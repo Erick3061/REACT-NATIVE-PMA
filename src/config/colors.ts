@@ -1,6 +1,6 @@
 export const colors = {
     Primary: '#000066',
-    PrimaryLight: '#442995',
+    PrimaryLight: '#c5cae9',
     PrimaryDark: '#00003b',
 
     DarkPrimary: '#263238',
@@ -15,7 +15,7 @@ export const colors = {
     TertiaryLight: '#feffff',
     TertiaryDark: '#9aa2a2',
 
-    background: '#fafafa',
+    background: '#e8eaf6',
 
     Error: '#f27474',
     Warning: '#f8bb86',

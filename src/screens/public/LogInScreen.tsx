@@ -68,7 +68,7 @@ export const LogInScreen = ({ navigation }: Props) => {
     const a = useRef<NativeTextInput>(null);
 
     useEffect(() => {
-        setValue('email', 'holder_2@pem-sa.com');
+        setValue('email', 'admin@pem-sa.com');
         setValue('password', '1234');
     }, [])
 

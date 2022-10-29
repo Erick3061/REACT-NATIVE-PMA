@@ -1,25 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import {
-    Dimensions, FlatList, I18nManager, Keyboard, Modal, Pressable, StyleSheet,
-    TextInput as NativeTextInput, TouchableOpacity,
-    TouchableWithoutFeedback, View, VirtualizedList
-} from 'react-native';
-import { IconButton, Text, TextInput } from 'react-native-paper';
+import { Dimensions, FlatList, I18nManager, Keyboard, Modal, Pressable, StyleSheet, Text, TextInput as NativeTextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { TextInput } from 'react-native-paper';
 import _ from 'lodash';
 import { useAppSelector } from '../app/hooks';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
-import { vh } from '../config/Dimensions';
-import Toast from 'react-native-toast-message';
+import { vh, vw } from '../config/Dimensions';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { List } from './List ';
 
 type Props = {
     valueField: string;
     labelField: string;
     label?: string;
-    data: Array<{ label: string, value: any }>;
-    valueSelect: { label: string, value: any };
+    data: Array<any>;
+    valuesSelected: Array<any>;
     flatListProps?: any;
     onBlur?: () => void;
-    onChange: (item: any) => void;
+    onChange: (item: Array<{ label: string, value: any }>) => void;
     value: string;
     error?: boolean;
 }
@@ -34,20 +31,15 @@ export const Select = React.forwardRef<any, Props>(
             value,
             error,
             label,
-            valueSelect
+            valuesSelected
         } = props;
 
-        const { colors } = useAppSelector(state => state.app.theme);
+        const { colors, roundness } = useAppSelector(state => state.app.theme);
         const { width: W, height: H } = Dimensions.get('window');
         const ref = useRef<View>(null);
         const search = useRef<NativeTextInput>(null);
-        const refList = useRef<FlatList>(null);
-
         const initialCurrentValue: { label: string, value: any } = { label: '', value: '' };
-        const initialLimit: number = 50;
-
         const [visible, setVisible] = useState<boolean>(false);
-        const [limit, setLimit] = useState<number>(initialLimit)
         const [filter, setFilter] = useState<Array<{ label: string, value: any }>>([]);
         const [position, setPosition] = useState<{ width: number, top: number, bottom: number, left: number, height: number }>();
         const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
@@ -55,18 +47,16 @@ export const Select = React.forwardRef<any, Props>(
         const debaucedValue = useDebouncedValue(textQueryValue, 200);
 
         useEffect(() => {
-            setLimit(initialLimit)
-            setFilter(() => data.filter(f => f.label.toLowerCase().includes(debaucedValue.toLowerCase())));
+            setFilter(() => data.filter(f => String(_.get(f, labelField)).toLowerCase().includes(debaucedValue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))));
         }, [debaucedValue]);
 
         useEffect(() => {
             if (textQueryValue === '') {
-                setLimit(initialLimit)
-                setFilter(data.slice(0, initialLimit));
+                setFilter(data);
             }
         }, [textQueryValue]);
 
-        useEffect(() => {//Keyboard action
+        useEffect(() => {
             const keyboardOpen = Keyboard.addListener('keyboardDidShow', (event) => {
                 setKeyboardHeight(event.endCoordinates.height);
             })
@@ -79,17 +69,9 @@ export const Select = React.forwardRef<any, Props>(
             }
         }, []);
 
-        useEffect(() => {
-            Toast.show({
-                text1: JSON.stringify({ limit, data: data.length })
-            })
-        }, [limit]);
-
-
         const _close = useCallback(() => {
             if (visible) setVisible(false);
-            setLimit(initialLimit);
-            setFilter(data.slice(0, limit));
+            setFilter(data);
         }, [visible]);
 
         const _measure = useCallback(() => {
@@ -109,7 +91,7 @@ export const Select = React.forwardRef<any, Props>(
 
         const onSelect = useCallback(
             (item: { label: string, value: any }) => {
-                onChange(item);
+                onChange([item]);
                 search.current?.blur();
                 Keyboard.dismiss();
                 _close();
@@ -117,25 +99,52 @@ export const Select = React.forwardRef<any, Props>(
             [onChange, _close]
         );
 
-        const _renderItem = ({ item, index }: { item: any; index: number }) => {
-            const selected = _.isEqual(_.get(item, valueField), valueSelect.value);
+        const _renderSearch = useCallback(() => {
             return (
-                <TouchableOpacity
-                    key={index.toString()}
-                    // onPress={() => console.log(item)}
-                    onPress={() => onSelect(item)}
-                    style={[
-                        { borderColor: colors.onPrimary, borderWidth: 1 },
-                        styles.item,
-                        selected && { backgroundColor: colors.primaryContainer },
-                    ]}
-                >
-                    <Text variant='bodyLarge' style={{ paddingHorizontal: 10 }}>
-                        {_.get(item, labelField)}
-                    </Text>
-                </TouchableOpacity>
-            );
-        };
+                <TouchableWithoutFeedback>
+                    <View style={{ flexDirection: 'row' }}>
+                        <TextInput
+                            style={{ flex: 1 }}
+                            ref={search}
+                            dense
+                            mode='outlined'
+                            label={'Buscar Cuenta'}
+                            left={<TextInput.Icon icon={'magnify'} />}
+                            autoCapitalize='none'
+                            onChangeText={setTextQueryValue}
+                        />
+                        <View style={{ justifyContent: 'center' }}>
+                            <Icon
+                                style={{ alignSelf: 'flex-end', backgroundColor: colors.primary, color: colors.onPrimary, borderRadius: roundness, marginLeft: 5, }}
+                                name='close'
+                                size={vw * 8}
+                                onPress={_close}
+                            />
+                        </View>
+                    </View>
+                </TouchableWithoutFeedback>
+            )
+        }, [search, vh, colors, _close, setTextQueryValue]);
+
+        const _renderDropDown = useCallback(() => {
+            return (
+                <TouchableWithoutFeedback>
+                    <Pressable onPress={() => setVisible(true)}>
+                        <TextInput
+                            style={{}}
+                            value={value}
+                            mode='outlined'
+                            label={value !== '' ? 'Cuenta seleccionada' : label}
+                            placeholder={visible ? 'Buscando cuentas ...' : 'Seleccione una cuenta'}
+                            showSoftInputOnFocus={false}
+                            editable={false}
+                            right={value !== '' ? <TextInput.Icon color={colors.primary} icon='close' onPress={() => onSelect(initialCurrentValue)} /> : <TextInput.Icon color={colors.primary} icon={visible ? 'chevron-up' : 'chevron-down'} onPress={() => setVisible(true)} />}
+                            error={error}
+                        />
+                    </Pressable>
+                </TouchableWithoutFeedback>
+            )
+        }, [error, value, visible, label, initialCurrentValue, colors])
 
         const _renderModal = useCallback(() => {
             if (position) {
@@ -150,59 +159,12 @@ export const Select = React.forwardRef<any, Props>(
                         hardwareAccelerated
                     >
                         <TouchableWithoutFeedback onPress={_close}>
-                            <View style={{ flex: 1, alignItems: 'center', backgroundColor: 'rgba(0,0,0,.1)' }}>
-                                <View style={{ width, height: topHeight, top, backgroundColor: 'white', borderRadius: 10, padding: 10 }}>
+                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,.1)', paddingVertical: 20 }}>
+                                <View style={{ width, height: '100%', backgroundColor: 'white', borderRadius: 10, padding: 10 }}>
                                     <TouchableWithoutFeedback>
                                         <View style={{ width: '100%', height: '100%' }}>
-                                            <TouchableWithoutFeedback>
-                                                <View style={{ flexDirection: 'row' }}>
-                                                    <TextInput
-                                                        style={{ flex: 1 }}
-                                                        ref={search}
-                                                        dense
-                                                        mode='outlined'
-                                                        label={'Buscar Cuenta'}
-                                                        left={<TextInput.Icon icon={'magnify'} />}
-                                                        autoCapitalize='none'
-                                                        onChangeText={setTextQueryValue}
-                                                    />
-                                                    <IconButton
-                                                        style={{ alignSelf: 'flex-end' }}
-                                                        containerColor={colors.primary}
-                                                        iconColor={colors.onPrimary}
-                                                        icon={'close'}
-                                                        size={vh * 2}
-                                                        onPress={_close}
-                                                    />
-                                                </View>
-                                            </TouchableWithoutFeedback>
-                                            <FlatList
-                                                ref={refList}
-                                                keyboardShouldPersistTaps="handled"
-                                                removeClippedSubviews
-                                                initialNumToRender={initialLimit}
-                                                ListEmptyComponent={<Text>Sin coincidencias</Text>}
-                                                contentContainerStyle={{
-                                                    paddingTop: 5,
-                                                    flexGrow: 1
-                                                }}
-                                                data={textQueryValue !== '' ? filter.slice(0, initialLimit) : filter}
-                                                renderItem={_renderItem}
-                                                keyExtractor={(_item, index) => index.toString()}
-                                                onEndReachedThreshold={0.2}
-                                                onEndReached={() => {
-                                                    if (textQueryValue === '') {
-                                                        const newLimit: number = limit + initialLimit;
-                                                        setLimit(newLimit);
-                                                        setFilter([...filter, ...data.slice(limit, newLimit)]);
-                                                    }
-                                                }}
-                                                onScrollToIndexFailed={info => {
-                                                    new Promise(resolve => setTimeout(() => resolve, 500)).then(() => {
-                                                        refList.current?.scrollToIndex({ index: info.index, animated: true });
-                                                    });
-                                                }}
-                                            />
+                                            {_renderSearch()}
+                                            <List data={filter} label={labelField} separatorColor={colors.primary} separator />
                                         </View>
                                     </TouchableWithoutFeedback>
                                 </View>
@@ -216,30 +178,8 @@ export const Select = React.forwardRef<any, Props>(
 
         return (
             <View style={{ justifyContent: 'center' }} ref={ref} onLayout={_measure}>
-                <TouchableWithoutFeedback>
-                    <Pressable onPress={() => setVisible(true)}>
-                        <TextInput
-                            style={{}}
-                            value={value}
-                            mode='outlined'
-                            label={value !== '' ? 'Cuenta seleccionada' : label}
-                            placeholder={visible ? 'Buscando cuentas ...' : 'Seleccione una cuenta'}
-                            showSoftInputOnFocus={false}
-                            editable={false}
-                            right={value !== '' ? <TextInput.Icon icon='close' onPress={() => onSelect(initialCurrentValue)} /> : undefined}
-                            error={error}
-                        />
-                    </Pressable>
-                </TouchableWithoutFeedback>
+                {_renderDropDown()}
                 {_renderModal()}
             </View>
         )
     });
-
-const styles = StyleSheet.create({
-    item: {
-        paddingVertical: vh,
-        borderRadius: 7,
-        marginVertical: 2
-    }
-});

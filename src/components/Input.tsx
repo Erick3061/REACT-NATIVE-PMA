@@ -36,11 +36,10 @@ export const Input = <T extends Object>({ renderRightIcon, renderLefttIcon, show
         return (
             <TextInput.Icon
                 icon={renderLefttIcon ?? renderRightIcon ?? 'close'}
-                size={30}
                 color={(focused) => focused ? colors.outline : error ? colors.error : colors.primary}
             />
         )
-    }, [renderLefttIcon, renderRightIcon]);
+    }, [renderLefttIcon, renderRightIcon, colors]);
 
     return (
         <Controller
@@ -71,7 +70,7 @@ export const Input = <T extends Object>({ renderRightIcon, renderLefttIcon, show
                         left={renderLefttIcon ? renderIcon(error) : undefined}
                         right={renderRightIcon ? renderIcon(error) : isPassword && < TextInput.Icon
                             icon={ShowPassword ? 'eye' : 'eye-off'}
-                            size={30} forceTextInputFocus={false}
+                            forceTextInputFocus={false}
                             color={(focused) => focused ? colors.outline : error ? colors.error : colors.primary}
                             onPress={() => setShowPassword(!ShowPassword)}
                             animated

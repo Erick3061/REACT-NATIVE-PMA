@@ -3,16 +3,16 @@ import React from 'react';
 import { ResultGroupQueryScreen } from '../screens/private/ResultGroupQueryScreen';
 import { ResultIndividualQueryScreen } from '../screens/private/ResultIndividualQueryScreen';
 import { DrawerScreens } from './DrawerScreens';
+import { Account } from '../interfaces/interfaces';
 
 export type rootPrivateScreens = {
     DrawerScreens: undefined;
-    ResultIndividualQueryScreen: undefined;
+    ResultIndividualQueryScreen: { props: { accounts: Array<Account>, start: string, end: string, report: 'ApCi' | 'EA' } };
     ResultGroupQueryScreen: undefined;
 }
 
 export const PrivateScreens = () => {
     const Stack = createStackNavigator<rootPrivateScreens>();
-
     return (
         <Stack.Navigator
             screenOptions={{
@@ -21,12 +21,13 @@ export const PrivateScreens = () => {
                     close: TransitionSpecs.TransitionIOSSpec,
                 },
                 cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-                headerStyleInterpolator: HeaderStyleInterpolators.forUIKit,
+                headerStyleInterpolator: HeaderStyleInterpolators.forUIKit
             }}
         >
             <Stack.Screen name='DrawerScreens' options={{ headerShown: false }} component={DrawerScreens} />
-            <Stack.Screen name='ResultIndividualQueryScreen' component={ResultIndividualQueryScreen} />
-            <Stack.Screen name='ResultGroupQueryScreen' component={ResultGroupQueryScreen} />
+            <Stack.Screen name='ResultIndividualQueryScreen' options={{ headerShown: false }} component={ResultIndividualQueryScreen} />
+            <Stack.Screen name='ResultGroupQueryScreen' options={{ headerShown: false }} component={ResultGroupQueryScreen} />
         </Stack.Navigator>
+
     )
 }

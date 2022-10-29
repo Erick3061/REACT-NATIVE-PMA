@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { responseError, User } from '../interfaces/interfaces';
+import { responseError, User, Account, GetReport, Dates, Events } from '../interfaces/interfaces';
 
 // export const baseUrl = 'https://pem-sa.ddns.me:3007/api';
-export const baseUrl = 'http://192.168.1.113:3000';
+export const baseUrl = 'http://192.168.1.93:3000';
 
 export const Api = async (endpoint: string, data: object = {}, method: 'GET' | 'POST' | 'PATCH' = 'GET', tokenTemp?: string) => {
     const url = `${baseUrl}/${endpoint}`;
@@ -30,3 +30,22 @@ export const CheckAuth = async (terms?: string) => {
         return data;
     } catch (error) { throw new Error(`${error}`); }
 };
+
+export const GetMyAccount = async () => {
+    try {
+        const response = await Api(`accounts/my-individual-accounts`, {}, 'GET');
+        const { status, message, ...data }: responseError & { accounts: Array<Account> } = await response.json();
+        if (status === false) throw new Error(`${message}`);
+        return data;
+    } catch (error) { throw new Error(`${error}`); }
+};
+
+
+export const ReportEvents = async ({ body, type }: { body: GetReport & Dates, type?: 'ApCi' | 'EA' }) => {
+    try {
+        const response = await Api(`reports/${type === 'ApCi' ? 'ap-ci' : 'event-alarm'}`, body, 'POST');
+        const { status, message, ...data }: responseError & { nombre: string, cuentas?: Array<Account & { eventos?: Array<Events> }> } = await response.json();
+        if (status === false) throw new Error(`${message}`);
+        return data;
+    } catch (error) { throw new Error(`${error}`); }
+}

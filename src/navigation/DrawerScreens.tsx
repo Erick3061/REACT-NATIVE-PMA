@@ -13,6 +13,7 @@ import { updateError, updateThemeView } from "../features/alertSlice";
 import { QueryTabsScreen } from '../screens/private/QueryTabScreens';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
 export type RootDrawerNavigator = {
     HomeScreen: undefined;
     ProfileScreen: undefined;
@@ -86,7 +87,6 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
                         await AsyncStorage.removeItem('token');
                         dispatch(LogOut())
                     } catch (error) { dispatch(updateError({ open: true, icon: true, msg: JSON.stringify(error) })) }
-
                 }} />
             </View>
         </View>

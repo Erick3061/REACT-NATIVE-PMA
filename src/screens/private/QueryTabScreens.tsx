@@ -1,5 +1,4 @@
 import React from 'react';
-import { View } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { AccountsScreen } from './topTabs/AccountsScreen';
 import { GroupsScreen } from './topTabs/GroupsScreen';
@@ -14,7 +13,6 @@ const Tab = createMaterialTopTabNavigator<ScreensTabs>();
 
 export const QueryTabsScreen = () => {
     const { colors, dark, fonts } = useAppSelector(state => state.app.theme);
-
     return (
         <Tab.Navigator
             screenOptions={{
