@@ -1,23 +1,56 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { Button, StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput, Pressable } from 'react-native';
 import { DataProvider, LayoutProvider, RecyclerListView } from 'recyclerlistview';
 import _ from 'lodash';
 import { screenWidth } from '../config/Dimensions';
 import { Text } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useDebouncedValue } from '../hooks/useDebouncedValue';
+import Toast from 'react-native-toast-message';
+import { toastConfig } from '../navigation/Root';
 
 interface Props {
     data: Array<any>;
-    label: string;
+    valueField: string;
+    labelField: string;
     height?: number;
     separator?: true;
     separatorColor?: string;
-    multiselect?: true;
+    colorSelected?: string;
+    colorBtns?: {
+        confirm: string;
+        cancel: string;
+    };
+    itemsSelected: Array<any>;
+    multiselect: boolean;
+    renderSearch?: {
+        placeholder: string;
+    }
+    onChange: (item: Array<any>) => void;
 }
-export const List = ({ data, label, height, separator, separatorColor }: Props) => {
-
+export const List = ({ data, labelField, valueField, height, separator, separatorColor, multiselect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch }: Props) => {
     const [dataProvider, setDataProvider] = useState<DataProvider>(new DataProvider((r1, r2) => r1 !== r2));
-
     const containerList = useRef<View>(null);
+    const [selected, setSelected] = useState<Array<any>>(itemsSelected);
+    const [filter, setFilter] = useState<Array<any>>(data);
+    const search = useRef<TextInput>(null);
+
+    const _onSelect = useCallback((item: Object) => {
+        if (!multiselect) {
+            onChange([item]);
+        } else {
+            const index = selected.findIndex(f => _.isEqual(_.get(f, valueField), _.get(item, valueField)));
+            if (index > -1) {
+                setSelected(selected.filter(f => _.get(f, valueField) !== _.get(selected[index], valueField)));
+            } else {
+                if (selected.length < 5) {
+                    setSelected([...selected, item]);
+                } else {
+                    Toast.show({ text1: 'Alerta', text2: 'Solo se pueden seleccionar hasta 5 cuentas', type: 'info' })
+                }
+            }
+        }
+    }, [dataProvider, valueField, labelField, setSelected, onChange, selected]);
 
     const _layoutProvider = useCallback(() => {
         return new LayoutProvider(
@@ -30,36 +63,114 @@ export const List = ({ data, label, height, separator, separatorColor }: Props) 
     }, [dataProvider, height]);
 
     const _renderRow = useCallback((type: string | number, data: any, index: number, extendedState?: object | undefined) => {
+        const isSelected = selected.find(f => _.isEqual(_.get(f, valueField), _.get(data, valueField)));
         return (
             <>
-                <TouchableOpacity style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}>
-                    <Text>{_.get(data, label)}</Text>
+                <TouchableOpacity
+                    onPress={() => _onSelect(data)}
+                    style={[styles.item, { backgroundColor: isSelected ? colorSelected ?? 'lightskyblue' : undefined }]}
+                >
+                    <Text>{_.get(data, labelField)}</Text>
                 </TouchableOpacity>
                 {separator && <View style={{ borderTopWidth: .2, borderColor: separatorColor ?? 'silver' }}></View>}
             </>
         )
-    }, [dataProvider, label, height, separator, separatorColor]);
+    }, [dataProvider, labelField, valueField, height, separator, separatorColor, selected]);
+
+    const _renderSearch = useCallback(() => {
+        const [textQueryValue, setTextQueryValue] = useState<string>('');
+        const debaucedValue = useDebouncedValue(textQueryValue, 200);
+        useEffect(() => {
+            setFilter(() => data.filter(f => String(_.get(f, labelField)).toLowerCase().includes(debaucedValue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))));
+        }, [debaucedValue]);
+
+        useEffect(() => {
+            if (textQueryValue.length === 0) {
+                setFilter(data);
+            }
+        }, [textQueryValue])
+
+
+        return (
+            <TouchableWithoutFeedback>
+                <Pressable style={styles.containerInput} onPress={() => search.current?.focus()}>
+                    <Icon name='magnify' size={30} />
+                    <TextInput
+                        ref={search}
+                        placeholder={renderSearch ? renderSearch.placeholder : 'Buscar'}
+                        style={styles.textInput}
+                        autoCapitalize='none'
+                        onChangeText={setTextQueryValue}
+                    />
+                </Pressable>
+            </TouchableWithoutFeedback>
+        )
+    }, [search]);
 
 
     useEffect(() => {
-        setDataProvider(dataProvider.cloneWithRows(data));
-        console.log(data.length);
-    }, [data]);
+        setDataProvider(dataProvider.cloneWithRows(filter));
+    }, [filter]);
 
     return (
         <View style={{ flex: 1 }}>
-            <View ref={containerList} style={{ flex: 1, marginVertical: 5, padding: 5, borderWidth: .2, borderRadius: 5, borderColor: separatorColor ?? 'silver', justifyContent: 'center' }}>
+            {renderSearch && _renderSearch()}
+            <View ref={containerList} style={[styles.container, { borderColor: separatorColor ?? 'silver' }]}>
                 {
-                    data.length > 0
+                    filter.length > 0
                         ?
                         <RecyclerListView
                             rowRenderer={_renderRow}
                             dataProvider={dataProvider}
                             layoutProvider={_layoutProvider()}
                         />
-                        : <Text style={{ textAlign: 'center' }}>SIN COINCIDENCIAS</Text>
+                        : <View style={{ flex: 1, justifyContent: 'center' }}><Text style={{ textAlign: 'center' }}>SIN COINCIDENCIAS</Text></View>
                 }
             </View>
+            <View style={styles.containerBtns}>
+                <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>
+                {multiselect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
+            </View>
+            <Toast visibilityTime={4000} config={toastConfig} />
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        marginVertical: 5,
+        padding: 5,
+        borderWidth: .2,
+        borderRadius: 5,
+        justifyContent: 'center',
+    },
+    containerInput: {
+        flexDirection: 'row',
+        marginVertical: 3,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderRadius: 5,
+        padding: 3,
+        borderColor: 'silver'
+    },
+    textInput: {
+        flex: 1,
+        padding: 5,
+    },
+    item: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 10,
+        borderRadius: 5,
+        margin: 1
+    },
+    containerBtns: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 5,
+    },
+    btns: {
+        marginHorizontal: 5,
+    }
+});

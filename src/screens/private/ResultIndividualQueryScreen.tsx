@@ -1,15 +1,16 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Switch, ActivityIndicator } from 'react-native';
+import React, { createRef, useEffect, useState } from 'react';
+import { StyleSheet, View, TouchableOpacity, Switch, ActivityIndicator, Pressable, SectionList, ScrollView } from 'react-native';
 import { Appbar, Menu, Text, TextInput, } from 'react-native-paper';
 import { useAppSelector } from '../../app/hooks';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { Loading } from '../../components/Loading';
-import Table from '../../components/Table';
+import Table from '../../components/table/Table';
 import { Events } from '../../interfaces/interfaces';
 import { useEvents } from '../../hooks/Events';
+import { Row } from '../../components/table/Row';
 
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultIndividualQueryScreen'> { };
@@ -38,7 +39,7 @@ const KeysEA: Array<{ key: keyof Events, size: number, center?: boolean }> = [
 
 export const ResultIndividualQueryScreen = ({ navigation, route }: Props) => {
     const { params: { props: { accounts, start, end } } } = route;
-    const { theme: { colors } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
     const [visible, setVisible] = React.useState<boolean>(false);
     const [viewChar, setViewChar] = React.useState<boolean>(false);
     const [report, setReport] = useState<'ApCi' | 'EA'>(route.params.props.report);
@@ -85,7 +86,7 @@ export const ResultIndividualQueryScreen = ({ navigation, route }: Props) => {
                 <Appbar.BackAction color={colors.background} onPress={() => navigation.goBack()} />
                 <Appbar.Content color={colors.background} title={report === 'ApCi' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'} />
             </Appbar.Header>
-            <View style={{ alignItems: 'center' }} >
+            {(accounts.length === 1) && <View style={{ alignItems: 'center' }} >
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <TextInput
                         style={{ flex: 1, marginHorizontal: 5, textAlign: 'center' }}
@@ -108,21 +109,28 @@ export const ResultIndividualQueryScreen = ({ navigation, route }: Props) => {
                         label='FINAL'
                     />
                 </View>
-            </View>
+            </View>}
             <View style={{ flex: 1, marginBottom: 57 }}>
-                <TouchableOpacity style={{ flexDirection: 'row' }} onPress={() => setViewChar(!viewChar)}>
-                    <Text>Generar gráfica</Text>
-                    <View pointerEvents="none">
-
-                    </View>
-                </TouchableOpacity>
+                {
+                    accounts.length === 1 &&
+                    <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }} onPress={() => { setViewChar(!viewChar); }}>
+                        <Text style={{ color: colors.primary, paddingHorizontal: 5 }}>{viewChar ? 'ocultar gráfica' : 'ver gráfica'}</Text>
+                        <Appbar.Action
+                            animated
+                            style={{ backgroundColor: colors.primaryContainer }}
+                            color={colors.primary}
+                            icon={viewChar ? 'toggle-switch' : "toggle-switch-off-outline"}
+                        />
+                    </TouchableOpacity>
+                }
                 <>
                     {
                         (isLoading || isFetching) ? <Loading /> :
                             data ?
                                 data.cuentas
                                     ?
-                                    data.cuentas.length === 1 ?
+                                    data.cuentas.length === 1
+                                        ?
                                         data?.cuentas?.map((acc, idx) =>
                                             !visible ?
                                                 <Table
@@ -134,7 +142,34 @@ export const ResultIndividualQueryScreen = ({ navigation, route }: Props) => {
                                                 />
                                                 : <ActivityIndicator color={colors.primary} key={acc.CodigoCte + (idx * .33)} />
                                         )
-                                        : <Text>Mucahas cuentas</Text>
+                                        :
+                                        <View style={{ paddingVertical: 5 }}>
+                                            <SectionList
+                                                sections={data.cuentas.map(acc => { return { title: { name: acc.Nombre, address: acc.Direccion, ref: createRef<ScrollView>() }, data: [{ events: acc.eventos ?? [] }] } })}
+                                                renderItem={({ item, section }) => {
+                                                    const ref = section.title.ref;
+                                                    return (
+                                                        <Table
+                                                            scrollRefHeader={ref}
+                                                            Data={item.events}
+                                                            keys={keys}
+                                                            fontSize={11}
+                                                        />
+                                                    )
+                                                }}
+                                                renderSectionHeader={({ section }) => (
+                                                    <View style={{ backgroundColor: 'steelblue', marginHorizontal: 5 }}>
+                                                        <Text style={{ color: 'white', paddingHorizontal: 5 }}>{section.title.name}</Text>
+                                                        <Text style={{ color: 'white', paddingHorizontal: 5 }}>{section.title.address}</Text>
+                                                        <ScrollView ref={section.title.ref} horizontal showsHorizontalScrollIndicator={false}>
+                                                            <Row data={titles} fontSize={13} tamCol={[{ size: 35, center: true }, ...keys]} styleLabel={{ padding: 0, margin: 0, color: 'white' }} />
+                                                        </ScrollView>
+                                                    </View>
+                                                )}
+                                                keyExtractor={(item, idx) => `${idx * .333}`}
+                                                stickySectionHeadersEnabled
+                                            />
+                                        </View>
                                     : exit()
                                 : <Text>Error</Text>
                     }
@@ -151,30 +186,30 @@ export const ResultIndividualQueryScreen = ({ navigation, route }: Props) => {
                 ]}
 
             >
-                <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="calendar-today" onPress={() => { }} />
-                <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="calendar" onPress={() => { }} />
-                <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="swap-horizontal" onPress={() => setVisible(true)} />
-                <Menu
-                    contentStyle={{ backgroundColor: colors.background }}
-                    visible={visible}
-                    onDismiss={() => setVisible(false)}
-                    anchor={
-                        <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="file-download-outline" onPress={() => { }} />
-                    }
-                >
-                    <Menu.Item onPress={() => {
-                        setReport('ApCi');
-                        setVisible(false);
-                        setTitles(TitlesApCi);
-                        queryClient.removeQueries(['Events', key]);
-                    }} title="Apertura y Cierre" />
-                    <Menu.Item onPress={async () => {
-                        setReport('EA');
-                        setVisible(false);
-                        setTitles(TitlesEA);
-                        queryClient.removeQueries(['Events', key]);
-                    }} title="Evento de Alarma" />
-                </Menu>
+                {(accounts.length === 1) && <>
+                    <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="swap-horizontal" onPress={() => setVisible(true)} />
+                    <Menu
+                        contentStyle={{ backgroundColor: colors.background }}
+                        visible={visible}
+                        onDismiss={() => setVisible(false)}
+                        anchor={
+                            <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="file-download-outline" onPress={() => { }} />
+                        }
+                    >
+                        <Menu.Item onPress={() => {
+                            setReport('ApCi');
+                            setVisible(false);
+                            setTitles(TitlesApCi);
+                            queryClient.removeQueries(['Events', key]);
+                        }} title="Apertura y Cierre" />
+                        <Menu.Item onPress={async () => {
+                            setReport('EA');
+                            setVisible(false);
+                            setTitles(TitlesEA);
+                            queryClient.removeQueries(['Events', key]);
+                        }} title="Evento de Alarma" />
+                    </Menu>
+                </>}
                 <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="refresh" onPress={() => refetch()} />
             </Appbar>
         </View >

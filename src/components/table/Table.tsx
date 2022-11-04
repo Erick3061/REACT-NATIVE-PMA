@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
 import _ from 'lodash';
+import { Row } from './Row';
 
 type Props = {
-    Header: {
+    Header?: {
         title?: string;
         subtitle?: string;
         tableHead: Array<string>;
@@ -11,27 +12,12 @@ type Props = {
     Data: any;
     keys: Array<{ key: string, size: number, center?: boolean }>
     fontSize: number;
+    scrollRefHeader?: React.RefObject<ScrollView>;
 }
 
-type PropsRow = {
-    data: Array<string>;
-    fontSize: number;
-    tamCol: Array<{ size: number, center?: boolean }>;
-    style?: StyleProp<ViewStyle>;
-    styleLabel?: StyleProp<TextStyle>;
-}
-
-const Table = ({ Header, Data, keys, fontSize, }: Props) => {
+const Table = ({ Header, Data, keys, fontSize, scrollRefHeader }: Props) => {
     const [events, setEvents] = useState<Array<any>>();
     const [tams, setTams] = useState<Array<{ size: number, center?: boolean }>>([]);
-
-    const Row = ({ data, fontSize, style, styleLabel, tamCol }: PropsRow) => {
-        return (
-            <View style={[styles.containerRow, style]}>
-                {data.map((col, idx) => <Text style={[styles.textHeader, { fontSize, color: '#37474f', width: tamCol[idx].size, textAlign: tamCol[idx].center ? 'center' : 'justify' }, styleLabel]} key={`${col}-${idx}-${Math.random()}`}>{col}</Text>)}
-            </View>
-        )
-    }
 
 
     useEffect(() => {
@@ -51,15 +37,17 @@ const Table = ({ Header, Data, keys, fontSize, }: Props) => {
     return (
         <View style={styles.containerTable}>
             {
-                (Header.title || Header.subtitle) &&
+                Header && (Header.title || Header.subtitle) &&
                 <View style={{ paddingVertical: 5, backgroundColor: 'steelblue' }}>
                     {Header.title && <Text style={styles.textTitlesHeader}>{Header.title}</Text>}
                     {Header.subtitle && <Text style={styles.textTitlesHeader}>{Header.subtitle}</Text>}
                 </View>
             }
-            <ScrollView horizontal={true}>
+            <ScrollView horizontal={true}
+                onScroll={({ nativeEvent }) => { scrollRefHeader?.current?.scrollTo({ x: nativeEvent.contentOffset.x, y: nativeEvent.contentOffset.y, animated: true }); }}
+            >
                 <View>
-                    {events && <Row tamCol={tams} styleLabel={{ color: 'white' }} style={{ backgroundColor: 'steelblue' }} fontSize={fontSize + 2} data={Header.tableHead} />}
+                    {(events && Header) && <Row tamCol={tams} styleLabel={{ color: 'white' }} style={{ backgroundColor: 'steelblue' }} fontSize={fontSize + 2} data={Header.tableHead} />}
                     <ScrollView>
                         {
                             events ? events.map((ev, idx) => <Row tamCol={tams} style={(idx % 2) ? { backgroundColor: '#7dcff4' } : undefined} fontSize={fontSize} key={idx * .333} data={ev} />)
@@ -80,14 +68,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'aliceblue',
         marginVertical: 5,
         marginHorizontal: 5
-    },
-    containerRow: {
-        flexDirection: 'row',
-        paddingHorizontal: 5
-    },
-    textHeader: {
-        // backgroundColor: 'pink',
-        paddingVertical: 2
     },
     textTitlesHeader: {
         color: 'white',

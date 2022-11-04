@@ -11,7 +11,7 @@ import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
 import { colors as ColorsAlerts } from '../config/colors';
 import { PrivateScreens } from './PrivateScreens';
 
-const toastConfig = {
+export const toastConfig = {
     success: (props: BaseToastProps) => {
         const { colors, fonts, dark } = useAppSelector(state => state.app.theme);
         return (
@@ -39,9 +39,9 @@ const toastConfig = {
         return (
             <BaseToast
                 {...props}
-                style={{ borderLeftColor: ColorsAlerts.Info, backgroundColor: dark ? colors.inverseOnSurface : colors.background }}
-                text1Style={{ fontSize: fonts.bodyLarge.fontSize }}
-                text2Style={{ fontSize: fonts.bodyMedium.fontSize }}
+                style={{ borderLeftColor: ColorsAlerts.Warning, backgroundColor: dark ? colors.inverseOnSurface : colors.background }}
+                text1Style={{ fontSize: fonts.bodyLarge.fontSize, color: colors.primary }}
+                text2Style={{ fontSize: fonts.bodyMedium.fontSize, color: colors.primary }}
             />
         )
     }

@@ -12,7 +12,7 @@ import 'moment/locale/es';
 import { Select } from '../../../components/Select';
 import _ from 'lodash';
 import { Input } from '../../../components/Input';
-import { Button, FAB, IconButton, Switch, Text, TouchableRipple } from 'react-native-paper';
+import { Button, FAB, IconButton, Switch, Text } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { updateInfo } from '../../../features/alertSlice';
@@ -20,8 +20,6 @@ import { useQuery } from '@tanstack/react-query';
 import { GetMyAccount } from '../../../api/Api';
 import { Loading } from '../../../components/Loading';
 import Toast from 'react-native-toast-message';
-import { is } from 'immer/dist/internal';
-import { MultipleSelect } from '../../../components/MultipleSelect';
 
 moment.locale('es');
 
@@ -51,7 +49,7 @@ export const AccountsScreen = () => {
     const { control, handleSubmit, reset, setValue: setValueForm } = useForm<Accout>({ defaultValues: { name: '', start: '', end: '' } });
 
     const [show, setShow] = useState<dateSelected>(initialDateSelected);
-    const [valueSelect, setValueSelect] = useState<Array<{ label: string, value: any }>>();
+    const [valueSelect, setValueSelect] = useState<Array<Account>>();
     const [isMulSel, setIsMulSel] = useState<boolean>(false);
 
     const startRef = useRef<NativeTextInput>(null);
@@ -60,12 +58,9 @@ export const AccountsScreen = () => {
     const openInfo = ({ msg, title }: { msg: string, title: string }) => dispatch(updateInfo({ open: true, title, msg, icon: true }));
 
     const onSubmitApCi: SubmitHandler<Accout> = async (props) => {
-        // const account = data?.accounts.find(f => f.CodigoCte === valueSelect.map(f=>f.value));
-        const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.value).includes(f.CodigoCte)) ?? [];
-        if (accounts) {
+        const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
+        if (accounts.length > 0) {
             const { end, name, start } = props;
-            console.log(accounts);
-
             navigate('ResultIndividualQueryScreen', { props: { accounts, start, end, report: 'ApCi' } });
         } else {
             Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
@@ -73,16 +68,21 @@ export const AccountsScreen = () => {
     };
 
     const onSubmitEA: SubmitHandler<Accout> = async (props) => {
-        const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.value).includes(f.CodigoCte)) ?? [];
-        if (accounts) {
+        const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
+        if (accounts.length > 0) {
             const { end, name, start } = props;
-            console.log(accounts);
-
             navigate('ResultIndividualQueryScreen', { props: { accounts, start, end, report: 'EA' } });
         } else {
             Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
         }
     };
+
+    useEffect(() => {
+        if (!isMulSel) {
+            setValueSelect([])
+        }
+    }, [isMulSel])
+
 
     useEffect(() => {
         setValueForm('start', show.start.date.date.date);
@@ -97,61 +97,44 @@ export const AccountsScreen = () => {
                     <KeyboardAvoidingView>
                         <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Seleccione el inicio y fin de la consulta;</Text>
                         <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
-
-                        {
-                            !isMulSel
-                                ?
-                                <Controller
-                                    control={control}
-                                    rules={{ required: { message: 'Debe seleccionar una cuenta', value: true } }}
-                                    name='name'
-                                    render={({ field: { value, onChange }, fieldState: { error } }) =>
-                                        <>
-                                            <Select
-                                                valueField='CodigoCte'
-                                                labelField='Nombre'
-                                                valuesSelected={valueSelect ?? []}
-                                                value={value}
-                                                label={'Seleccione una cuenta'}
-                                                data={isSuccess ? data.accounts : data ? data.accounts : []}
-                                                onChange={(value: Array<any>) => {
-                                                    setValueSelect(value);
-                                                    onChange(value[0].label);
-                                                }}
-                                                error={error ? true : false}
-                                            />
-                                            {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
-                                        </>
-                                    }
-                                />
-                                :
-                                <MultipleSelect
-                                    labelField='label'
-                                    valueField='value'
-                                    valuesSelected={valueSelect}
-                                    data={isSuccess ? data.accounts.map(acc => { return { label: acc.Nombre, value: acc.CodigoCte } }) : data ? data.accounts.map(acc => { return { label: acc.Nombre, value: acc.CodigoCte } }) : []}
-                                    onChange={(value?: { label: string, value: any }) => {
-                                        if (value) {
-                                            if (data?.accounts.find(f => _.isEqual(f.CodigoCte, value.value))?.Status !== 'A') {
-                                                Toast.show({ type: 'error', text1: 'Error', text2: 'Cuenta inhabilitada' })
-                                            } else {
-                                                if (valueSelect?.find(f => f.value === value.value)) {
-                                                    setValueSelect(valueSelect.filter(f => f.value !== value.value));
-                                                } else {
-                                                    setValueSelect(valueSelect ? [...valueSelect, value] : [value]);
-                                                }
-                                            }
-                                        } else setValueSelect(undefined);
-                                    }}
-                                />
-                        }
-
-                        <TouchableOpacity onPress={() => setIsMulSel(!isMulSel)} style={{ marginVertical: 10, paddingHorizontal: 5, paddingVertical: 10 }}>
+                        <TouchableOpacity onPress={() => setIsMulSel(!isMulSel)} style={{ marginVertical: 5, paddingHorizontal: 5, paddingVertical: 5 }}>
                             <View pointerEvents="none" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text variant='titleSmall' >Selector multiple</Text>
                                 <Switch value={isMulSel} />
                             </View>
                         </TouchableOpacity>
+                        <Controller
+                            control={control}
+                            rules={{ required: { message: 'Debe seleccionar una cuenta', value: true } }}
+                            name='name'
+                            render={({ field: { value, onChange }, fieldState: { error } }) =>
+                                <>
+                                    <Select
+                                        valueField='CodigoCte'
+                                        labelField='Nombre'
+                                        value={value}
+                                        itemsSelected={valueSelect ?? []}
+                                        label={isMulSel ? 'Seleccione sus cuentas' : 'Seleccione una cuenta'}
+                                        data={data ? data.accounts.filter(f => f.Status !== 'I') : []}
+                                        onChange={(value: Array<any>) => {
+                                            setValueSelect(value);
+                                            onChange((value.length <= 1) ? _.get(value[0], 'Nombre') : 'Eliminar Cuentas Seleccionadas');
+                                        }}
+                                        error={error ? true : false}
+                                        multiSelect={isMulSel}
+                                    />
+                                    {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                                </>
+                            }
+                        />
+                        {
+                            isMulSel &&
+                            <View style={{ padding: 10 }}>
+                                {
+                                    valueSelect?.map(acc => <Text key={acc.CodigoCte}>{acc.Nombre}</Text>)
+                                }
+                            </View>
+                        }
                         <View style={{ display: 'flex', flexDirection: 'row', marginVertical: 10 }}>
                             <Input
                                 disabled={isLoading}
@@ -216,7 +199,7 @@ export const AccountsScreen = () => {
                                     loading={isLoading}
                                     style={{ marginVertical: 5, flex: 1 }}
                                     mode='contained'
-                                    onPress={handleSubmit(onSubmitApCi)}>APERTURA</Button>
+                                    onPress={handleSubmit(onSubmitApCi)}>APERTURA Y CIERRE</Button>
                                 <IconButton
                                     icon={'information-outline'}
                                     onPress={() => openInfo({
@@ -229,7 +212,7 @@ export const AccountsScreen = () => {
                                     loading={isLoading}
                                     style={{ marginVertical: 5, flex: 1 }}
                                     mode='contained'
-                                    onPress={handleSubmit(onSubmitEA)}>CIERRE</Button>
+                                    onPress={handleSubmit(onSubmitEA)}>EVENTO DE ALARMA</Button>
                                 <IconButton
                                     icon={'information-outline'}
                                     onPress={() => openInfo({
