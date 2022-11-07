@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { GetMyAccount } from '../../../api/Api';
 import { Loading } from '../../../components/Loading';
 import Toast from 'react-native-toast-message';
+import { ScrollView } from 'react-native-gesture-handler';
 
 moment.locale('es');
 
@@ -91,138 +92,141 @@ export const AccountsScreen = () => {
 
     return (
         <View style={{ flex: 1, padding: 10, }}>
-            {
-                isLoading ? <Loading />
-                    :
-                    <KeyboardAvoidingView>
-                        <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Seleccione el inicio y fin de la consulta;</Text>
-                        <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
-                        <TouchableOpacity onPress={() => setIsMulSel(!isMulSel)} style={{ marginVertical: 5, paddingHorizontal: 5, paddingVertical: 5 }}>
-                            <View pointerEvents="none" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Text variant='titleSmall' >Selector multiple</Text>
-                                <Switch value={isMulSel} />
-                            </View>
-                        </TouchableOpacity>
-                        <Controller
-                            control={control}
-                            rules={{ required: { message: 'Debe seleccionar una cuenta', value: true } }}
-                            name='name'
-                            render={({ field: { value, onChange }, fieldState: { error } }) =>
-                                <>
-                                    <Select
-                                        valueField='CodigoCte'
-                                        labelField='Nombre'
-                                        value={value}
-                                        itemsSelected={valueSelect ?? []}
-                                        label={isMulSel ? 'Seleccione sus cuentas' : 'Seleccione una cuenta'}
-                                        data={data ? data.accounts.filter(f => f.Status !== 'I') : []}
-                                        onChange={(value: Array<any>) => {
-                                            setValueSelect(value);
-                                            onChange((value.length <= 1) ? _.get(value[0], 'Nombre') : 'Eliminar Cuentas Seleccionadas');
-                                        }}
-                                        error={error ? true : false}
-                                        multiSelect={isMulSel}
-                                    />
-                                    {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
-                                </>
-                            }
-                        />
-                        {
-                            isMulSel &&
-                            <View style={{ padding: 10 }}>
-                                {
-                                    valueSelect?.map(acc => <Text key={acc.CodigoCte}>{acc.Nombre}</Text>)
+            <ScrollView>
+                {
+                    isLoading ? <Loading />
+                        :
+                        <KeyboardAvoidingView>
+                            <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Seleccione el inicio y fin de la consulta;</Text>
+                            <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
+                            <TouchableOpacity onPress={() => setIsMulSel(!isMulSel)} style={{ marginVertical: 5, paddingHorizontal: 5, paddingVertical: 5 }}>
+                                <View pointerEvents="none" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Text variant='titleSmall' >Selector multiple</Text>
+                                    <Switch value={isMulSel} />
+                                </View>
+                            </TouchableOpacity>
+                            <Controller
+                                control={control}
+                                rules={{ required: { message: 'Debe seleccionar una cuenta', value: true } }}
+                                name='name'
+                                render={({ field: { value, onChange }, fieldState: { error } }) =>
+                                    <>
+                                        <Select
+                                            valueField='CodigoCte'
+                                            labelField='Nombre'
+                                            value={value}
+                                            itemsSelected={valueSelect ?? []}
+                                            label={isMulSel ? 'Seleccione sus cuentas' : 'Seleccione una cuenta'}
+                                            data={data ? data.accounts.filter(f => f.Status !== 'I') : []}
+                                            onChange={(value: Array<any>) => {
+                                                setValueSelect(value);
+                                                onChange((value.length <= 1) ? _.get(value[0], 'Nombre') : 'Eliminar Cuentas Seleccionadas');
+                                            }}
+                                            error={error ? true : false}
+                                            multiSelect={isMulSel}
+                                        />
+                                        {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                                    </>
                                 }
-                            </View>
-                        }
-                        <View style={{ display: 'flex', flexDirection: 'row', marginVertical: 10 }}>
-                            <Input
-                                disabled={isLoading}
-                                refp={startRef}
-                                control={control}
-                                formInputs={control._defaultValues}
-                                label='Fecha inicio'
-                                name='start'
-                                placeholder=''
-                                style={styles.input}
-                                mode='outlined'
-                                onFocus={() => { setShow({ ...show, start: { date: show.start.date, open: true } }) }}
-                                showSoftInputOnFocus={false}
-                                renderRightIcon='calendar'
-                                rules={{ required: { message: 'Debe seleccionar una fecha', value: true } }}
                             />
-                            <Input
-                                disabled={isLoading}
-                                refp={endtRef}
-                                control={control}
-                                formInputs={control._defaultValues}
-                                label='Fecha final'
-                                name='end'
-                                placeholder=''
-                                style={styles.input}
-                                mode='outlined'
-                                onFocus={() => { setShow({ ...show, end: { date: show.end.date, open: true } }) }}
-                                showSoftInputOnFocus={false}
-                                renderRightIcon='calendar'
-                                rules={{ required: { message: 'Debe seleccionar una fecha', value: true } }}
-                            />
-                        </View>
-                        {
-                            (show.start.open || show.end.open) &&
-                            <DateTimePicker
-                                locale={moment.locale('es')}
-                                value={show.start.open ? show.start.date.DATE : show.end.date.DATE}
-                                mode={'date'}
-                                minimumDate={modDate({ days: -30 }).DATE}
-                                maximumDate={getDate().DATE}
-                                onChange={({ nativeEvent, type }) => {
-                                    const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
-                                    if (show.start.open) {
-                                        startRef.current?.blur();
-                                        setShow({ ...show, start: { date, open: false } });
-                                        setValueForm('start', date.date.date);
+                            {
+                                isMulSel &&
+                                <View style={{ padding: 10 }}>
+                                    {
+                                        valueSelect?.map(acc => <Text key={acc.CodigoCte}>{acc.Nombre}</Text>)
                                     }
-                                    if (show.end.open) {
-                                        endtRef.current?.blur();
-                                        setShow({ ...show, end: { date, open: false } });
-                                        setValueForm('end', date.date.date);
-                                    }
-                                }}
-                                onTouchCancel={() => {
-                                    console.log('cancel');
-                                }}
-                            />
-                        }
-                        <View style={{ paddingHorizontal: 40, alignItems: 'center' }}>
-                            <View style={{ flexDirection: 'row' }}>
-                                <Button
-                                    loading={isLoading}
-                                    style={{ marginVertical: 5, flex: 1 }}
-                                    mode='contained'
-                                    onPress={handleSubmit(onSubmitApCi)}>APERTURA Y CIERRE</Button>
-                                <IconButton
-                                    icon={'information-outline'}
-                                    onPress={() => openInfo({
-                                        title: 'APERTURA Y CIERRE',
-                                        msg: 'Con este reporte podra consultar los horarios en los que se recibieron los eventos de apertura y cierre'
-                                    })} />
+                                </View>
+                            }
+                            <View style={{ display: 'flex', flexDirection: 'row', marginVertical: 10 }}>
+                                <Input
+                                    disabled={isLoading}
+                                    refp={startRef}
+                                    control={control}
+                                    formInputs={control._defaultValues}
+                                    label='Fecha inicio'
+                                    name='start'
+                                    placeholder=''
+                                    style={styles.input}
+                                    mode='outlined'
+                                    onFocus={() => { setShow({ ...show, start: { date: show.start.date, open: true } }) }}
+                                    showSoftInputOnFocus={false}
+                                    renderRightIcon='calendar'
+                                    rules={{ required: { message: 'Debe seleccionar una fecha', value: true } }}
+                                />
+                                <Input
+                                    disabled={isLoading}
+                                    refp={endtRef}
+                                    control={control}
+                                    formInputs={control._defaultValues}
+                                    label='Fecha final'
+                                    name='end'
+                                    placeholder=''
+                                    style={styles.input}
+                                    mode='outlined'
+                                    onFocus={() => { setShow({ ...show, end: { date: show.end.date, open: true } }) }}
+                                    showSoftInputOnFocus={false}
+                                    renderRightIcon='calendar'
+                                    rules={{ required: { message: 'Debe seleccionar una fecha', value: true } }}
+                                />
                             </View>
-                            <View style={{ flexDirection: 'row' }}>
-                                <Button
-                                    loading={isLoading}
-                                    style={{ marginVertical: 5, flex: 1 }}
-                                    mode='contained'
-                                    onPress={handleSubmit(onSubmitEA)}>EVENTO DE ALARMA</Button>
-                                <IconButton
-                                    icon={'information-outline'}
-                                    onPress={() => openInfo({
-                                        title: 'EVENTO DE ALARMA',
-                                        msg: 'Con este reporte podra ver los eventos de alarma, asi como los eventos generados por su sistema de alarma'
-                                    })} />
+                            {
+                                (show.start.open || show.end.open) &&
+                                <DateTimePicker
+                                    display={'default'}
+                                    locale={moment.locale('es')}
+                                    value={show.start.open ? show.start.date.DATE : show.end.date.DATE}
+                                    mode={'date'}
+                                    minimumDate={modDate({ days: -30 }).DATE}
+                                    maximumDate={getDate().DATE}
+                                    onChange={({ nativeEvent, type }) => {
+                                        const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
+                                        if (show.start.open) {
+                                            startRef.current?.blur();
+                                            setShow({ ...show, start: { date, open: false } });
+                                            setValueForm('start', date.date.date);
+                                        }
+                                        if (show.end.open) {
+                                            endtRef.current?.blur();
+                                            setShow({ ...show, end: { date, open: false } });
+                                            setValueForm('end', date.date.date);
+                                        }
+                                    }}
+                                    onTouchCancel={() => {
+                                        console.log('cancel');
+                                    }}
+                                />
+                            }
+                            <View style={{ paddingHorizontal: 40, alignItems: 'center' }}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <Button
+                                        loading={isLoading}
+                                        style={{ marginVertical: 5 }}
+                                        mode='contained'
+                                        onPress={handleSubmit(onSubmitApCi)}>APERTURA Y CIERRE</Button>
+                                    <IconButton
+                                        icon={'information-outline'}
+                                        onPress={() => openInfo({
+                                            title: 'APERTURA Y CIERRE',
+                                            msg: 'Con este reporte podra consultar los horarios en los que se recibieron los eventos de apertura y cierre'
+                                        })} />
+                                </View>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <Button
+                                        loading={isLoading}
+                                        style={{ marginVertical: 5 }}
+                                        mode='contained'
+                                        onPress={handleSubmit(onSubmitEA)}>EVENTO DE ALARMA</Button>
+                                    <IconButton
+                                        icon={'information-outline'}
+                                        onPress={() => openInfo({
+                                            title: 'EVENTO DE ALARMA',
+                                            msg: 'Con este reporte podra ver los eventos de alarma, asi como los eventos generados por su sistema de alarma'
+                                        })} />
+                                </View>
                             </View>
-                        </View>
-                    </KeyboardAvoidingView>
-            }
+                        </KeyboardAvoidingView>
+                }
+            </ScrollView>
             <FAB
                 icon="refresh"
                 label='Actualizar'
@@ -236,7 +240,7 @@ export const AccountsScreen = () => {
 }
 const styles = StyleSheet.create({
     input: {
-        flex: 1, marginHorizontal: 10, fontWeight: '700'
+        flex: 1, marginHorizontal: 5, fontWeight: '600', textAlign: 'center'
     },
     dropdown: {
         height: 50,

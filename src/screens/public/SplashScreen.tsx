@@ -80,12 +80,12 @@ export const SplashScreen = ({ navigation }: Props) => {
                 isDark
                     ?
                     <Animated.Image
-                        style={{ borderWidth: 1, width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] }}
+                        style={{ width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] }}
                         source={require('../../assets/logo3.png')}
                     />
                     :
                     <Animated.Image
-                        style={{ borderWidth: 1, width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] }}
+                        style={{ width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] }}
                         source={require('../../assets/logo4.png')}
                     />
             }

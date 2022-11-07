@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, TextInput as NativeTextInput } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Input } from '../../components/Input';
@@ -15,7 +15,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUser } from '../../features/appSlice';
 import { User } from '../../interfaces/interfaces';
 import Toast from 'react-native-toast-message';
-import { Alert } from '../../components/Alert';
 
 type InputsLogIn = {
     email: string,
@@ -32,7 +31,7 @@ export const LogInScreen = ({ navigation }: Props) => {
     const { isLoading, mutate, data } = useMutation(['LogIn'], LogIn, {
         retry: 0,
         onError: async err => {
-            dispatch(updateError({ open: true, msg: `${err}`, icon: true, title: 'Error' }));
+            Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
         onSuccess: async data => {
             if (data.termsAndConditions) {
@@ -47,7 +46,7 @@ export const LogInScreen = ({ navigation }: Props) => {
         retry: 0,
         enabled: false,
         onError: async err => {
-            dispatch(updateError({ open: true, msg: JSON.stringify(err, null, 3) }));
+            Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
         onSuccess: async data => {
             setLogIn(data);
@@ -58,7 +57,7 @@ export const LogInScreen = ({ navigation }: Props) => {
         try {
             await AsyncStorage.setItem('token', data.token);
             dispatch(setUser(data));
-        } catch (error) { dispatch(updateError({ open: true, icon: true, msg: JSON.stringify(error) })) }
+        } catch (error) { Toast.show({ text1: 'Error', text2: String(error), type: 'error' }); }
     };
 
     const onSubmit: SubmitHandler<InputsLogIn> = async (data) => {
@@ -81,7 +80,7 @@ export const LogInScreen = ({ navigation }: Props) => {
     return (
         <ScrollView style={{ height: screenHeight, width: screenWidth }}>
             <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
-                <Text variant='headlineMedium' style={styles.title}>PEMSA monitoreo APP</Text>
+                <Text variant='headlineSmall' style={styles.title}>PEMSA monitoreo APP</Text>
                 {
                     isLoading && <Loading />
                 }
@@ -137,14 +136,14 @@ export const LogInScreen = ({ navigation }: Props) => {
                         icon={'lock-question'}
                         mode='contained'
                         loading={false}
-                        onPress={() => dispatch(updateInfo({ open: true, msg: 'Contacta a tu titular para recuperar tu contraseña' }))}
+                        onPress={() => dispatch(updateInfo({ open: true, icon: true, msg: 'Contacta a tu titular para recuperar tu contraseña' }))}
                         // onPress={() => { navigation.navigate('ForgetPasswordScreen') }}
                         disabled={false}
                     > Olvidé mi contraseña </Button>
                 </View>
             </View>
-            <Text onPress={() => dispatch(updateTcyAp({ open: true }))} variant='bodyLarge' style={{ fontWeight: '700', marginVertical: 20, textAlign: 'center' }}>Términos y condiciones y aviso de privacidad</Text>
-            <Text variant='bodyLarge' style={{ fontWeight: '700', textAlign: 'center', paddingBottom: 15 }}>Versión: {'222'}</Text>
+            <Text onPress={() => dispatch(updateTcyAp({ open: true }))} variant='bodyMedium' style={{ fontWeight: '700', marginVertical: 20, textAlign: 'center' }}>Términos y condiciones y aviso de privacidad</Text>
+            <Text variant='bodyMedium' style={{ fontWeight: '700', textAlign: 'center', paddingBottom: 15 }}>Versión: {'222'}</Text>
         </ScrollView>
     )
 }
@@ -152,12 +151,11 @@ export const LogInScreen = ({ navigation }: Props) => {
 export const styles = StyleSheet.create({
     title: {
         textAlign: 'center',
-        fontWeight: '700',
         paddingTop: 10
     },
     img: {
         width: '100%',
-        height: vh * 40,
+        height: vh * 35,
         resizeMode: 'contain',
     },
     imgDark: {

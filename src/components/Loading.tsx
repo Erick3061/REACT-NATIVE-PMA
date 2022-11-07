@@ -8,8 +8,8 @@ export const Loading = () => {
         <Modal visible transparent animationType='slide' hardwareAccelerated>
             <View style={styles.centeredView}>
                 <View style={[styles.modalView, { backgroundColor: colors.background, borderRadius: roundness * 2, width: vw * 40, height: vw * 40, shadowColor: colors.primary }]}>
-                    <ActivityIndicator color={colors.primary} size={'large'} />
-                    <Text style={[{ color: colors.primary }, fonts.bodyLarge]} >Cargando...</Text>
+                    <ActivityIndicator color={colors.primary} size={vw * 5} />
+                    <Text style={[{ color: colors.primary }, fonts.bodyMedium]} >Cargando...</Text>
                 </View>
             </View>
         </Modal>

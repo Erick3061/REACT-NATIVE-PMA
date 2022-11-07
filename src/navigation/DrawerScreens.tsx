@@ -53,7 +53,6 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <StatusBar backgroundColor={colors.primary} />
             <View style={{ paddingHorizontal: 10, paddingVertical: 20, backgroundColor: colors.primary }}>
                 {
                     User &&

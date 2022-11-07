@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Animated, StyleProp, TextStyle, } from 'react-native';
+import { StyleSheet, View, Animated, StyleProp, TextStyle, Pressable, } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { Button, Switch, Text } from 'react-native-paper';
+import { Button, Switch, Text, TouchableRipple } from 'react-native-paper';
 import { vh, vw } from '../../config/Dimensions';
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { StackScreenProps } from '@react-navigation/stack';
@@ -76,7 +76,7 @@ const Item = ({ title, description, scrollOffsetAnimatedValue }: {
     const opacity = scrollOffsetAnimatedValue.interpolate({ inputRange: inputRangeOpacity, outputRange: [1, 0, 1], });
     const { colors } = useAppSelector(state => state.app.theme);
     return (
-        <View style={{ flex: 1 }} >
+        <View style={{ flex: 1, paddingHorizontal: 10 }} >
             <Animated.Image
                 source={require('../../assets/logo.png')}
                 style={[styles.imageStyle, { transform: [{ scale }] }]}
@@ -129,7 +129,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
 
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container]}>
             <AnimatedPagerView
                 initialPage={page}
                 style={{ flex: 1 }}
@@ -147,29 +147,41 @@ export const IntroductionScreen = ({ navigation }: Props) => {
                     </ScrollView>
                 ))}
             </AnimatedPagerView>
-            {(page === data.length - 1) && <View style={styles.checkboxContainer}>
-                {/* <Checkbox onPress={() => setShowPages(!showPages)} status={showPages ? 'checked' : 'unchecked'} /> */}
-                <Switch value={showPages} onValueChange={() => setShowPages(!showPages)} />
-                <Text variant='bodyLarge' style={{ fontWeight: '600' }}>No mostrar bienvenida</Text>
-            </View>}
-            <View style={styles.bootom}>
-                {page !== 0 ? <Button onPress={() => Pager.current?.setPage(page - 1)} mode='text' style={styles.btns} compact labelStyle={{ textTransform: 'uppercase' }}>atras</Button> : <View style={styles.btns}></View>}
-                <View style={[styles.pagination]}>
-                    {data.map((item, idx) => {
-                        return (
-                            <View key={item.key} style={[styles.paginationDot, { backgroundColor: (idx === page) ? colors.error : 'grey', marginHorizontal: 2 }]} />
-                        );
-                    })}
+            <View style={{ paddingHorizontal: 10 }}>
+                <TouchableRipple onPress={() => setShowPages(!showPages)}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5, padding: 5 }}>
+                        <Text style={{ textTransform: 'uppercase' }}>omitir bienvenida</Text>
+                        <Switch value={showPages} onValueChange={() => setShowPages(!showPages)} />
+                    </View>
+                </TouchableRipple>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5 }}>
+
+                    <Button
+                        labelStyle={{ textTransform: 'uppercase' }}
+                        disabled={page === 0 ? true : false}
+                        style={styles.btns} onPress={() => Pager.current?.setPage(page - 1)}
+                    >atras</Button>
+                    <View style={[styles.pagination]}>
+                        {data.map((item, idx) => {
+                            return (
+                                <View key={item.key} style={[styles.paginationDot, { backgroundColor: (idx === page) ? 'red' : 'grey', marginHorizontal: 2 }]} />
+                            );
+                        })}
+                    </View>
+                    <Button
+                        labelStyle={{ textTransform: 'uppercase' }}
+                        style={styles.btns}
+                        onPress={() => {
+                            if (page === data.length - 1) {
+                                if (showPages) { dispatch(updateQuestion({ open: true, msg: '¿Estas seguro de omitir la BIENVENIDA ?', dismissable: false, icon: true })); }
+                                else {
+                                    navigation.replace('LogInScreen');
+                                }
+                            }
+                            Pager.current?.setPage(page + 1)
+                        }}
+                    >{(page === data.length - 1) ? 'ir a inicio' : 'siguiente'}</Button>
                 </View>
-                <Button onPress={() => {
-                    if (page === data.length - 1) {
-                        if (showPages) { dispatch(updateQuestion({ open: true, msg: '¿Estas seguro de omitir la BIENVENIDA ?', dismissable: false, icon: true })); }
-                        else {
-                            navigation.replace('LogInScreen');
-                        }
-                    }
-                    Pager.current?.setPage(page + 1)
-                }} mode='text' style={styles.btns} compact labelStyle={{ textTransform: 'uppercase' }}>{(page === data.length - 1) ? 'ir a inicio' : 'siguiente'}</Button>
             </View>
         </View>
     );
@@ -178,17 +190,13 @@ export const IntroductionScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 15
     },
     bootom: {
-        display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingVertical: 10,
     },
     btns: {
         marginHorizontal: 5,
-        flex: 3,
     },
     checkboxContainer: {
         display: 'flex',

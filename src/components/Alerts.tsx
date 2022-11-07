@@ -9,7 +9,7 @@ import { Alert } from './Alert';
 import { LightenDarkenColor } from '../functions/functions';
 import { colors } from '../config/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { vw, vh } from '../config/Dimensions';
+import { vw, vh, screenHeight } from '../config/Dimensions';
 
 export const Alerts = () => {
     const { error, info, question, tcyap, theme } = useAppSelector((state) => state.alerts);
@@ -72,7 +72,7 @@ export const Alerts = () => {
             }
             {
                 tcyap &&
-                <Dialog style={{ backgroundColor: ThemeColors.background }} visible={tcyap.open} dismissable={tcyap.showTC ? tcyap.showTC.dismissable : true} onDismiss={() => dispatch(updateTcyAp({ ...tcyap, open: false }))}>
+                <Dialog style={{ backgroundColor: ThemeColors.background, height: screenHeight - 50 }} visible={tcyap.open} dismissable={tcyap.showTC ? tcyap.showTC.dismissable : true} onDismiss={() => dispatch(updateTcyAp({ ...tcyap, open: false }))}>
                     <Dialog.ScrollArea>
                         <ScrollView>
                             {
