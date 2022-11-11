@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Dimensions, I18nManager, Keyboard, Modal, Pressable, TextInput as NativeTextInput, TouchableWithoutFeedback, View } from 'react-native';
+import { Dimensions, I18nManager, Keyboard, Modal, Pressable, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { TextInput } from 'react-native-paper';
 import _ from 'lodash';
@@ -115,26 +115,28 @@ export const Select = React.forwardRef<any, Props>(
                         <TouchableWithoutFeedback
                         // onPress={_close}
                         >
-                            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,.1)', paddingVertical: 20 }}>
-                                <View style={{ width, height: '100%', backgroundColor: 'white', borderRadius: 10, padding: 10 }}>
-                                    <TouchableWithoutFeedback>
-                                        <View style={{ width: '100%', height: '100%' }}>
-                                            <List
-                                                data={data}
-                                                itemsSelected={itemsSelected}
-                                                labelField={labelField}
-                                                valueField={valueField}
-                                                separator
-                                                separatorColor={colors.primary}
-                                                onChange={onSelect}
-                                                multiselect={multiSelect}
-                                                renderSearch={{ placeholder: 'Buscar cuenta' }}
-                                                colorBtns={{ cancel: colors.error, confirm: colors.primary }}
-                                            />
-                                        </View>
-                                    </TouchableWithoutFeedback>
+                            <SafeAreaView style={{ flex: 1 }}>
+                                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,.1)', paddingVertical: 20 }}>
+                                    <View style={{ width, height: '100%', backgroundColor: 'white', borderRadius: 10, padding: 10 }}>
+                                        <TouchableWithoutFeedback>
+                                            <View style={{ width: '100%', height: '100%' }}>
+                                                <List
+                                                    data={data}
+                                                    itemsSelected={itemsSelected}
+                                                    labelField={labelField}
+                                                    valueField={valueField}
+                                                    separator
+                                                    separatorColor={colors.primary}
+                                                    onChange={onSelect}
+                                                    multiselect={multiSelect}
+                                                    renderSearch={{ placeholder: 'Buscar cuenta' }}
+                                                    colorBtns={{ cancel: colors.error, confirm: colors.primary }}
+                                                />
+                                            </View>
+                                        </TouchableWithoutFeedback>
+                                    </View>
                                 </View>
-                            </View>
+                            </SafeAreaView>
                         </TouchableWithoutFeedback>
                     </Modal>
                 )

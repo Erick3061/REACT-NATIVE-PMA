@@ -10,15 +10,18 @@ import { useDispatch } from 'react-redux';
 import { LogOut } from "../features/appSlice";
 import { DetailsInfoScreen } from '../screens/private/DetailsInfoScreen';
 import { updateError, updateThemeView } from "../features/alertSlice";
-import { QueryTabsScreen } from '../screens/private/QueryTabScreens';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GroupsScreen } from '../screens/private/GroupsScreen';
+import { AccountsScreen } from '../screens/private/AccountsScreen';
 
 
 export type RootDrawerNavigator = {
     HomeScreen: undefined;
     ProfileScreen: undefined;
-    QueryTabsScreen: undefined;
+    AccountsScreen: undefined;
+    GroupsScreen: undefined;
     DetailsInfoScreen: undefined;
+    AvanzadoScreen: undefined;
 }
 
 const menuDrawer = createDrawerNavigator<RootDrawerNavigator>();
@@ -34,8 +37,10 @@ export const DrawerScreens = () => {
             drawerContent={(Props) => <MenuContent {...Props} />}
         >
             <menuDrawer.Screen name="HomeScreen" options={{ title: 'INICIO' }} component={HomeScreen} />
-            <menuDrawer.Screen name="QueryTabsScreen" options={{ title: 'CONSULTAS' }} component={QueryTabsScreen} />
             <menuDrawer.Screen name="ProfileScreen" options={{ title: 'CAMBIAR CONTRASEÑA' }} component={ProfileScreen} />
+            <menuDrawer.Screen name="AccountsScreen" options={{ title: 'Individual' }} component={AccountsScreen} />
+            <menuDrawer.Screen name="GroupsScreen" options={{ title: 'Grupal' }} component={GroupsScreen} />
+            <menuDrawer.Screen name="AvanzadoScreen" options={{ title: 'Avanzado' }} component={AccountsScreen} />
             <menuDrawer.Screen name="DetailsInfoScreen" options={{ title: 'PEMSA monitoreo APP' }} component={DetailsInfoScreen} />
             {/* <menuDrawer.Screen name="ThemeScreen" options={{ title: 'TEMA' }} component={ThemeScreen} /> */}
         </menuDrawer.Navigator>
@@ -66,7 +71,11 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
             </View>
             <DrawerContentScrollView style={{ flex: 1, maxHeight: screenHeight, paddingVertical: 10 }}>
                 <Drawer.Item active={nameRote === 'HomeScreen' && true} icon="home" label="INICIO" onPress={() => navigation.navigate<keyof RootDrawerNavigator>("HomeScreen")} />
-                <Drawer.Item active={nameRote === 'QueryTabsScreen' && true} icon="database-search" label="CONSULTAS" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('QueryTabsScreen')} />
+                <Drawer.Section title="Consultas">
+                    <Drawer.Item active={nameRote === 'AccountsScreen' && true} icon="database-search" label="INDIVIDUAL" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('AccountsScreen')} />
+                    <Drawer.Item active={nameRote === 'GroupsScreen' && true} icon="database-search" label="GRUPAL" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('GroupsScreen')} />
+                    <Drawer.Item active={nameRote === 'AvanzadoScreen' && true} icon="database-search" label="AVANZADO" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('AccountsScreen')} />
+                </Drawer.Section>
                 <Drawer.Item active={nameRote === 'ProfileScreen' && true} icon="lock" label="CAMBIAR CONTRASEÑA" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('ProfileScreen')} />
                 <Drawer.Item icon="account" label="ADMINISTRAR USUARIOS" />
             </DrawerContentScrollView>

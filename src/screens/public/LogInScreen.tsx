@@ -6,7 +6,7 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { rootPublicScreen } from '../../navigation/PublicScreens';
 import { screenHeight, screenWidth, vh } from '../../config/Dimensions';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { updateTcyAp, updateInfo, updateError } from "../../features/alertSlice";
+import { updateTcyAp, updateInfo } from "../../features/alertSlice";
 import { Button, Text } from 'react-native-paper';
 import { Loading } from '../../components/Loading';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -79,11 +79,9 @@ export const LogInScreen = ({ navigation }: Props) => {
 
     return (
         <ScrollView style={{ height: screenHeight, width: screenWidth }}>
+            {isLoading && <Loading />}
             <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
                 <Text variant='titleLarge' style={styles.title}>PEMSA monitoreo APP</Text>
-                {
-                    isLoading && <Loading />
-                }
                 <Image
                     source={require('../../assets/logo.png')}
                     style={[styles.img, isDark ? { ...styles.imgDark, backgroundColor: colors.backdrop } : {}]}
@@ -95,7 +93,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                         control={control}
                         name={'email'}
                         renderLefttIcon='account'
-                        mode='flat'
+                        mode='outlined'
                         placeholder='ejemplo@correo.com o usuario'
                         keyboardType='email-address'
                         rules={{ required: { value: true, message: 'Campo requerido' } }}
@@ -111,7 +109,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                         control={control}
                         name={'password'}
                         renderLefttIcon='lock'
-                        mode='flat'
+                        mode='outlined'
                         keyboardType='default'
                         placeholder='**********'
                         rules={{ required: { value: true, message: 'Campo requerido' } }}
