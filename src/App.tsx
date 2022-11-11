@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { SafeAreaView, StatusBar, View } from 'react-native';
+import { SafeAreaView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Provider as StoreProvider } from "react-redux";
 import { store } from './app/store';

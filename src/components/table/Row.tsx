@@ -4,7 +4,7 @@ import { StyleProp, View, ViewStyle, TextStyle, StyleSheet, Text } from 'react-n
 type PropsRow = {
     data: Array<string>;
     fontSize: number;
-    tamCol: Array<{ size: number, center?: boolean }>;
+    tamCol?: Array<{ size: number, center?: boolean }>;
     style?: StyleProp<ViewStyle>;
     styleLabel?: StyleProp<TextStyle>;
 }
@@ -12,7 +12,11 @@ type PropsRow = {
 export const Row = ({ data, fontSize, style, styleLabel, tamCol }: PropsRow) => {
     return (
         <View style={[styles.containerRow, style]}>
-            {data.map((col, idx) => <Text style={[styles.textHeader, { fontSize, color: '#37474f', width: tamCol[idx].size, textAlign: tamCol[idx].center ? 'center' : 'justify' }, styleLabel]} key={`${col}-${idx}-${Math.random()}`}>{col}</Text>)}
+            {data.map((col, idx) => {
+                const width: number | undefined = tamCol ? tamCol[idx].size : undefined;
+                const center: boolean | undefined = tamCol ? tamCol[idx].center : undefined;
+                return (<Text style={[styles.textHeader, { fontSize, color: '#37474f', width, textAlign: center ? 'center' : 'left' }, styleLabel]} key={`${col}-${idx}-${Math.random()}`}>{col}</Text>)
+            })}
         </View>
     )
 }
@@ -21,10 +25,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 5,
-        height: 20,
     },
     textHeader: {
-        paddingVertical: 2
+        marginVertical: 2,
+        marginHorizontal: 1,
     },
     textTitlesHeader: {
         color: 'white',

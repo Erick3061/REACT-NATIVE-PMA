@@ -8,10 +8,10 @@ const whiteTheme: MD3Theme = {
   // roundness: 4,
   colors: {
     ...MD3LightTheme.colors,
-    primary: "rgb(3, 5, 104)",
+    onPrimaryContainer: "rgb(79, 86, 169)",
     onPrimary: "rgb(255, 255, 255)",
     primaryContainer: "rgb(224, 224, 255)",
-    onPrimaryContainer: "rgb(80, 86, 172)",
+    primary: "rgb(3, 8, 101)",
     secondary: "rgb(92, 93, 114)",
     onSecondary: "rgb(255, 255, 255)",
     secondaryContainer: "rgb(225, 224, 249)",
@@ -28,28 +28,27 @@ const whiteTheme: MD3Theme = {
     onBackground: "rgb(27, 27, 31)",
     surface: "rgb(255, 251, 255)",
     onSurface: "rgb(27, 27, 31)",
-    surfaceVariant: "rgb(228, 225, 236)",
+    surfaceVariant: "rgb(227, 225, 236)",
     onSurfaceVariant: "rgb(70, 70, 79)",
-    outline: "rgb(80, 86, 172)",
+    outline: "rgb(119, 118, 128)",
     outlineVariant: "rgb(199, 197, 208)",
     shadow: "rgb(0, 0, 0)",
     scrim: "rgb(0, 0, 0)",
     inverseSurface: "rgb(48, 48, 52)",
-    inverseOnSurface: "rgb(243, 239, 244)",
-    inversePrimary: "rgb(191, 194, 255)",
+    inverseOnSurface: "rgb(243, 240, 244)",
+    inversePrimary: "rgb(190, 194, 255)",
     elevation: {
       level0: "transparent",
       level1: "rgb(246, 243, 251)",
       level2: "rgb(241, 238, 248)",
       level3: "rgb(236, 233, 246)",
       level4: "rgb(234, 231, 245)",
-      level5: "rgb(231, 228, 243)"
+      level5: "rgb(230, 228, 243)"
     },
     surfaceDisabled: "rgba(27, 27, 31, 0.12)",
     onSurfaceDisabled: "rgba(27, 27, 31, 0.38)",
     backdrop: "rgba(48, 48, 56, 0.4)"
   }
-
 };
 
 const darkTheme: MD3Theme = {
@@ -57,10 +56,10 @@ const darkTheme: MD3Theme = {
   // roundness: 4,
   colors: {
     ...whiteTheme.colors,
-    primary: "rgb(224, 224, 255)",
+    onPrimaryContainer: "rgb(191, 194, 255)",
     onPrimary: "rgb(31, 36, 123)",
     primaryContainer: "rgb(55, 61, 146)",
-    onPrimaryContainer: "rgb(191, 194, 255)",
+    primary: "rgb(224, 224, 255)",
     secondary: "rgb(197, 196, 221)",
     onSecondary: "rgb(46, 47, 66)",
     secondaryContainer: "rgb(68, 69, 89)",
@@ -79,7 +78,7 @@ const darkTheme: MD3Theme = {
     onSurface: "rgb(229, 225, 230)",
     surfaceVariant: "rgb(70, 70, 79)",
     onSurfaceVariant: "rgb(199, 197, 208)",
-    outline: "rgb(191, 194, 255)",
+    outline: "rgb(145, 143, 154)",
     outlineVariant: "rgb(70, 70, 79)",
     shadow: "rgb(0, 0, 0)",
     scrim: "rgb(0, 0, 0)",

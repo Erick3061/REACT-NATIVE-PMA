@@ -1,4 +1,4 @@
-import { typeAccount } from "../../types/types";
+import { typeAccount } from "../types/types";
 
 export interface appSlice {
     status: 'authenticated' | 'not-authenticated';

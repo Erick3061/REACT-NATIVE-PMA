@@ -44,8 +44,49 @@ export const GetMyAccount = async () => {
 export const ReportEvents = async ({ body, type }: { body: GetReport & Dates, type?: 'ApCi' | 'EA' }) => {
     try {
         const response = await Api(`reports/${type === 'ApCi' ? 'ap-ci' : 'event-alarm'}`, body, 'POST');
-        const { status, message, ...data }: responseError & { nombre: string, cuentas?: Array<Account & { eventos?: Array<Events> }> } = await response.json();
+        const { status, message, ...data }: responseError & { nombre: string, cuentas?: Array<Account & { eventos?: Array<Events>, porcentajes?: { Apertura?: number, Cierre?: number, Alarma?: number, Pruebas?: number, Bateria?: number, Otros?: number } }> } = await response.json();
         if (status === false) throw new Error(`${message}`);
+        if (data.cuentas?.length === 1 && data.cuentas[0].eventos) {
+            const total: number = data.cuentas[0].eventos.length;
+            if (type === 'ApCi') {
+                let Apertura = Math.round((data.cuentas[0].eventos.filter(f => f.DescripcionEvent.toLowerCase().includes('apertur')).length * 100) / total);
+                let Cierre = Math.round((data.cuentas[0].eventos.filter(f => f.DescripcionEvent.toLowerCase().includes('cierr')).length * 100) / total);
+                return { nombre: '', cuentas: [{ ...data.cuentas[0], porcentajes: { Apertura, Cierre } }] }
+            } else {
+                let Apertura = Math.round((data.cuentas[0].eventos.filter(f => f.DescripcionEvent.toLowerCase().includes('apertur')).length * 100) / total);
+                let Cierre = Math.round((data.cuentas[0].eventos.filter(f => f.DescripcionEvent.toLowerCase().includes('cierr')).length * 100) / total);
+                let Alarma = Math.round((data.cuentas[0].eventos.filter(f => (
+                    f.CodigoAlarma.includes('ACZ') ||
+                    f.CodigoAlarma.includes('A') ||
+                    f.CodigoAlarma.includes('FIRE') ||
+                    f.CodigoAlarma.includes('ASA')
+                )).length * 100) / total);
+                let Pruebas = Math.round((data.cuentas[0].eventos.filter(f => (
+                    f.CodigoAlarma.includes('ATF0') ||
+                    f.CodigoAlarma.includes('ATF1') ||
+                    f.CodigoAlarma.includes('ATF3') ||
+                    f.CodigoAlarma.includes('ATN0') ||
+                    f.CodigoAlarma.includes('ATN1') ||
+                    f.CodigoAlarma.includes('ATN3') ||
+                    f.CodigoAlarma.includes('ATP') ||
+                    f.CodigoAlarma.includes('PR') ||
+                    f.CodigoAlarma.includes('SUP') ||
+                    f.CodigoAlarma.includes('TESE') ||
+                    f.CodigoAlarma.includes('TESS') ||
+                    f.CodigoAlarma.includes('TNVB') ||
+                    f.CodigoAlarma.includes('TST') ||
+                    f.CodigoAlarma.includes('TST0') ||
+                    f.CodigoAlarma.includes('TST1') ||
+                    f.CodigoAlarma.includes('TST3') ||
+                    f.CodigoAlarma.includes('TSTR')
+                )).length * 100) / total);
+                let Bateria = Math.round((data.cuentas[0].eventos.filter(f => (
+                    f.CodigoAlarma.includes('BB') ||
+                    f.CodigoAlarma.includes('FCA')
+                )).length * 100) / total);
+                return { nombre: '', cuentas: [{ ...data.cuentas[0], porcentajes: { Apertura, Cierre, Alarma, Pruebas, Bateria, Otros: 100 - (Apertura + Cierre + Alarma + Pruebas + Bateria) } }] }
+            }
+        }
         return data;
     } catch (error) { throw new Error(`${error}`); }
 }

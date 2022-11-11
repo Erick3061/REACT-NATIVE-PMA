@@ -62,7 +62,7 @@ export const AccountsScreen = () => {
         const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
         if (accounts.length > 0) {
             const { end, name, start } = props;
-            navigate('ResultIndividualQueryScreen', { props: { accounts, start, end, report: 'ApCi' } });
+            navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'ApCi' } });
         } else {
             Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
         }
@@ -72,7 +72,7 @@ export const AccountsScreen = () => {
         const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
         if (accounts.length > 0) {
             const { end, name, start } = props;
-            navigate('ResultIndividualQueryScreen', { props: { accounts, start, end, report: 'EA' } });
+            navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'EA' } });
         } else {
             Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
         }

@@ -80,7 +80,7 @@ export const LogInScreen = ({ navigation }: Props) => {
     return (
         <ScrollView style={{ height: screenHeight, width: screenWidth }}>
             <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
-                <Text variant='headlineSmall' style={styles.title}>PEMSA monitoreo APP</Text>
+                <Text variant='titleLarge' style={styles.title}>PEMSA monitoreo APP</Text>
                 {
                     isLoading && <Loading />
                 }
@@ -95,7 +95,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                         control={control}
                         name={'email'}
                         renderLefttIcon='account'
-                        mode='outlined'
+                        mode='flat'
                         placeholder='ejemplo@correo.com o usuario'
                         keyboardType='email-address'
                         rules={{ required: { value: true, message: 'Campo requerido' } }}
@@ -111,7 +111,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                         control={control}
                         name={'password'}
                         renderLefttIcon='lock'
-                        mode='outlined'
+                        mode='flat'
                         keyboardType='default'
                         placeholder='**********'
                         rules={{ required: { value: true, message: 'Campo requerido' } }}
@@ -125,7 +125,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                     <Button
                         style={styles.Btns}
                         icon={'login'}
-                        mode='contained'
+                        mode='elevated'
                         loading={false}
                         onPress={handleSubmit(onSubmit)}
                         disabled={false}
@@ -134,7 +134,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                     <Button
                         style={styles.Btns}
                         icon={'lock-question'}
-                        mode='contained'
+                        mode='elevated'
                         loading={false}
                         onPress={() => dispatch(updateInfo({ open: true, icon: true, msg: 'Contacta a tu titular para recuperar tu contraseña' }))}
                         // onPress={() => { navigation.navigate('ForgetPasswordScreen') }}

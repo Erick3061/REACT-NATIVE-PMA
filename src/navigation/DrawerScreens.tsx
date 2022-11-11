@@ -28,8 +28,8 @@ export const DrawerScreens = () => {
     return (
         <menuDrawer.Navigator
             screenOptions={{
-                headerStyle: { backgroundColor: colors.primary },
-                headerTintColor: colors.onPrimary,
+                // headerStyle: { backgroundColor: colors.primary },
+                // headerTintColor: colors.onPrimary,
             }}
             drawerContent={(Props) => <MenuContent {...Props} />}
         >
@@ -52,15 +52,15 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
     }, [index])
 
     return (
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
-            <View style={{ paddingHorizontal: 10, paddingVertical: 20, backgroundColor: colors.primary }}>
+        <View style={{ flex: 1 }}>
+            <View style={{ paddingHorizontal: 10, paddingVertical: 2, borderColor: colors.primaryContainer, borderWidth: 1 }}>
                 {
                     User &&
                     <>
-                        <Avatar.Text labelStyle={{ color: colors.primary }} theme={{ colors: { primary: colors.onPrimary } }} label={User.fullName.split(' ').map(el => el[0]).join('').slice(0, 2).toUpperCase()} style={{ marginVertical: 5 }} />
-                        <Text style={{ color: colors.onPrimary }} variant="titleMedium">PEMSA monitoreo APP © ®</Text>
-                        <Text style={{ color: colors.onPrimary }} variant="bodyMedium">{User.fullName}</Text>
-                        <Text style={{ color: colors.onPrimary }} variant="bodyMedium">{User.email}</Text>
+                        <Avatar.Text label={User.fullName.split(' ').map(el => el[0]).join('').slice(0, 2).toUpperCase()} style={{ marginVertical: 5 }} />
+                        <Text style={{}} variant="titleMedium">PEMSA monitoreo APP © ®</Text>
+                        <Text style={{}} variant="bodyMedium">{User.fullName}</Text>
+                        <Text style={{}} variant="bodyMedium">{User.email}</Text>
                     </>
                 }
             </View>
