@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Animated, StyleProp, TextStyle, Pressable, } from 'react-native';
+import { StyleSheet, View, Animated, StyleProp, TextStyle, Pressable, Image } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { Button, Switch, Text, TouchableRipple } from 'react-native-paper';
-import { vh, vw } from '../../config/Dimensions';
+import { vh, vw, screenHeight } from '../../config/Dimensions';
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { StackScreenProps } from '@react-navigation/stack';
 import { rootPublicScreen } from '../../navigation/PublicScreens';
 import { ScrollView } from 'react-native-gesture-handler';
 import { updateError, updateQuestion } from '../../features/alertSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import _ from 'lodash';
+import { baseUrl } from '../../api/Api';
 
 type PagerViewOnPageScrollEventData = { position: number; offset: number; }
 
@@ -25,7 +27,7 @@ type data = Array<{
 
 const data: data = [
     {
-        title: 'PEMSA monitoreo APP',
+        title: 'BIENVENIDO',
         description:
             [
                 { text: 'Ahora nos acercamos a usted para brindale el acceso de informacón de su sistema de alarma', style: { paddingTop: 10, } }
@@ -62,7 +64,7 @@ const data: data = [
     },
 ];
 
-const DOT_SIZE = 25;
+const DOT_SIZE = 15;
 
 const Item = ({ title, description, scrollOffsetAnimatedValue }: {
     description: Array<{ text: string; style?: StyleProp<TextStyle> }>;
@@ -76,28 +78,60 @@ const Item = ({ title, description, scrollOffsetAnimatedValue }: {
     const opacity = scrollOffsetAnimatedValue.interpolate({ inputRange: inputRangeOpacity, outputRange: [1, 0, 1], });
     const { colors } = useAppSelector(state => state.app.theme);
     return (
-        <View style={{ flex: 1, paddingHorizontal: 10 }} >
-            <Animated.Image
-                source={require('../../assets/logo.png')}
-                style={[styles.imageStyle, { transform: [{ scale }] }]}
+        <Animated.View style={{ flex: 1, paddingHorizontal: 15, alignItems: 'center', transform: [{ scale }], opacity }} >
+            <Image
+                source={require('../../assets/logo2.png')}
+                style={[styles.imageStyle]}
             />
             <View>
-                <Animated.View style={[{ opacity }]}>
-                    <Text variant='headlineSmall' style={{ ...styles.heading, color: colors.error }}>{title}</Text>
-                </Animated.View>
+                <View >
+                    <Text variant='headlineSmall' style={{ ...styles.heading, color: colors.primary }}>{title}</Text>
+                </View>
                 <Animated.View style={[{ opacity, flexDirection: 'column' }]}>
                     {
                         description.map((el, key) =>
-                            <Text key={key} variant='bodyLarge' style={el.style ?? styles.description}>
+                            <Text key={key} variant='bodyMedium' style={[el.style ?? styles.description, { color: colors.primary }]}>
                                 {el.text}
                             </Text>
                         )
                     }
                 </Animated.View>
             </View>
-        </View>
+        </Animated.View>
     );
 };
+
+const Dots = ({ positionAnimatedValue, scrollOffsetAnimatedValue }: { scrollOffsetAnimatedValue: Animated.Value; positionAnimatedValue: Animated.Value; }) => {
+    const inputRange = [0, data.length];
+    const margin: number = 2;
+    const { theme: { colors } } = useAppSelector(state => state.app)
+    const translateX = Animated.add(scrollOffsetAnimatedValue, positionAnimatedValue).interpolate({
+        inputRange,
+        outputRange: [0, data.length * (DOT_SIZE + (margin * 2))]
+    });
+
+
+    return (
+        <View style={{ alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row' }} >
+                <Animated.View
+                    style={[
+                        styles.paginationDot, { margin, backgroundColor: colors.primary, zIndex: 1 },
+                        {
+                            position: 'absolute',
+                            transform: [{ translateX: translateX }],
+                        },
+                    ]}
+                />
+                {data.map((item) => {
+                    return (
+                        <Animated.View key={item.key} style={[styles.paginationDot, { margin, borderWidth: 1, borderColor: 'lightgrey' }]} />
+                    );
+                })}
+            </View>
+        </View>
+    )
+}
 
 const AnimatedPagerView = Animated.createAnimatedComponent(PagerView);
 
@@ -131,44 +165,38 @@ export const IntroductionScreen = ({ navigation }: Props) => {
     return (
         <View style={[styles.container]}>
             <AnimatedPagerView
-                initialPage={page}
+                initialPage={positionAnimatedValue}
                 style={{ flex: 1 }}
                 ref={Pager}
                 onPageScroll={Animated.event<PagerViewOnPageScrollEventData>(
                     [{ nativeEvent: { offset: scrollOffsetAnimatedValue, position: positionAnimatedValue } }],
-                    { listener: ({ nativeEvent: { position } }) => setPage(() => position), useNativeDriver: true, }
+                    {
+                        listener: ({ nativeEvent: { position, offset } }) => {
+                            setPage(() => position)
+                        }, useNativeDriver: true,
+                    }
                 )}
             >
                 {data.map((item, key) => (
-                    <ScrollView key={key} style={{ flex: 1 }}>
+                    <ScrollView key={key}>
                         <View collapsable={false} key={item.title}>
                             <Item {...item} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} positionAnimatedValue={positionAnimatedValue} />
                         </View>
                     </ScrollView>
                 ))}
             </AnimatedPagerView>
-            <View style={{ paddingHorizontal: 10 }}>
-                <TouchableRipple onPress={() => setShowPages(!showPages)}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5, padding: 5 }}>
-                        <Text style={{ textTransform: 'uppercase' }}>omitir bienvenida</Text>
-                        <Switch value={showPages} onValueChange={() => setShowPages(!showPages)} />
-                    </View>
-                </TouchableRipple>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5 }}>
-
+            <Dots positionAnimatedValue={positionAnimatedValue} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} />
+            <View style={{ paddingHorizontal: 15 }}>
+                {(page === data.length - 1) &&
+                    <TouchableRipple onPress={() => setShowPages(!showPages)}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5, padding: 5 }}>
+                            <Text style={{ textTransform: 'uppercase', color: colors.primary }}>omitir bienvenida</Text>
+                            <Switch value={showPages} onValueChange={() => setShowPages(!showPages)} />
+                        </View>
+                    </TouchableRipple>}
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 5 }}>
                     <Button
-                        labelStyle={{ textTransform: 'uppercase' }}
-                        disabled={page === 0 ? true : false}
-                        style={styles.btns} onPress={() => Pager.current?.setPage(page - 1)}
-                    >atras</Button>
-                    <View style={[styles.pagination]}>
-                        {data.map((item, idx) => {
-                            return (
-                                <View key={item.key} style={[styles.paginationDot, { backgroundColor: (idx === page) ? 'red' : 'grey', marginHorizontal: 2 }]} />
-                            );
-                        })}
-                    </View>
-                    <Button
+                        mode='elevated'
                         labelStyle={{ textTransform: 'uppercase' }}
                         style={styles.btns}
                         onPress={() => {
@@ -204,14 +232,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     imageStyle: {
-        width: vw * 50,
-        height: vh * 35,
+        // width: vw * 50,.
+        height: vh * 20,
         resizeMode: 'contain',
         alignSelf: 'center'
     },
     heading: {
         textTransform: 'uppercase',
-        fontWeight: '600',
+        fontWeight: '700',
         textAlign: 'center'
     },
     description: {
@@ -224,8 +252,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     paginationDot: {
-        width: DOT_SIZE * 0.4,
-        height: DOT_SIZE * 0.4,
+        width: DOT_SIZE,
+        height: DOT_SIZE,
         borderRadius: DOT_SIZE / 2,
     },
 });

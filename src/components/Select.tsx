@@ -15,7 +15,7 @@ type Props = {
     value: string;
     label?: string;
     error?: boolean;
-    multiSelect: boolean;
+    multiSelect?: { maxSelect: number };
 }
 
 export const Select = React.forwardRef<any, Props>(
@@ -128,7 +128,7 @@ export const Select = React.forwardRef<any, Props>(
                                                     separator
                                                     separatorColor={colors.primary}
                                                     onChange={onSelect}
-                                                    multiselect={multiSelect}
+                                                    multiSelect={multiSelect}
                                                     renderSearch={{ placeholder: 'Buscar cuenta' }}
                                                     colorBtns={{ cancel: colors.error, confirm: colors.primary }}
                                                 />

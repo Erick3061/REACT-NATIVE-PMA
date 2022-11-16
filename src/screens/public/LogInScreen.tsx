@@ -15,6 +15,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUser } from '../../features/appSlice';
 import { User } from '../../interfaces/interfaces';
 import Toast from 'react-native-toast-message';
+import { SocialNetworks } from '../../components/SocialNetworks';
+import { colors } from '../../config/colors';
 
 type InputsLogIn = {
     email: string,
@@ -64,7 +66,7 @@ export const LogInScreen = ({ navigation }: Props) => {
         mutate(data);
     };
 
-    const a = useRef<NativeTextInput>(null);
+    const nextInput = useRef<NativeTextInput>(null);
 
     useEffect(() => {
         setValue('email', 'admin@pem-sa.com');
@@ -81,7 +83,7 @@ export const LogInScreen = ({ navigation }: Props) => {
         <ScrollView style={{ height: screenHeight, width: screenWidth }}>
             {isLoading && <Loading />}
             <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
-                <Text variant='titleLarge' style={styles.title}>PEMSA monitoreo APP</Text>
+                <Text variant='titleLarge' style={[styles.title, { color: colors.primary }]}>PEMSA monitoreo APP</Text>
                 <Image
                     source={require('../../assets/logo.png')}
                     style={[styles.img, isDark ? { ...styles.imgDark, backgroundColor: colors.backdrop } : {}]}
@@ -100,11 +102,11 @@ export const LogInScreen = ({ navigation }: Props) => {
                         label='correo'
                         returnKeyType='next'
                         onSubmitEditing={() => {
-                            a.current?.focus();
+                            nextInput.current?.focus();
                         }}
                     />
                     <Input
-                        refp={a}
+                        refp={nextInput}
                         formInputs={control._defaultValues}
                         control={control}
                         name={'password'}
@@ -124,24 +126,24 @@ export const LogInScreen = ({ navigation }: Props) => {
                         style={styles.Btns}
                         icon={'login'}
                         mode='elevated'
-                        loading={false}
+                        loading={isLoading}
                         onPress={handleSubmit(onSubmit)}
-                        disabled={false}
+                        disabled={isLoading}
                         labelStyle={{ textTransform: 'uppercase' }}
                     > Iniciar Sesión </Button>
                     <Button
                         style={styles.Btns}
                         icon={'lock-question'}
                         mode='elevated'
-                        loading={false}
+                        loading={isLoading}
                         onPress={() => dispatch(updateInfo({ open: true, icon: true, msg: 'Contacta a tu titular para recuperar tu contraseña' }))}
-                        // onPress={() => { navigation.navigate('ForgetPasswordScreen') }}
-                        disabled={false}
+                        disabled={isLoading}
                     > Olvidé mi contraseña </Button>
                 </View>
             </View>
-            <Text onPress={() => dispatch(updateTcyAp({ open: true }))} variant='bodyMedium' style={{ fontWeight: '700', marginVertical: 20, textAlign: 'center' }}>Términos y condiciones y aviso de privacidad</Text>
-            <Text variant='bodyMedium' style={{ fontWeight: '700', textAlign: 'center', paddingBottom: 15 }}>Versión: {'222'}</Text>
+            <SocialNetworks />
+            <Text onPress={() => dispatch(updateTcyAp({ open: true }))} variant='bodyMedium' style={[styles.terms, { color: colors.primary }]}>Términos y condiciones y aviso de privacidad</Text>
+            <Text variant='bodyMedium' style={[styles.version, { color: colors.primary }]}>Versión: {'222'}</Text>
         </ScrollView>
     )
 }
@@ -171,6 +173,16 @@ export const styles = StyleSheet.create({
         paddingVertical: 10,
     },
     Btns: {
-        marginVertical: 7,
+        marginVertical: 5,
     },
+    terms: {
+        fontWeight: '700',
+        marginVertical: 20,
+        textAlign: 'center'
+    },
+    version: {
+        fontWeight: '700',
+        textAlign: 'center',
+        paddingBottom: 15
+    }
 });

@@ -22,13 +22,13 @@ interface Props {
         cancel: string;
     };
     itemsSelected: Array<any>;
-    multiselect: boolean;
+    multiSelect?: { maxSelect: number };
     renderSearch?: {
         placeholder: string;
     }
     onChange: (item: Array<any>) => void;
 }
-export const List = ({ data, labelField, valueField, height, separator, separatorColor, multiselect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch }: Props) => {
+export const List = ({ data, labelField, valueField, height, separator, separatorColor, multiSelect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch }: Props) => {
     const [dataProvider, setDataProvider] = useState<DataProvider>(new DataProvider((r1, r2) => r1 !== r2));
     const containerList = useRef<View>(null);
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
@@ -36,14 +36,14 @@ export const List = ({ data, labelField, valueField, height, separator, separato
     const search = useRef<TextInput>(null);
 
     const _onSelect = useCallback((item: Object) => {
-        if (!multiselect) {
+        if (!multiSelect) {
             onChange([item]);
         } else {
             const index = selected.findIndex(f => _.isEqual(_.get(f, valueField), _.get(item, valueField)));
             if (index > -1) {
                 setSelected(selected.filter(f => _.get(f, valueField) !== _.get(selected[index], valueField)));
             } else {
-                if (selected.length < 5) {
+                if (selected.length < multiSelect.maxSelect) {
                     setSelected([...selected, item]);
                 } else {
                     Toast.show({ text1: 'Alerta', text2: 'Solo se pueden seleccionar hasta 5 cuentas', type: 'info' })
@@ -129,7 +129,7 @@ export const List = ({ data, labelField, valueField, height, separator, separato
             </View>
             <View style={styles.containerBtns}>
                 <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>
-                {multiselect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
+                {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
             </View>
             <Toast visibilityTime={4000} config={toastConfig} />
         </View>

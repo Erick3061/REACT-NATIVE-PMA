@@ -24,13 +24,13 @@ const whiteTheme: MD3Theme = {
     onError: "rgb(255, 255, 255)",
     errorContainer: "rgb(255, 218, 214)",
     onErrorContainer: "rgb(65, 0, 2)",
-    background: "rgb(255, 251, 255)",
-    onBackground: "rgb(27, 27, 31)",
+    background: "rgb(246, 243, 251)",
+    onBackground: "rgb(3, 8, 101)",
     surface: "rgb(255, 251, 255)",
-    onSurface: "rgb(27, 27, 31)",
+    onSurface: "rgb(3, 8, 101)",
     surfaceVariant: "rgb(227, 225, 236)",
     onSurfaceVariant: "rgb(70, 70, 79)",
-    outline: "rgb(119, 118, 128)",
+    outline: "rgb(79, 86, 169)",
     outlineVariant: "rgb(199, 197, 208)",
     shadow: "rgb(0, 0, 0)",
     scrim: "rgb(0, 0, 0)",
@@ -55,7 +55,7 @@ const darkTheme: MD3Theme = {
   ...MD3DarkTheme,
   // roundness: 4,
   colors: {
-    ...whiteTheme.colors,
+    ...MD3DarkTheme.colors,
     onPrimaryContainer: "rgb(191, 194, 255)",
     onPrimary: "rgb(31, 36, 123)",
     primaryContainer: "rgb(55, 61, 146)",
@@ -105,6 +105,10 @@ const CombinedLightTheme: MD3Theme & Theme = {
   colors: {
     ...NavigationDefaultTheme.colors,
     ...whiteTheme.colors,
+    card: whiteTheme.colors.background,
+    text: whiteTheme.colors.primary,
+    border: whiteTheme.colors.primary,
+    notification: 'steelblue',
   },
 };
 const CombinedDarkTheme: MD3Theme & Theme = {
@@ -113,6 +117,10 @@ const CombinedDarkTheme: MD3Theme & Theme = {
   colors: {
     ...NavigationDarkTheme.colors,
     ...darkTheme.colors,
+    card: darkTheme.colors.background,
+    text: darkTheme.colors.primary,
+    border: darkTheme.colors.primary,
+    notification: 'steelblue',
   },
 };
 

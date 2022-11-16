@@ -1,11 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
-import { Text } from 'react-native-paper';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as StoreProvider } from "react-redux";
+import { SafeAreaView } from 'react-native';
 import { store } from './app/store';
 import { Root } from './navigation/Root';
-
 
 export const App = () => {
   const queryClient = new QueryClient();

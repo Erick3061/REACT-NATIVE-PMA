@@ -2,17 +2,17 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useRef, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { View, TextInput as NativeTextInput, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { View, TextInput as NativeTextInput, StyleSheet, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { getDate, modDate } from '../../functions/functions';
-import { formatDate, Account, date } from '../../interfaces/interfaces';
+import { formatDate, Account } from '../../interfaces/interfaces';
 import { useEffect } from 'react';
 import moment from 'moment';
 import 'moment/locale/es';
 import { Select } from '../../components/Select';
 import _ from 'lodash';
 import { Input } from '../../components/Input';
-import { Button, FAB, IconButton, Switch, Text } from 'react-native-paper';
+import { Button, Chip, FAB, IconButton, Switch, Text, Surface } from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { updateInfo } from '../../features/alertSlice';
@@ -21,7 +21,6 @@ import { GetMyAccount } from '../../api/Api';
 import { Loading } from '../../components/Loading';
 import Toast from 'react-native-toast-message';
 import { ScrollView } from 'react-native-gesture-handler';
-import { Calendar } from '../../components/Calendar';
 
 moment.locale('es');
 
@@ -36,13 +35,8 @@ type dateSelected = { start: { open: boolean; date: formatDate; }, end: { open: 
 
 const initialDateSelected: dateSelected = { start: { open: false, date: modDate({ days: -30 }) }, end: { open: false, date: getDate() } }
 
-const calendars = [
-    { label: 'Fecha inicio', date: modDate({ days: -30 }).DATE },
-    { label: 'Fecha final', date: modDate({}).DATE },
-]
-
-export const AccountsScreen = () => {
-    const { isLoading, data, isSuccess, isError, refetch } = useQuery(['MyAccounts'], GetMyAccount, {
+export const AdvancedScreen = () => {
+    const { isLoading, data, refetch } = useQuery(['MyAccounts'], GetMyAccount, {
         onError: error => Toast.show({ type: 'error', text1: 'Error', text2: `${error}` }),
         onSuccess: data => Toast.show({ type: 'success', text2: 'Cuentas Actualizadas correctamente...' })
     });
@@ -50,39 +44,47 @@ export const AccountsScreen = () => {
     const { navigate } = useNavigation<Stack>();
     const dispatch = useAppDispatch();
 
-    const { theme: { colors } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
-    const { control, handleSubmit, reset, setValue: setValueForm, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '' } });
+    const { control, handleSubmit, reset, setValue: setValueForm } = useForm<Accout>({ defaultValues: { name: '', start: '', end: '' } });
 
+    const [show, setShow] = useState<dateSelected>(initialDateSelected);
     const [valueSelect, setValueSelect] = useState<Array<Account>>();
+
+    const startRef = useRef<NativeTextInput>(null);
+    const endtRef = useRef<NativeTextInput>(null);
 
     const openInfo = ({ msg, title }: { msg: string, title: string }) => dispatch(updateInfo({ open: true, title, msg, icon: true }));
 
-    const [dates, setDates] = useState<Array<{ name: string, date?: formatDate }>>();
-
     const onSubmitApCi: SubmitHandler<Accout> = async (props) => {
         const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
-        if (dates && accounts.length > 0) {
-            const missingDates = dates.filter(s => s.date === undefined).map(name => name.name);
-            if (missingDates?.length === 0) {
-                const start = dates.find(f => f.name === 'Fecha inicio')?.date?.date.date ?? modDate({}).date.date;
-                const end = dates.find(f => f.name === 'Fecha final')?.date?.date.date ?? modDate({}).date.date;
-                navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'ApCi' } });
-            } else {
-                Toast.show({ type: 'customError', text1: 'Error al asignar Fechas', text2: `Fechas faltantes:\n${missingDates}` })
-            }
+        if (accounts.length > 0) {
+            const { end, name, start } = props;
+            navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'ApCi' } });
+        } else {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
         }
     };
 
     const onSubmitEA: SubmitHandler<Accout> = async (props) => {
-        // const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
-        // if (accounts.length > 0) {
-        //     const { end, name, start } = props;
-        //     navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'EA' } });
-        // } else {
-        //     Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
-        // }
+        const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
+        if (accounts.length > 0) {
+            const { end, name, start } = props;
+            navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'EA' } });
+        } else {
+            Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
+        }
     };
+
+    useEffect(() => {
+        setValueForm('start', show.start.date.date.date);
+        setValueForm('end', show.end.date.date.date);
+    }, []);
+
+    useEffect(() => {
+        if (valueSelect?.length === 0) setValueForm('name', '')
+    }, [valueSelect])
+
 
     return (
         <View style={{ flex: 1, padding: 10, }}>
@@ -91,8 +93,6 @@ export const AccountsScreen = () => {
                     isLoading ? <Loading />
                         :
                         <KeyboardAvoidingView>
-                            <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Seleccione el inicio y fin de la consulta;</Text>
-                            <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
                             <Controller
                                 control={control}
                                 rules={{ required: { message: 'Debe seleccionar una cuenta', value: true } }}
@@ -104,27 +104,38 @@ export const AccountsScreen = () => {
                                             labelField='Nombre'
                                             value={value}
                                             itemsSelected={valueSelect ?? []}
-                                            label={'Seleccione una cuenta'}
+                                            label={'Seleccione sus cuentas'}
                                             data={data ? data.accounts.filter(f => f.Status !== 'I') : []}
                                             onChange={(value: Array<any>) => {
                                                 setValueSelect(value);
                                                 onChange((value.length <= 1) ? _.get(value[0], 'Nombre') : 'Eliminar Cuentas Seleccionadas');
                                             }}
                                             error={error ? true : false}
+                                            multiSelect={{ maxSelect: data?.accounts.length ?? 50 }}
                                         />
                                         {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
                                     </>
                                 }
                             />
-                            <Calendar
-                                calendars={calendars}
-                                backgroundColor={colors.background}
-                                textColor={colors.text}
-                                colorOutline={colors.outline}
-                                limitDays={30}
-                                onChange={setDates}
-                            />
-                            {/* <View style={{ display: 'flex', flexDirection: 'row', marginVertical: 10 }}>
+                            <View style={{ padding: 10, maxHeight: 250 }}>
+                                {(valueSelect && valueSelect.length > 0) && <Surface elevation={2} style={{ borderRadius: roundness, padding: 10, backgroundColor: colors.background }}>
+                                    <ScrollView>
+                                        {valueSelect?.map(acc => <Chip
+                                            key={acc.CodigoCte}
+                                            mode={'outlined'}
+                                            elevated={true}
+                                            elevation={2}
+                                            style={{ margin: 2 }}
+                                            icon="account"
+                                            closeIcon={'close'}
+                                            closeIconAccessibilityLabel={'k'}
+                                            onClose={() => setValueSelect(valueSelect.filter(f => f.CodigoCte !== acc.CodigoCte))}
+                                        >{acc.Nombre}
+                                        </Chip>)}
+                                    </ScrollView>
+                                </Surface>}
+                            </View>
+                            <View style={{ display: 'flex', flexDirection: 'row', marginVertical: 10 }}>
                                 <Input
                                     disabled={isLoading}
                                     refp={startRef}
@@ -182,7 +193,7 @@ export const AccountsScreen = () => {
                                         console.log('cancel');
                                     }}
                                 />
-                            } */}
+                            }
                             <View style={{ paddingHorizontal: 40, alignItems: 'center' }}>
                                 <View style={{ flexDirection: 'row' }}>
                                     <Button

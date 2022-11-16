@@ -41,7 +41,7 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
                 return arr;
             });
             setEvents(data);
-            setfilter(data.slice(0, numberOfItemsPerPage));
+            setfilter(pagination ? data.slice(0, numberOfItemsPerPage) : data);
         }
     }, [Data, titles]);
 

@@ -187,7 +187,7 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
         <View style={{ flex: 1 }}>
             <Appbar.Header mode='small' theme={{ colors: { surface: colors.primary } }}>
                 <Appbar.BackAction color={colors.background} onPress={() => {
-                    navigation.pop()
+                    navigation.goBack()
                 }} />
                 <Appbar.Content color={colors.background} title={report === 'ApCi' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'} />
             </Appbar.Header>

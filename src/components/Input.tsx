@@ -5,6 +5,7 @@ import { Text, TextInput } from 'react-native-paper';
 import { useAppSelector } from '../app/hooks';
 import { vh, vw } from '../config/Dimensions';
 import _ from 'lodash';
+import Color from 'color';
 
 interface Props<T> {
     formInputs: T;
@@ -36,7 +37,7 @@ export const Input = <T extends Object>({ renderRightIcon, renderLefttIcon, show
         return (
             <TextInput.Icon
                 icon={renderLefttIcon ?? renderRightIcon ?? 'close'}
-                color={(focused) => focused ? colors.outline : error ? colors.error : colors.primary}
+                color={(focused) => focused ? colors.primary : error ? colors.error : colors.outline}
             />
         )
     }, [renderLefttIcon, renderRightIcon, colors]);
@@ -67,11 +68,12 @@ export const Input = <T extends Object>({ renderRightIcon, renderLefttIcon, show
                         error={error ? true : false}
                         keyboardType={keyboardType}
                         returnKeyType={returnKeyType}
+                        selectionColor={Color(colors.primary).alpha(.1).toString()}
                         left={renderLefttIcon ? renderIcon(error) : undefined}
                         right={renderRightIcon ? renderIcon(error) : isPassword && < TextInput.Icon
                             icon={ShowPassword ? 'eye' : 'eye-off'}
                             forceTextInputFocus={false}
-                            color={(focused) => focused ? colors.outline : error ? colors.error : colors.primary}
+                            color={(focused) => focused ? colors.primary : error ? colors.error : colors.outline}
                             onPress={() => setShowPassword(!ShowPassword)}
                             animated
                         />}

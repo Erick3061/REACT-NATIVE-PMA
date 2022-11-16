@@ -1,9 +1,9 @@
-import { CardStyleInterpolators, createStackNavigator, HeaderStyleInterpolators, TransitionSpecs } from '@react-navigation/stack';
 import React from 'react';
+import { CardStyleInterpolators, createStackNavigator, HeaderStyleInterpolators, TransitionSpecs } from '@react-navigation/stack';
 import { ResultQueryScreen } from '../screens/private/ResultQueryScreen';
 import { DrawerScreens } from './DrawerScreens';
-import { Account } from '../interfaces/interfaces';
 import { TypeReport } from '../types/types';
+import { Account } from '../interfaces/interfaces';
 
 export type rootPrivateScreens = {
     DrawerScreens: undefined;

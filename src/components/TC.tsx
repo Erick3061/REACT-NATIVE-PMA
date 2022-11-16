@@ -1,6 +1,6 @@
 import React from 'react'
 import { StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper'
+import { Text } from 'react-native-paper';
 
 export const TC = () => {
     return (
@@ -9,8 +9,7 @@ export const TC = () => {
                 Es obligación del usuario de la aplicación, así como del titular respectivo, informar cambios en el personal que emplea la aplicación, notificando altas y bajas de manera oportuna.
             </Text>
             <Text style={styles.text}>
-                La información proporcionada por la aplicación es de uso exclusivo para el usuario y PEMSA no es
-                responsable del uso que dicho usuario haga de la información consultada.
+                La información proporcionada por la aplicación es de uso exclusivo para el usuario y PEMSA no es responsable del uso que dicho usuario haga de la información consultada.
             </Text>
             <Text style={styles.text}>
                 El acceso a la información para consulta del cliente es independiente a la información resguardada
