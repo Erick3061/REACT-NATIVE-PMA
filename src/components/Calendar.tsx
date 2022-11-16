@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { modDate } from '../functions/functions';
 import { formatDate } from '../interfaces/interfaces';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
+import { screenHeight } from '../config/Dimensions';
 
 
 
@@ -46,7 +47,7 @@ export const Calendar = (props: Props) => {
             return (
                 dates.map((calendar, idx) => {
                     return (
-                        <Pressable key={calendar.name + idx} onPress={() => { console.log('hshsh') }}>
+                        <Pressable key={calendar.name + idx} onPress={() => { setopenCalendar(true) }}>
                             <View style={{ position: 'relative' }}>
                                 <View style={[styles.caontainerInput, { height: height ?? minHeight, borderColor: colorOutline ?? 'black' }]}>
                                     <Icon name='calendar' size={minHeight / 1.7} color={textColor} onPress={() => setDate()} />
@@ -67,22 +68,15 @@ export const Calendar = (props: Props) => {
     const _renderCalendar = React.useCallback(() => {
         return (
             <SafeAreaView>
-                <Modal visible transparent>
-                    <DateTimePicker
-                        display={'default'}
-                        locale={moment.locale('es')}
-                        value={new Date()}
-                        mode={'date'}
-                        // minimumDate={modDate({ days: -30 }).DATE}
-                        // maximumDate={getDate().DATE}
-                        onChange={({ nativeEvent, type }) => {
-
-                        }}
-                        onTouchCancel={() => {
-                            // console.log('cancel');
-                        }}
-                    />
-                </Modal>
+                {openCalendar && <DateTimePicker
+                    display={(Platform.OS === 'ios') ? 'inline' : 'default'}
+                    value={new Date()}
+                    mode={'date'}
+                    onChange={() => { }}
+                    onTouchCancel={() => {
+                        setopenCalendar(false)
+                    }}
+                />}
             </SafeAreaView>
         )
     }, [openCalendar])

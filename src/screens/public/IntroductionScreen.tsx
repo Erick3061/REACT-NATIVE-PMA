@@ -187,7 +187,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
             </AnimatedPagerView>
             <Dots positionAnimatedValue={positionAnimatedValue} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} />
             <View style={{ paddingHorizontal: 15 }}>
-                {(page === data.length - 1) &&
+                {
                     <TouchableRipple onPress={() => setShowPages(!showPages)}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5, padding: 5 }}>
                             <Text style={{ textTransform: 'uppercase', color: colors.primary }}>omitir bienvenida</Text>
