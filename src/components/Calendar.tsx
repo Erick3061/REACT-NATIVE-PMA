@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Platform, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, SafeAreaView, StyleSheet, Text, View, TouchableWithoutFeedback } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { modDate } from '../functions/functions';
 import { formatDate } from '../interfaces/interfaces';
@@ -22,14 +22,14 @@ interface Props {
 export const Calendar = (props: Props) => {
     const { calendars, height, backgroundColor, textColor, colorOutline, onChange, error, limitDays } = props;
     const [dates, setDates] = useState<Array<{ name: string, date?: formatDate }>>();
-    const [openCalendar, setopenCalendar] = useState<boolean>(false);
+    const [calendar, setCalendar] = useState<string | undefined>(undefined);
 
     const onDelete = (name: string) => {
         if (dates) setDates(() => dates.map(dat => (dat.name === name) ? { name } : dat));
     }
 
-    const setDate = () => {
-        setDates(calendars.map(cal => { return { name: cal.label, date: modDate({ dateI: cal.date }) } }));
+    const setDate = (date: formatDate) => {
+        setDates(calendars.map(cal => { return { name: cal.label, date } }));
     }
 
     useEffect(() => {
@@ -40,6 +40,11 @@ export const Calendar = (props: Props) => {
         if (dates) onChange(dates);
     }, [dates])
 
+    useEffect(() => {
+        console.log(calendar);
+    }, [calendar])
+
+
 
     const _renderInputs = React.useCallback(() => {
         const minHeight: number = 40;
@@ -47,18 +52,20 @@ export const Calendar = (props: Props) => {
             return (
                 dates.map((calendar, idx) => {
                     return (
-                        <Pressable key={calendar.name + idx} onPress={() => { setopenCalendar(true) }}>
-                            <View style={{ position: 'relative' }}>
-                                <View style={[styles.caontainerInput, { height: height ?? minHeight, borderColor: colorOutline ?? 'black' }]}>
-                                    <Icon name='calendar' size={minHeight / 1.7} color={textColor} onPress={() => setDate()} />
-                                    <Text style={[styles.date, { color: textColor ?? 'black' }]}>{calendar.date?.date.date ?? '--/--/--'}</Text>
-                                    {calendar.date && <Icon name='close' size={minHeight / 1.9} color={textColor} onPress={() => onDelete(calendar.name)} />}
-                                </View>
-                                <View style={[styles.containerLabel, { backgroundColor: backgroundColor ?? 'white' }]}>
-                                    <Text style={[styles.label, { color: textColor ?? 'black' }]}>{calendar.name}</Text>
-                                </View>
+                        <View key={calendar.name + idx} style={[styles.caontainerInput, { height: height ?? minHeight, borderColor: colorOutline ?? 'black' }]}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <TouchableWithoutFeedback onPress={() => setCalendar(calendar.name)}>
+                                    <View style={{ flexDirection: 'row', height: height ?? minHeight, alignItems: 'flex-end', paddingBottom: 5 }}>
+                                        <Icon name='calendar' size={minHeight / 1.7} color={textColor} />
+                                        <Text style={[styles.date, { color: textColor ?? 'black' }]}>{calendar.date?.date.date ?? '--/--/--'}</Text>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                                {calendar.date && <Icon name='close' size={minHeight / 1.9} color={textColor} style={{ marginStart: 5 }} onPress={() => onDelete(calendar.name)} />}
                             </View>
-                        </Pressable>
+                            <View style={[styles.containerLabel, { backgroundColor: backgroundColor ?? 'white' }]}>
+                                <Text style={[styles.label, { color: textColor ?? 'black' }]}>{calendar.name}</Text>
+                            </View>
+                        </View>
                     )
                 })
             )
@@ -68,18 +75,25 @@ export const Calendar = (props: Props) => {
     const _renderCalendar = React.useCallback(() => {
         return (
             <SafeAreaView>
-                {openCalendar && <DateTimePicker
-                    display={(Platform.OS === 'ios') ? 'inline' : 'default'}
-                    value={new Date()}
-                    mode={'date'}
-                    onChange={() => { }}
-                    onTouchCancel={() => {
-                        setopenCalendar(false)
-                    }}
-                />}
+                {
+                    (calendar) &&
+                    <DateTimePicker
+                        display={'default'}
+                        locale={moment.locale('es')}
+                        value={modDate({}).DATE}
+                        mode={'date'}
+                        minimumDate={limitDays ? modDate({ days: -limitDays }).DATE : undefined}
+                        maximumDate={modDate({}).DATE}
+                        onChange={({ nativeEvent, type }) => {
+                            console.log(nativeEvent, type);
+                            setCalendar(undefined)
+                            // const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
+                        }}
+                    />
+                }
             </SafeAreaView>
         )
-    }, [openCalendar])
+    }, [calendar])
 
     return (
         <View style={[styles.containerInputs]}>
@@ -91,7 +105,6 @@ export const Calendar = (props: Props) => {
 
 const styles = StyleSheet.create({
     containerInputs: {
-        padding: 5,
         display: 'flex',
         flexWrap: 'wrap',
         flexDirection: 'row',
@@ -103,14 +116,15 @@ const styles = StyleSheet.create({
         position: 'relative',
         alignItems: 'center',
         paddingHorizontal: 5,
-        margin: 6,
+        marginTop: 10,
+        marginBottom: 4,
         borderRadius: 5
     },
     containerLabel: {
         position: 'absolute',
         height: 15,
         borderRadius: 5,
-        top: -2,
+        top: -10,
         left: 10,
     },
     label: {
@@ -118,6 +132,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 5
     },
     date: {
-        marginHorizontal: 5
+        marginHorizontal: 3,
+        paddingBottom: 3
     }
 });
