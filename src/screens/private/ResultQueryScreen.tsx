@@ -1,19 +1,20 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { createRef, useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Switch, ActivityIndicator, Pressable, SectionList, ScrollView, Modal } from 'react-native';
-import { Appbar, List, Menu, Surface, Text, TextInput, } from 'react-native-paper';
+import { StyleSheet, View, Pressable, SectionList, ScrollView, Modal, Platform } from 'react-native';
+import { Appbar, List, Surface, Text, } from 'react-native-paper';
 import { useAppSelector } from '../../app/hooks';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { Loading } from '../../components/Loading';
 import Table from '../../components/table/Table';
-import { Events } from '../../interfaces/interfaces';
 import { useEvents } from '../../hooks/Events';
 import { Row } from '../../components/table/Row';
 import { screenWidth } from '../../config/Dimensions';
 import { HeaderTableValues, TypeReport } from '../../types/types';
 import { TarjetPercentaje } from '../../components/TarjetPercentaje';
+import Color from 'color';
+import { Menu } from '../../components/Menu';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultQueryScreen'> { };
 
@@ -73,7 +74,7 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
         if (data && data.cuentas?.length === 1) {
             return (
                 <View style={{ flex: 1 }}>
-                    {(data.cuentas[0].porcentajes) && <View style={{ padding: 10, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly' }}>
+                    {(data.cuentas[0].porcentajes) && <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
                         {
                             (report === 'ApCi') ?
                                 <>
@@ -185,78 +186,33 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <Appbar.Header mode='small' theme={{ colors: { surface: colors.primary } }}>
-                <Appbar.BackAction color={colors.background} onPress={() => {
-                    navigation.goBack()
-                }} />
-                <Appbar.Content color={colors.background} title={report === 'ApCi' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'} />
+            <Appbar.Header mode='small' theme={{ colors: { surface: colors.background } }}
+                style={{ borderBottomWidth: 1, borderColor: Color(colors.primary).alpha(.1).toString(), height: Platform.OS === 'ios' ? 44 : 56 }}>
+                <Appbar.BackAction onPress={() => { navigation.goBack() }} />
+                <Appbar.Content titleStyle={[fonts.bodyLarge, { fontWeight: 'bold' }]} title={report === 'ApCi' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'} />
+                <Menu
+                    options={[
+
+                        {
+                            label: 'Cambiar reporte',
+                            onPress: () => { },
+                        },
+                        {
+                            label: 'Descargar reporte',
+                            onPress: () => refetch(),
+                        },
+                        {
+                            label: 'Actualizar',
+                            onPress: () => refetch(),
+                        },
+                    ]}
+                />
             </Appbar.Header>
-            <View
-                accessibilityState={{ busy: false, checked: false, disabled: false, expanded: false, selected: false }}
-                accessible={false}
-                style={{ flex: 1, marginBottom: 57 }}
-                collapsable
-                needsOffscreenAlphaCompositing={false}
-                removeClippedSubviews={false}
-            >
+
+            <View style={{ flex: 1 }}>
                 {(isLoading || isFetching) && <Loading />}
                 {_renderTable()}
             </View>
-            <Appbar
-                style={[
-                    styles.bottom,
-                    {
-                        height: 56,
-                        backgroundColor: colors.primary,
-                        justifyContent: 'space-evenly'
-                    },
-                ]}
-
-            >
-                {(accounts.length === 1) && <>
-                    <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="swap-horizontal" onPress={() => setVisible(true)} />
-                    <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="file-download-outline" onPress={() => { }} />
-                </>}
-                <Appbar.Action style={{ backgroundColor: colors.primaryContainer }} color={colors.primary} icon="refresh" onPress={() => refetch()} />
-            </Appbar>
-
-            <Modal visible={visible} transparent animationType='slide'>
-                <Pressable onPress={() => setVisible(!visible)} style={{ flex: 1 }} />
-                <View style={{
-                    backgroundColor: colors.background, width: screenWidth, height: 170, borderTopRightRadius: 15, borderTopLeftRadius: 15, position: 'absolute', bottom: 0,
-                    shadowColor: "#000",
-                    shadowOffset: {
-                        width: 0,
-                        height: 10,
-                    },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 3.84,
-
-                    elevation: 5,
-                }}>
-                    <List.Section style={{ paddingHorizontal: 30, width: screenWidth, }}>
-                        <List.Subheader selectionColor={'red'}>Reportes</List.Subheader>
-                        <List.Item cancelable title="Apertura y Cierre" left={() => <List.Icon color={colors.primary} icon="newspaper-variant" />}
-                            onPress={
-                                () => {
-                                    setReport('ApCi');
-                                    setVisible(false);
-                                    setTitles(TitlesApCi);
-                                    queryClient.removeQueries(['Events', key]);
-                                }
-                            } />
-                        <List.Item title="Evento de Alarma" left={() => <List.Icon color={colors.primary} icon="newspaper-variant" />}
-                            onPress={
-                                () => {
-                                    setReport('EA');
-                                    setVisible(false);
-                                    setTitles(TitlesEA);
-                                    queryClient.removeQueries(['Events', key]);
-                                }
-                            } />
-                    </List.Section>
-                </View>
-            </Modal>
         </View >
     );
 };

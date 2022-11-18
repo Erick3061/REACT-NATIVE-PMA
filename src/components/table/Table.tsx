@@ -7,6 +7,7 @@ import { IconButton, Surface } from 'react-native-paper';
 import { SimpleSelect } from '../SimpleSelect';
 import { HeaderTableValues } from '../../types/types';
 import { screenWidth } from '../../config/Dimensions';
+import { stylesApp } from '../../App';
 
 
 type Props = {
@@ -75,7 +76,7 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
                             value={numberOfItemsPerPage}
                             Width={50}
                         />
-                        <Text style={{ fontWeight: 'bold', paddingHorizontal: 5 }}>Events</Text>
+                        <Text style={{ fontWeight: 'bold', padding: 3 }}>Filas</Text>
                     </View>
                     <Text style={{ fontWeight: 'bold', paddingHorizontal: 5 }}>{`${from + 1}-${to} of ${events.length}`}</Text>
 
@@ -97,7 +98,7 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
     }, [events, pagination, numberOfItemsPerPage, page, numberOfItemsPerPageList]);
 
     return (
-        <Surface elevation={2} style={[styles.container, colorBackgroundTable ? { backgroundColor: colorBackgroundTable } : {}]}>
+        <View style={[styles.container, colorBackgroundTable ? { backgroundColor: colorBackgroundTable } : {}]}>
             {
                 Header && (Header.title || Header.subtitle) &&
                 <View style={{ paddingVertical: 5 }}>
@@ -122,7 +123,7 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
                 </View>
             </ScrollView>
             {pagination && _renderPagination()}
-        </Surface>
+        </View>
     )
 }
 
@@ -133,7 +134,8 @@ const styles = StyleSheet.create({
         flex: 1,
         borderRadius: 10,
         marginHorizontal: 10,
-        marginVertical: 5
+        marginVertical: 5,
+        ...stylesApp.shadow
     },
     textTitlesHeader: {
         paddingHorizontal: 5,

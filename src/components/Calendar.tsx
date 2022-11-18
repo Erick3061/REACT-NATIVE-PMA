@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Platform, Pressable, SafeAreaView, StyleSheet, Text, View, TouchableWithoutFeedback } from 'react-native';
+import { Modal, Platform, Pressable, SafeAreaView, StyleSheet, Text, View, TouchableWithoutFeedback, Button } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { modDate } from '../functions/functions';
 import { formatDate } from '../interfaces/interfaces';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from 'moment';
-import { screenHeight } from '../config/Dimensions';
+import { screenHeight, screenWidth } from '../config/Dimensions';
+import { useAppSelector } from '../app/hooks';
 
 
 
@@ -73,26 +74,46 @@ export const Calendar = (props: Props) => {
     }, [dates, backgroundColor, textColor, colorOutline]);
 
     const _renderCalendar = React.useCallback(() => {
-        return (
-            <SafeAreaView>
-                {
-                    (calendar) &&
-                    <DateTimePicker
-                        display={'default'}
-                        locale={moment.locale('es')}
-                        value={modDate({}).DATE}
-                        mode={'date'}
-                        minimumDate={limitDays ? modDate({ days: -limitDays }).DATE : undefined}
-                        maximumDate={modDate({}).DATE}
-                        onChange={({ nativeEvent, type }) => {
-                            console.log(nativeEvent, type);
-                            setCalendar(undefined)
-                            // const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
-                        }}
-                    />
-                }
-            </SafeAreaView>
-        )
+        const { theme: { roundness, colors } } = useAppSelector(state => state.app);
+        return (Platform.OS === 'ios')
+            ?
+            <Modal visible={calendar !== undefined ? true : false} transparent animationType='fade'>
+                <View style={{ width: screenWidth, height: screenHeight, position: 'relative', justifyContent: 'center', alignItems: 'center' }}>
+                    <Pressable style={{ width: '100%', height: '100%', backgroundColor: colors.backdrop }} onPress={() => setCalendar(undefined)} />
+                    <View style={{ position: 'absolute', backgroundColor: colors.background, borderRadius: roundness * 2, padding: 10 }} >
+                        <DateTimePicker
+                            display={'inline'}
+                            locale={moment.locale('es')}
+                            value={modDate({}).DATE}
+                            mode={'date'}
+                            minimumDate={limitDays ? modDate({ days: -limitDays }).DATE : undefined}
+                            maximumDate={modDate({}).DATE}
+                            onChange={({ nativeEvent, type }) => {
+                                console.log(nativeEvent, type);
+                                setCalendar(undefined)
+                                //   const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
+                            }}
+                        />
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                            <Button title='Cancelar' onPress={() => setCalendar(undefined)} />
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+            :
+            (calendar !== undefined) && <DateTimePicker
+                display={'default'}
+                locale={moment.locale('es')}
+                value={modDate({}).DATE}
+                mode={'date'}
+                minimumDate={limitDays ? modDate({ days: -limitDays }).DATE : undefined}
+                maximumDate={modDate({}).DATE}
+                onChange={({ nativeEvent, type }) => {
+                    console.log(nativeEvent, type);
+                    setCalendar(undefined)
+                    //  const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
+                }}
+            />
     }, [calendar])
 
     return (

@@ -13,8 +13,8 @@ import useEffect from 'react';
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export default function Donut({ percentage, radius = 35, strokeWidth = 5, duration = 100, color, delay = 500, textColor, max = 100, updated }
-    : { percentage: number, radius?: number, strokeWidth?: number, duration?: number, color: string, delay?: number, textColor?: string, max: number, updated?: boolean }) {
+export default function Donut({ percentage, radius = 35, strokeWidth = 5, duration = 100, color, delay = 500, textColor, max = 100 }
+    : { percentage: number, radius?: number, strokeWidth?: number, duration?: number, color: string, delay?: number, textColor?: string, max: number }) {
     const animated = React.useRef(new Animated.Value(0)).current;
     const circleRef = React.useRef<any>(null);
     const inputRef = React.useRef<TextInput>(null);
@@ -103,7 +103,7 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
                 editable={false}
                 style={[
                     StyleSheet.absoluteFillObject,
-                    { fontSize: radius / 2.5, color: textColor ?? color, opacity: 1 },
+                    { fontSize: radius / 3, color: textColor ?? color, opacity: 1 },
                     styles.text,
                 ]}
             />

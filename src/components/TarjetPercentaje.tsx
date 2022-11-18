@@ -1,9 +1,8 @@
 import React from 'react'
-import { StyleSheet, View } from 'react-native'
-import { Surface, Text } from 'react-native-paper';
+import { StyleSheet, Text, View } from 'react-native'
+import { IconButton } from 'react-native-paper';
+import { stylesApp } from '../App';
 import { useAppSelector } from '../app/hooks';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { vw, screenWidth } from '../config/Dimensions';
 import Donut from './Donut';
 
 interface Props {
@@ -16,44 +15,32 @@ interface Props {
     }
     text: string;
     textLarge?: string;
-    updated?: boolean;
 }
-export const TarjetPercentaje = ({ max, percentage, icon, text, updated, textLarge }: Props) => {
-    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
+export const TarjetPercentaje = ({ max, percentage, icon, text, textLarge }: Props) => {
+    const { theme: { colors, roundness, fonts } } = useAppSelector(state => state.app);
     return (
-        <Surface elevation={2} style={{ borderRadius: roundness * 2, margin: 5, width: '45%' }}>
-            <View style={[styles.constainer, { backgroundColor: colors.background, borderRadius: roundness * 2 }]}>
-                {icon && <View style={[styles.containerIcon, { paddingHorizontal: 10 }]} >
-                    <Icon size={vw * 6} name={icon.name} color={icon.colorIcon ?? colors.onPrimary} style={[styles.icon, { backgroundColor: icon.backgroundColor ?? colors.primary }]} />
-                </View>}
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={{ marginHorizontal: 10, alignItems: 'center' }}>
-                        <Text variant='titleMedium'>{text}</Text>
-                        <Text variant='titleSmall'>{100}</Text>
-                    </View>
-                    <Donut radius={30} color='steelblue' max={max} percentage={percentage ?? 0} updated />
+        <View style={[styles.constainer, { backgroundColor: colors.background, borderRadius: roundness * 3, shadowColor: colors.primary }]}>
+            {icon && <IconButton style={{ alignSelf: 'flex-start', marginBottom: -10 }} icon={icon.name} containerColor={icon.backgroundColor ?? colors.primary} iconColor={icon.colorIcon ?? colors.onPrimary} />}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ marginHorizontal: 5, alignItems: 'center' }}>
+                    <Text style={fonts.titleMedium}>{text}</Text>
+                    <Text style={fonts.titleSmall}>{100}</Text>
                 </View>
-                {text && <Text variant='titleSmall'>{textLarge}</Text>}
+                <Donut radius={35} color='steelblue' max={max} percentage={percentage ?? 0} />
             </View>
-        </Surface>
+            {text && <Text style={fonts.titleSmall}>{textLarge}</Text>}
+        </View>
     )
 }
 
 
 const styles = StyleSheet.create({
     constainer: {
-        padding: 5,
         justifyContent: 'center',
-        alignItems: 'center'
-    },
-    containerIcon: {
-        padding: 1,
-        width: '100%',
-        alignItems: 'flex-start',
-        justifyContent: 'center'
-    },
-    icon: {
-        borderRadius: 100,
-        padding: 4
+        alignItems: 'center',
+        // width: '45%',
+        marginVertical: 3,
+        width: 170,
+        ...stylesApp.shadow
     }
 });
