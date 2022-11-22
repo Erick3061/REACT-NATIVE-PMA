@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Row } from './Row';
 import { Table as CreateTable, Row as CreateRow } from 'react-native-table-component';
 import { IconButton, Surface } from 'react-native-paper';
-import { SimpleSelect } from '../SimpleSelect';
+import { SimpleSelect } from '../select/SimpleSelect';
 import { HeaderTableValues } from '../../types/types';
 import { screenWidth } from '../../config/Dimensions';
 import { stylesApp } from '../../App';

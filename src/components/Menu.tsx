@@ -1,12 +1,16 @@
 import Color from 'color';
 import { toPairs } from 'lodash';
-import React, { useState, useRef, useCallback } from 'react';
-import { LayoutRectangle, Modal, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, TouchableHighlight, View } from 'react-native';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { LayoutRectangle, Modal, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, TouchableHighlight, View, Platform, Animated } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { stylesApp } from '../App';
 import { useAppSelector } from '../app/hooks';
+import { screenHeight } from '../config/Dimensions';
 
 interface option {
     label: string,
+    icon?: string,
     onPress: () => void;
 }
 
@@ -14,30 +18,84 @@ interface Props {
     options: Array<option>
 }
 
+export const _renderModalMenu = (props: Props &
+{
+    open: boolean,
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    positionActivator?: LayoutRectangle,
+}) => {
+    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
+    const [area, setArea] = useState<LayoutRectangle>();
+
+    const _renderItems = () => {
+        return props.options.map((o, idx) => {
+            return (
+                <TouchableHighlight
+                    key={o.label + idx}
+                    underlayColor={Color(colors.primaryContainer).toString()}
+                    style={[styles.containerItemModal,
+                    {
+                        borderRadius: roundness * 3,
+                        borderColor: Color(colors.primaryContainer).toString(),
+
+                    }]}
+                    onPress={() => {
+                        props.setOpen(false);
+                        o.onPress();
+                    }}
+                >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                        <Icon name={o.icon ?? 'home'} style={{ marginLeft: 5 }} size={30} color={colors.primary} />
+                        <Text style={{ marginHorizontal: 5, color: colors.text }}>{o.label}</Text>
+                    </View>
+                </TouchableHighlight>
+            )
+        })
+    }
+
+    const _renderOptions = useCallback(() => {
+        if (props.positionActivator && area) {
+            return (
+                Platform.OS === 'ios'
+                    ?
+                    <Animated.View style={[styles.modal, {
+                        width: '100%',
+                        bottom: screenHeight - (area.height + area.y * 2),
+                        paddingBottom: area.y,
+                        borderTopRightRadius: roundness * 3,
+                        borderTopLeftRadius: roundness * 3,
+                        ...stylesApp.shadow
+                    }]}>
+                        {_renderItems()}
+                    </Animated.View>
+                    :
+                    <View style={[styles.modal, { right: 20, top: props.positionActivator.y, borderRadius: roundness * 3, ...stylesApp.shadow }]}>
+                        {_renderItems()}
+                    </View>
+            )
+        }
+        return undefined;
+    }, [props.positionActivator, area]);
+
+    return (
+        <Modal visible={props.open} transparent animationType='fade'>
+            <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0,.15)' }}>
+                <Pressable style={{ flex: 1 }} onPress={() => props.setOpen(false)} onLayout={layout => {
+                    console.log(layout.nativeEvent.layout);
+                    setArea(layout.nativeEvent.layout);
+                }} />
+                {_renderOptions()}
+            </SafeAreaView>
+        </Modal>
+    )
+}
+
 export const Menu = (props: Props) => {
     const { theme: { colors, roundness } } = useAppSelector(state => state.app);
     const [open, setOpen] = useState<boolean>(false);
     const [positionActivator, setPositionActivator] = useState<LayoutRectangle>();
     const activator = useRef<TouchableHighlight>(null);
-
-
-    const _renderOptions = useCallback(() => {
-        if (positionActivator) {
-            const { width, height, x, y } = positionActivator;
-            return (
-                <View style={[styles.modal, { right: 20, top: y, borderRadius: roundness * 3 }]}>
-                    {
-                        props.options.map((o, idx) => {
-                            return (
-                                <Text key={o.label + idx} onPress={o.onPress}>{o.label}</Text>
-                            )
-                        })
-                    }
-                </View>
-            )
-        }
-        return undefined;
-    }, [positionActivator]);
+    const slide = useRef(new Animated.Value(0)).current;
 
     return (
         <>
@@ -50,13 +108,7 @@ export const Menu = (props: Props) => {
             >
                 <Icon color={colors.primary} size={25} name='dots-vertical' />
             </TouchableHighlight>
-            <Modal visible={open} transparent animationType='fade'>
-                <SafeAreaView style={{ backgroundColor: colors.backdrop }} />
-                <View style={[styles.containerModal, { backgroundColor: colors.backdrop }]}>
-                    <Pressable style={{ width: '100%', height: '100%' }} onPress={() => setOpen(false)} />
-                    {_renderOptions()}
-                </View>
-            </Modal>
+            {_renderModalMenu({ open, setOpen, options: props.options, positionActivator })}
         </>
     )
 }
@@ -72,5 +124,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         position: 'absolute',
         padding: 15
+    },
+    containerItemModal: {
+        borderWidth: .2,
+        marginVertical: 5
     }
 });

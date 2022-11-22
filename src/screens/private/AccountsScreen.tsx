@@ -9,7 +9,7 @@ import { formatDate, Account, date } from '../../interfaces/interfaces';
 import { useEffect } from 'react';
 import moment from 'moment';
 import 'moment/locale/es';
-import { Select } from '../../components/Select';
+import { Select } from '../../components/select/Select';
 import _ from 'lodash';
 import { Input } from '../../components/Input';
 import { Button, FAB, IconButton, Switch, Text } from 'react-native-paper';

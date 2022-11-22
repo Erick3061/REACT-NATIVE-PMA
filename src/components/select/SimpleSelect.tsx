@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Dimensions, FlatList, I18nManager, Keyboard, ListRenderItemInfo, Modal, Pressable, Text, TextInput as NativeTextInput, TextInput, TouchableWithoutFeedback, View } from 'react-native';
 import _ from 'lodash';
-import { useAppSelector } from '../app/hooks';
+import { useAppSelector } from '../../app/hooks';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Surface, TouchableRipple } from 'react-native-paper';
 

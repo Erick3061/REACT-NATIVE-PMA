@@ -3,8 +3,8 @@ import { Dimensions, I18nManager, Keyboard, Modal, Pressable, TextInput as Nativ
 import Toast from 'react-native-toast-message';
 import { TextInput } from 'react-native-paper';
 import _ from 'lodash';
-import { useAppSelector } from '../app/hooks';
-import { List } from './List';
+import { useAppSelector } from '../../app/hooks';
+import { List } from '../List';
 
 type Props = {
     valueField: string;

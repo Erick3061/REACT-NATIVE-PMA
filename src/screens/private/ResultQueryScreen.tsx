@@ -15,6 +15,7 @@ import { HeaderTableValues, TypeReport } from '../../types/types';
 import { TarjetPercentaje } from '../../components/TarjetPercentaje';
 import Color from 'color';
 import { Menu } from '../../components/Menu';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultQueryScreen'> { };
 
@@ -195,14 +196,18 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
 
                         {
                             label: 'Cambiar reporte',
-                            onPress: () => { },
+                            icon: 'swap-horizontal',
+                            onPress: () => setVisible(true),
                         },
                         {
                             label: 'Descargar reporte',
-                            onPress: () => refetch(),
+                            icon: 'file-download-outline',
+
+                            onPress: () => { },
                         },
                         {
                             label: 'Actualizar',
+                            icon: 'refresh',
                             onPress: () => refetch(),
                         },
                     ]}
@@ -213,6 +218,35 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
                 {(isLoading || isFetching) && <Loading />}
                 {_renderTable()}
             </View>
+
+            <Modal visible={visible} transparent animationType='slide'>
+                <Pressable onPress={() => setVisible(!visible)} style={{ flex: 1 }} />
+                <View style={{
+                    backgroundColor: colors.background, width: screenWidth, height: 170, borderTopRightRadius: 15, borderTopLeftRadius: 15, position: 'absolute', bottom: 0
+                }}>
+                    <List.Section style={{ paddingHorizontal: 30, width: screenWidth, }}>
+                        <List.Subheader selectionColor={'red'}>Reportes</List.Subheader>
+                        <List.Item cancelable title="Apertura y Cierre" left={() => <List.Icon color={colors.primary} icon="newspaper-variant" />}
+                            onPress={
+                                () => {
+                                    setReport('ApCi');
+                                    setVisible(false);
+                                    setTitles(TitlesApCi);
+                                    queryClient.removeQueries(['Events', key]);
+                                }
+                            } />
+                        <List.Item title="Evento de Alarma" left={() => <List.Icon color={colors.primary} icon="newspaper-variant" />}
+                            onPress={
+                                () => {
+                                    setReport('EA');
+                                    setVisible(false);
+                                    setTitles(TitlesEA);
+                                    queryClient.removeQueries(['Events', key]);
+                                }
+                            } />
+                    </List.Section>
+                </View>
+            </Modal>
         </View >
     );
 };
