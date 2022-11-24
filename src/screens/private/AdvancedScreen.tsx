@@ -1,90 +1,82 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { View, TextInput as NativeTextInput, StyleSheet, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
-import { getDate, modDate } from '../../functions/functions';
+import { modDate } from '../../functions/functions';
 import { formatDate, Account } from '../../interfaces/interfaces';
 import { useEffect } from 'react';
-import moment from 'moment';
-import 'moment/locale/es';
 import { Select } from '../../components/select/Select';
 import _ from 'lodash';
-import { Input } from '../../components/Input';
-import { Button, Chip, FAB, IconButton, Switch, Text, Surface } from 'react-native-paper';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { Button, Chip, FAB, IconButton, Text, Surface } from 'react-native-paper';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { updateInfo } from '../../features/alertSlice';
-import { useQuery } from '@tanstack/react-query';
-import { GetMyAccount } from '../../api/Api';
 import { Loading } from '../../components/Loading';
 import Toast from 'react-native-toast-message';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useMyAccounts } from '../../hooks/useQuery';
+import { TypeReport } from '../../types/types';
+import { Calendar } from '../../components/calendar/Calendar';
+import { vh } from '../../config/Dimensions';
 
-moment.locale('es');
 
 type Stack = StackNavigationProp<rootPrivateScreens>;
+
 type Accout = {
     name: string;
+    report: string;
     start: string;
     end: string;
 }
 
-type dateSelected = { start: { open: boolean; date: formatDate; }, end: { open: boolean; date: formatDate; } }
 
-const initialDateSelected: dateSelected = { start: { open: false, date: modDate({ days: -30 }) }, end: { open: false, date: getDate() } }
+const calendars = [
+    { label: 'Fecha inicio', date: modDate({ days: -30 }).DATE },
+    { label: 'Fecha final', date: modDate({}).DATE },
+]
+
+const reports: Array<{ name: string, value: TypeReport, msg: string }> = [
+    { name: 'APERTURA Y CIERRE', value: 'ApCi', msg: 'Con este reporte podra consultar los horarios en los que se recibieron los eventos de apertura y cierre' },
+    { name: 'EVENTO DE ALARMA', value: 'EA', msg: 'Con este reporte podra ver los eventos de alarma, asi como los eventos generados por su sistema de alarma' },
+    { name: 'PROBLEMAS DE BATERIA', value: 'Bat', msg: '' },
+    { name: 'ESTADO DE SUCURSALES', value: 'Status', msg: '' },
+    { name: 'HORARIOS DE APERTURAS Y CIERRES', value: 'ApCiSem', msg: '' },
+]
 
 export const AdvancedScreen = () => {
-    const { isLoading, data, refetch } = useQuery(['MyAccounts'], GetMyAccount, {
-        onError: error => Toast.show({ type: 'error', text1: 'Error', text2: `${error}` }),
-        onSuccess: data => Toast.show({ type: 'success', text2: 'Cuentas Actualizadas correctamente...' })
-    });
+    const { isLoading, data, refetch } = useMyAccounts();
 
     const { navigate } = useNavigation<Stack>();
     const dispatch = useAppDispatch();
 
-    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness, fonts } } = useAppSelector(state => state.app);
 
     const { control, handleSubmit, reset, setValue: setValueForm } = useForm<Accout>({ defaultValues: { name: '', start: '', end: '' } });
 
-    const [show, setShow] = useState<dateSelected>(initialDateSelected);
     const [valueSelect, setValueSelect] = useState<Array<Account>>();
-
-    const startRef = useRef<NativeTextInput>(null);
-    const endtRef = useRef<NativeTextInput>(null);
+    const [report, setReport] = useState<typeof reports>();
+    const [dates, setDates] = useState<Array<{ name: string, date?: formatDate }>>();
 
     const openInfo = ({ msg, title }: { msg: string, title: string }) => dispatch(updateInfo({ open: true, title, msg, icon: true }));
 
-    const onSubmitApCi: SubmitHandler<Accout> = async (props) => {
+    const onSubmit: SubmitHandler<Accout> = async (props) => {
         const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
-        if (accounts.length > 0) {
-            const { end, name, start } = props;
-            navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'ApCi' } });
-        } else {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
+        if (dates && accounts.length > 0 && report) {
+            const missingDates = dates.filter(s => s.date === undefined).map(name => name.name);
+            if (missingDates?.length === 0) {
+                const start = dates.find(f => f.name === 'Fecha inicio')?.date?.date.date ?? modDate({}).date.date;
+                const end = dates.find(f => f.name === 'Fecha final')?.date?.date.date ?? modDate({}).date.date;
+                navigate('ResultQueryScreen', { props: { accounts, start, end, report: report[0].value } });
+            } else {
+                Toast.show({ type: 'customError', text1: 'Error al asignar Fechas', text2: `Fechas faltantes:\n${missingDates}` })
+            }
         }
     };
-
-    const onSubmitEA: SubmitHandler<Accout> = async (props) => {
-        const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
-        if (accounts.length > 0) {
-            const { end, name, start } = props;
-            navigate('ResultQueryScreen', { props: { accounts, start, end, report: 'EA' } });
-        } else {
-            Toast.show({ type: 'error', text1: 'Error', text2: 'No existe la centa' })
-        }
-    };
-
-    useEffect(() => {
-        setValueForm('start', show.start.date.date.date);
-        setValueForm('end', show.end.date.date.date);
-    }, []);
 
     useEffect(() => {
         if (valueSelect?.length === 0) setValueForm('name', '')
-    }, [valueSelect])
-
+    }, [valueSelect]);
 
     return (
         <View style={{ flex: 1, padding: 10, }}>
@@ -105,11 +97,13 @@ export const AdvancedScreen = () => {
                                             value={value}
                                             itemsSelected={valueSelect ?? []}
                                             label={'Seleccione sus cuentas'}
+                                            colorSelected={colors.primaryContainer}
                                             data={data ? data.accounts.filter(f => f.Status !== 'I') : []}
                                             onChange={(value: Array<any>) => {
                                                 setValueSelect(value);
                                                 onChange((value.length <= 1) ? _.get(value[0], 'Nombre') : 'Eliminar Cuentas Seleccionadas');
                                             }}
+                                            renderSearch={{ placeholder: 'Buscar cuenta' }}
                                             error={error ? true : false}
                                             multiSelect={{ maxSelect: data?.accounts.length ?? 50 }}
                                         />
@@ -117,15 +111,15 @@ export const AdvancedScreen = () => {
                                     </>
                                 }
                             />
-                            <View style={{ padding: 10, maxHeight: 250 }}>
-                                {(valueSelect && valueSelect.length > 0) && <Surface elevation={2} style={{ borderRadius: roundness, padding: 10, backgroundColor: colors.background }}>
-                                    <ScrollView>
+                            <View style={{ padding: 10, maxHeight: vh * 25 }}>
+                                {(valueSelect && valueSelect.length > 0) &&
+                                    <ScrollView >
                                         {valueSelect?.map(acc => <Chip
                                             key={acc.CodigoCte}
                                             mode={'outlined'}
                                             elevated={true}
-                                            elevation={2}
-                                            style={{ margin: 2 }}
+                                            elevation={1}
+                                            style={{ margin: 4 }}
                                             icon="account"
                                             closeIcon={'close'}
                                             closeIconAccessibilityLabel={'k'}
@@ -133,94 +127,61 @@ export const AdvancedScreen = () => {
                                         >{acc.Nombre}
                                         </Chip>)}
                                     </ScrollView>
-                                </Surface>}
+                                }
                             </View>
-                            <View style={{ display: 'flex', flexDirection: 'row', marginVertical: 10 }}>
-                                <Input
-                                    disabled={isLoading}
-                                    refp={startRef}
-                                    control={control}
-                                    formInputs={control._defaultValues}
-                                    label='Fecha inicio'
-                                    name='start'
-                                    placeholder=''
-                                    style={styles.input}
-                                    mode='outlined'
-                                    onFocus={() => { setShow({ ...show, start: { date: show.start.date, open: true } }) }}
-                                    showSoftInputOnFocus={false}
-                                    renderRightIcon='calendar'
-                                    rules={{ required: { message: 'Debe seleccionar una fecha', value: true } }}
-                                />
-                                <Input
-                                    disabled={isLoading}
-                                    refp={endtRef}
-                                    control={control}
-                                    formInputs={control._defaultValues}
-                                    label='Fecha final'
-                                    name='end'
-                                    placeholder=''
-                                    style={styles.input}
-                                    mode='outlined'
-                                    onFocus={() => { setShow({ ...show, end: { date: show.end.date, open: true } }) }}
-                                    showSoftInputOnFocus={false}
-                                    renderRightIcon='calendar'
-                                    rules={{ required: { message: 'Debe seleccionar una fecha', value: true } }}
-                                />
+
+                            <Calendar
+                                calendars={calendars}
+                                backgroundColor={colors.background}
+                                textColor={colors.text}
+                                colorOutline={colors.outline}
+                                limitDays={30}
+                                onChange={setDates}
+                                Textstyle={fonts.titleMedium}
+                            />
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
+                                <View style={{ flex: 1 }}>
+                                    <Controller
+                                        control={control}
+                                        rules={{ required: { message: 'Debe seleccionar una cuenta', value: true } }}
+                                        name='report'
+                                        render={({ field: { value, onChange }, fieldState: { error } }) =>
+                                            <>
+                                                <Select
+                                                    maxHeight={vh * 30}
+                                                    animationType='slide'
+                                                    valueField='value'
+                                                    labelField='name'
+                                                    colorSelected={colors.primaryContainer}
+                                                    value={value}
+                                                    label='Seleccione reporte'
+                                                    itemsSelected={report ?? []}
+                                                    data={reports}
+                                                    onChange={(value) => {
+                                                        setReport(value);
+                                                        onChange(_.get(value[0], 'name'))
+                                                        console.log(value);
+                                                    }}
+                                                    error={error ? true : false}
+                                                />
+                                                {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                                            </>
+                                        }
+                                    />
+                                </View>
+                                <IconButton
+                                    icon={'information-outline'}
+                                    onPress={() => openInfo({
+                                        title: (report && report.length !== 0) ? _.get(report[0], 'name') : 'Seleccione un reporte',
+                                        msg: (report && report.length !== 0) ? _.get(report[0], 'msg') : '',
+                                    })} />
                             </View>
-                            {
-                                (show.start.open || show.end.open) &&
-                                <DateTimePicker
-                                    display={'default'}
-                                    locale={moment.locale('es')}
-                                    value={show.start.open ? show.start.date.DATE : show.end.date.DATE}
-                                    mode={'date'}
-                                    minimumDate={modDate({ days: -30 }).DATE}
-                                    maximumDate={getDate().DATE}
-                                    onChange={({ nativeEvent, type }) => {
-                                        const date: formatDate = modDate({ dateI: nativeEvent.timestamp ? new Date(nativeEvent.timestamp) : show.start.open ? show.start.date.DATE : show.end.date.DATE })
-                                        if (show.start.open) {
-                                            startRef.current?.blur();
-                                            setShow({ ...show, start: { date, open: false } });
-                                            setValueForm('start', date.date.date);
-                                        }
-                                        if (show.end.open) {
-                                            endtRef.current?.blur();
-                                            setShow({ ...show, end: { date, open: false } });
-                                            setValueForm('end', date.date.date);
-                                        }
-                                    }}
-                                    onTouchCancel={() => {
-                                        console.log('cancel');
-                                    }}
-                                />
-                            }
-                            <View style={{ paddingHorizontal: 40, alignItems: 'center' }}>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Button
-                                        loading={isLoading}
-                                        style={{ marginVertical: 5 }}
-                                        mode='contained'
-                                        onPress={handleSubmit(onSubmitApCi)}>APERTURA Y CIERRE</Button>
-                                    <IconButton
-                                        icon={'information-outline'}
-                                        onPress={() => openInfo({
-                                            title: 'APERTURA Y CIERRE',
-                                            msg: 'Con este reporte podra consultar los horarios en los que se recibieron los eventos de apertura y cierre'
-                                        })} />
-                                </View>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Button
-                                        loading={isLoading}
-                                        style={{ marginVertical: 5 }}
-                                        mode='contained'
-                                        onPress={handleSubmit(onSubmitEA)}>EVENTO DE ALARMA</Button>
-                                    <IconButton
-                                        icon={'information-outline'}
-                                        onPress={() => openInfo({
-                                            title: 'EVENTO DE ALARMA',
-                                            msg: 'Con este reporte podra ver los eventos de alarma, asi como los eventos generados por su sistema de alarma'
-                                        })} />
-                                </View>
+                            <View style={{ padding: 10, alignItems: 'center' }}>
+                                <Button
+                                    loading={isLoading}
+                                    style={{ marginVertical: 5 }}
+                                    mode='elevated'
+                                    onPress={handleSubmit(onSubmit)}>CONSULTAR</Button>
                             </View>
                         </KeyboardAvoidingView>
                 }

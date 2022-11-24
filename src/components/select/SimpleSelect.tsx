@@ -99,11 +99,12 @@ export const SimpleSelect = React.forwardRef<any, Props>(
                 }
 
                 return (
-                    <FlatList ref={refList} data={data.filter(f => f !== value)} renderItem={_renderItem} onLayout={({ nativeEvent: { layout } }) => {
-                        ref.current?.measure((x, y, width, height, px, py) => {
-                            setPosition({ ...position, height: layout.height + (height * 2) });
-                        });
-                    }} />
+                    <FlatList ref={refList} data={data.filter(f => f !== value)} renderItem={_renderItem}
+                        onLayout={({ nativeEvent: { layout } }) => {
+                            ref.current?.measure((x, y, width, height, px, py) => {
+                                setPosition({ ...position, height: layout.height + (height * 2) });
+                            });
+                        }} />
                 )
             }
         }, [data, position, ref, roundness, value])

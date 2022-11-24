@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, FlatList, ListRenderItemInfo } from 'react-native';
 import _ from 'lodash';
 import { Row } from './Row';
-import { Table as CreateTable, Row as CreateRow } from 'react-native-table-component';
 import { IconButton, Surface } from 'react-native-paper';
 import { SimpleSelect } from '../select/SimpleSelect';
 import { HeaderTableValues } from '../../types/types';
 import { screenWidth } from '../../config/Dimensions';
 import { stylesApp } from '../../App';
+import { TableProvider, TableContext } from '../../context/TableContext';
+import { time } from '../../interfaces/interfaces';
+import useCallback from 'react';
 
 
 type Props = {
@@ -28,12 +30,21 @@ type Props = {
     colorBackgroundTable?: string;
 }
 
-const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, isDataObject, isShowHeader = true, showIndices, colorBackgroundTable }: Props) => {
+const TableState = ({ children }: any) => {
+    return (
+        <TableProvider>
+            {children}
+        </TableProvider>
+    )
+}
+
+const RenderTable = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, isDataObject, isShowHeader = true, showIndices, colorBackgroundTable }: Props) => {
     const [events, setEvents] = useState<Array<any>>();
     const [filter, setfilter] = useState<Array<any>>();
     const numberOfItemsPerPageList = [15, 25, 35, 50];
     const [page, setPage] = useState(0);
     const [numberOfItemsPerPage, setdNumberOfItemsPerPage] = useState(numberOfItemsPerPageList[0]);
+    const { data } = useContext(TableContext);
 
     useEffect(() => {
         if (Array.isArray(Data)) {
@@ -44,7 +55,7 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
             setEvents(data);
             setfilter(pagination ? data.slice(0, numberOfItemsPerPage) : data);
         }
-    }, [Data, titles]);
+    }, [Data, titles, pagination]);
 
     useEffect(() => {
         if (events) {
@@ -54,18 +65,15 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
 
     useEffect(() => {
         setPage(0);
+        console.log('entro');
     }, []);
-
-
 
     //version erick
 
     const _renderPagination = React.useCallback(() => {
-        if (events) {
+        if (events && pagination) {
             const from = page * numberOfItemsPerPage;
             const to = Math.min((page + 1) * numberOfItemsPerPage, events.length);
-            console.log(page);
-
 
             return (
                 <View style={[styles.containerPagination]}>
@@ -95,35 +103,62 @@ const Table = ({ Header, Data, titles, fontSize, scrollRefHeader, pagination, is
                 </View>
             )
         }
+        return undefined
     }, [events, pagination, numberOfItemsPerPage, page, numberOfItemsPerPageList]);
 
-    return (
-        <View style={[styles.container, colorBackgroundTable ? { backgroundColor: colorBackgroundTable } : {}]}>
-            {
-                Header && (Header.title || Header.subtitle) &&
+    const _renderHeader = React.useCallback(() => {
+        if (Header)
+            return (
                 <View style={{ paddingVertical: 5 }}>
                     {Header.title && <Text style={styles.textTitlesHeader}>{Header.title}</Text>}
                     {Header.subtitle && <Text style={styles.textTitlesHeader}>{Header.subtitle}</Text>}
                 </View>
-            }
+            )
+        return undefined;
+    }, [Header])
+
+    const _renderTH = React.useCallback(() => {
+        if (titles && isShowHeader)
+            return (
+                <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase' }} fontSize={fontSize + 2} data={titles.map(r => r.title)} />
+            )
+        return undefined;
+    }, [titles, isShowHeader]);
+
+    const _renderBody = React.useCallback(() => {
+        if (filter)
+            if (filter.length === 0)
+                return <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>;
+            else
+                return (
+                    filter.map((ev, idx) => <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} style={{ borderBottomColor: 'rgba(0,0,0,.3)', borderBottomWidth: .2 }} fontSize={fontSize} key={idx * .333} data={ev} />)
+                )
+        return <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>;
+    }, [filter])
+
+    return (
+        <View style={[styles.container, colorBackgroundTable ? { backgroundColor: colorBackgroundTable } : {}]}>
+            {_renderHeader()}
             <ScrollView horizontal={true}
                 onScroll={({ nativeEvent }) => { scrollRefHeader?.current?.scrollTo({ x: nativeEvent.contentOffset.x, y: nativeEvent.contentOffset.y, animated: true }); }}
             >
                 <View>
-                    {(isShowHeader && titles && filter) && <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase' }} fontSize={fontSize + 2} data={titles.map(r => r.title)} />}
+                    {_renderTH()}
                     <ScrollView >
-                        {
-                            filter
-                                ? filter.length === 0
-                                    ? <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>
-                                    : filter.map((ev, idx) => <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} style={{ borderBottomColor: 'rgba(0,0,0,.3)', borderBottomWidth: .2 }} fontSize={fontSize} key={idx * .333} data={ev} />)
-                                : <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>
-                        }
+                        {_renderBody()}
                     </ScrollView>
                 </View>
             </ScrollView>
-            {pagination && _renderPagination()}
+            {_renderPagination()}
         </View>
+    )
+}
+
+const Table = (props: Props) => {
+    return (
+        <TableState>
+            <RenderTable {...props} />
+        </TableState>
     )
 }
 

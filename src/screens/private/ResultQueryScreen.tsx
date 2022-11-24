@@ -1,21 +1,19 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { createRef, useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View, Pressable, SectionList, ScrollView, Modal, Platform } from 'react-native';
-import { Appbar, List, Surface, Text, } from 'react-native-paper';
+import { View, SectionList, ScrollView, Platform } from 'react-native';
+import { Appbar, Surface, Text, } from 'react-native-paper';
 import { useAppSelector } from '../../app/hooks';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { useQueryClient } from '@tanstack/react-query';
 import Toast from 'react-native-toast-message';
 import { Loading } from '../../components/Loading';
 import Table from '../../components/table/Table';
-import { useEvents } from '../../hooks/Events';
+import { useEvents } from '../../hooks/useQuery';
 import { Row } from '../../components/table/Row';
-import { screenWidth } from '../../config/Dimensions';
 import { HeaderTableValues, TypeReport } from '../../types/types';
 import { TarjetPercentaje } from '../../components/TarjetPercentaje';
 import Color from 'color';
-import { Menu } from '../../components/Menu';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Menu, _renderModalMenu } from '../../components/select/Menu';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultQueryScreen'> { };
 
@@ -47,8 +45,6 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
     const [key, setkey] = useState(accounts.length === 1 ? accounts[0].CodigoCte : 'Accounts');
     const queryClient = useQueryClient();
 
-    const logError = (text: string) => Toast.show({ text1: 'Error', text2: text, type: 'error' });
-
     useEffect(() => {
         setVisible(false);
         if (report === 'ApCi') {
@@ -66,10 +62,6 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
         type: report,
         typeAccount: 1
     });
-
-    useEffect(() => {
-        if (error) logError(`${error}`);
-    }, [error]);
 
     const _renderTable = useCallback(() => {
         if (data && data.cuentas?.length === 1) {
@@ -183,7 +175,7 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
             )
         }
         return undefined;
-    }, [data, titles])
+    }, [data, titles]);
 
     return (
         <View style={{ flex: 1 }}>
@@ -219,44 +211,34 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
                 {_renderTable()}
             </View>
 
-            <Modal visible={visible} transparent animationType='slide'>
-                <Pressable onPress={() => setVisible(!visible)} style={{ flex: 1 }} />
-                <View style={{
-                    backgroundColor: colors.background, width: screenWidth, height: 170, borderTopRightRadius: 15, borderTopLeftRadius: 15, position: 'absolute', bottom: 0
-                }}>
-                    <List.Section style={{ paddingHorizontal: 30, width: screenWidth, }}>
-                        <List.Subheader selectionColor={'red'}>Reportes</List.Subheader>
-                        <List.Item cancelable title="Apertura y Cierre" left={() => <List.Icon color={colors.primary} icon="newspaper-variant" />}
-                            onPress={
-                                () => {
-                                    setReport('ApCi');
-                                    setVisible(false);
-                                    setTitles(TitlesApCi);
-                                    queryClient.removeQueries(['Events', key]);
-                                }
-                            } />
-                        <List.Item title="Evento de Alarma" left={() => <List.Icon color={colors.primary} icon="newspaper-variant" />}
-                            onPress={
-                                () => {
-                                    setReport('EA');
-                                    setVisible(false);
-                                    setTitles(TitlesEA);
-                                    queryClient.removeQueries(['Events', key]);
-                                }
-                            } />
-                    </List.Section>
-                </View>
-            </Modal>
+            {_renderModalMenu({
+                open: visible,
+                setOpen: setVisible,
+                options: [
+
+                    {
+                        label: 'APERTURA Y CIERRE',
+                        icon: 'file-outline',
+                        onPress: () => {
+                            setReport('ApCi');
+                            setVisible(false);
+                            setTitles(TitlesApCi);
+                            queryClient.removeQueries(['Events', key]);
+                        },
+                    },
+                    {
+                        label: 'EVENTO DE ALARMA',
+                        icon: 'file-outline',
+
+                        onPress: () => {
+                            setReport('EA');
+                            setVisible(false);
+                            setTitles(TitlesEA);
+                            queryClient.removeQueries(['Events', key]);
+                        },
+                    },
+                ],
+            })}
         </View >
     );
 };
-
-const styles = StyleSheet.create({
-    bottom: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 0,
-    },
-});
-

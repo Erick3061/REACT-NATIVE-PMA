@@ -57,6 +57,20 @@ export interface Account {
     Status?: string;
 }
 
+export interface Percentajes {
+    Apertura?: number;
+    Cierre?: number;
+    Alarma?: number;
+    Pruebas?: number;
+    Bateria?: number;
+    Otros?: number;
+}
+
+export interface AccountExtended {
+    eventos?: Array<Events>;
+    porcentajes?: Percentajes
+}
+
 export interface responseError {
     status?: boolean;
     message?: Array<string>;

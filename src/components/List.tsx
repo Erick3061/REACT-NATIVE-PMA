@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../navigation/Root';
+import Color from 'color';
 
 interface Props {
     data: Array<any>;
@@ -72,7 +73,7 @@ export const List = ({ data, labelField, valueField, height, separator, separato
                 >
                     <Text>{_.get(data, labelField)}</Text>
                 </TouchableOpacity>
-                {separator && <View style={{ borderTopWidth: .2, borderColor: separatorColor ?? 'silver' }}></View>}
+                {separator && <View style={{ borderTopWidth: .2, borderColor: Color(separatorColor ?? 'silver').alpha(.5).toString() }}></View>}
             </>
         )
     }, [dataProvider, labelField, valueField, height, separator, separatorColor, selected]);
@@ -113,37 +114,35 @@ export const List = ({ data, labelField, valueField, height, separator, separato
     }, [filter]);
 
     return (
-        <View style={{ flex: 1 }}>
-            {renderSearch && _renderSearch()}
-            <View ref={containerList} style={[styles.container, { borderColor: separatorColor ?? 'silver' }]}>
-                {
-                    filter.length > 0
-                        ?
-                        <RecyclerListView
-                            rowRenderer={_renderRow}
-                            dataProvider={dataProvider}
-                            layoutProvider={_layoutProvider()}
-                        />
-                        : <View style={{ flex: 1, justifyContent: 'center' }}><Text style={{ textAlign: 'center' }}>SIN COINCIDENCIAS</Text></View>
-                }
+        <TouchableWithoutFeedback>
+            <View style={{ flex: 1 }}>
+                {renderSearch && _renderSearch()}
+                <View ref={containerList} style={[styles.container, { borderColor: separatorColor ?? 'silver' }]}>
+                    {
+                        filter.length > 0
+                            ?
+                            <RecyclerListView
+                                rowRenderer={_renderRow}
+                                dataProvider={dataProvider}
+                                layoutProvider={_layoutProvider()}
+                            />
+                            : <View style={{ flex: 1, justifyContent: 'center' }}><Text style={{ textAlign: 'center' }}>SIN COINCIDENCIAS</Text></View>
+                    }
+                </View>
+                <View style={styles.containerBtns}>
+                    <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>
+                    {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
+                </View>
+                <Toast visibilityTime={4000} config={toastConfig} />
             </View>
-            <View style={styles.containerBtns}>
-                <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>
-                {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
-            </View>
-            <Toast visibilityTime={4000} config={toastConfig} />
-        </View>
+        </TouchableWithoutFeedback>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginVertical: 5,
         padding: 5,
-        borderWidth: .2,
-        borderRadius: 5,
-        justifyContent: 'center',
     },
     containerInput: {
         flexDirection: 'row',
@@ -161,9 +160,8 @@ const styles = StyleSheet.create({
     item: {
         flex: 1,
         justifyContent: 'center',
-        paddingHorizontal: 10,
+        paddingHorizontal: 5,
         borderRadius: 5,
-        margin: 1
     },
     containerBtns: {
         flexDirection: 'row',

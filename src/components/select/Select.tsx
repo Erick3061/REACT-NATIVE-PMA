@@ -1,21 +1,28 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Dimensions, I18nManager, Keyboard, Modal, Pressable, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView } from 'react-native';
+import { Dimensions, I18nManager, Keyboard, Modal, Pressable, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { TextInput } from 'react-native-paper';
 import _ from 'lodash';
 import { useAppSelector } from '../../app/hooks';
 import { List } from '../List';
+import { stylesApp } from '../../App';
 
 type Props = {
     valueField: string;
     labelField: string;
     itemsSelected: Array<any>;
+    colorSelected?: string;
     data: Array<any>;
     onChange: (item: Array<any>) => void;
     value: string;
     label?: string;
     error?: boolean;
     multiSelect?: { maxSelect: number };
+    animationType?: "slide" | "none" | "fade";
+    maxHeight?: number;
+    renderSearch?: {
+        placeholder: string;
+    }
 }
 
 export const Select = React.forwardRef<any, Props>(
@@ -29,7 +36,11 @@ export const Select = React.forwardRef<any, Props>(
             error,
             label,
             multiSelect,
-            itemsSelected
+            itemsSelected,
+            animationType,
+            maxHeight,
+            renderSearch,
+            colorSelected
         } = props;
 
         const { colors, roundness } = useAppSelector(state => state.app.theme);
@@ -100,39 +111,55 @@ export const Select = React.forwardRef<any, Props>(
                     </Pressable>
                 </TouchableWithoutFeedback>
             )
-        }, [error, value, visible, label, colors])
+        }, [error, value, visible, label, colors]);
 
         const _renderModal = useCallback(() => {
             if (position) {
-                const { width } = position;
+                const { width, bottom, height, left, top } = position;
                 return (
                     <Modal
                         transparent
-                        animationType='slide'
+                        animationType={animationType}
                         visible={visible}
                         hardwareAccelerated
                     >
                         <TouchableWithoutFeedback
-                        // onPress={_close}
+                            onPress={maxHeight ? _close : () => { }}
                         >
                             <SafeAreaView style={{ flex: 1 }}>
-                                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,.1)', paddingVertical: 20 }}>
-                                    <View style={{ width, height: '100%', backgroundColor: 'white', borderRadius: 10, padding: 10 }}>
+                                <View style={[modal.Modal]}>
+                                    <View style={[
+                                        modal.Container,
+                                        {
+                                            width,
+                                            borderRadius: roundness * 2
+                                        },
+                                        maxHeight
+                                            ? {
+                                                height: (data.length + 1) * 55,
+                                                maxHeight,
+                                                position: 'absolute',
+                                                top,
+                                                left
+                                            }
+                                            : {
+                                                height: '100%'
+                                            }
+                                    ]}>
                                         <TouchableWithoutFeedback>
-                                            <View style={{ width: '100%', height: '100%' }}>
-                                                <List
-                                                    data={data}
-                                                    itemsSelected={itemsSelected}
-                                                    labelField={labelField}
-                                                    valueField={valueField}
-                                                    separator
-                                                    separatorColor={colors.primary}
-                                                    onChange={onSelect}
-                                                    multiSelect={multiSelect}
-                                                    renderSearch={{ placeholder: 'Buscar cuenta' }}
-                                                    colorBtns={{ cancel: colors.error, confirm: colors.primary }}
-                                                />
-                                            </View>
+                                            <List
+                                                data={data}
+                                                itemsSelected={itemsSelected}
+                                                labelField={labelField}
+                                                valueField={valueField}
+                                                separator
+                                                separatorColor={colors.primary}
+                                                colorSelected={colorSelected}
+                                                onChange={onSelect}
+                                                multiSelect={multiSelect}
+                                                renderSearch={renderSearch}
+                                                colorBtns={{ cancel: colors.error, confirm: colors.primary }}
+                                            />
                                         </TouchableWithoutFeedback>
                                     </View>
                                 </View>
@@ -145,9 +172,23 @@ export const Select = React.forwardRef<any, Props>(
         }, [visible, keyboardHeight, position]);
 
         return (
-            <View style={{ justifyContent: 'center' }} ref={ref} onLayout={_measure}>
+            <View style={{ justifyContent: 'center', flex: 1 }} ref={ref} onLayout={_measure}>
                 {_renderDropDown()}
                 {_renderModal()}
             </View>
         )
     });
+
+const modal = StyleSheet.create({
+    Modal: {
+        flex: 1,
+        alignItems: 'center',
+        // backgroundColor: 'rgba(0,0,0,.1)',
+        paddingVertical: 10
+    },
+    Container: {
+        backgroundColor: 'white',
+        padding: 5,
+        ...stylesApp.shadow
+    }
+});

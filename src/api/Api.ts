@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { responseError, User, Account, GetReport, Dates, Events } from '../interfaces/interfaces';
+import { responseError, User, Account, GetReport, Dates, Events, AccountExtended } from '../interfaces/interfaces';
+import { TypeReport } from '../types/types';
 
 // export const baseUrl = 'https://pem-sa.ddns.me:3007/api';
 export const baseUrl = 'http://192.168.1.93:3000';
@@ -41,10 +42,10 @@ export const GetMyAccount = async () => {
 };
 
 
-export const ReportEvents = async ({ body, type }: { body: GetReport & Dates, type?: 'ApCi' | 'EA' }) => {
+export const ReportEvents = async ({ body, type }: { body: GetReport & Dates, type?: TypeReport }) => {
     try {
         const response = await Api(`reports/${type === 'ApCi' ? 'ap-ci' : 'event-alarm'}`, body, 'POST');
-        const { status, message, ...data }: responseError & { nombre: string, cuentas?: Array<Account & { eventos?: Array<Events>, porcentajes?: { Apertura?: number, Cierre?: number, Alarma?: number, Pruebas?: number, Bateria?: number, Otros?: number } }> } = await response.json();
+        const { status, message, ...data }: responseError & { nombre: string, cuentas?: Array<Account & AccountExtended> } = await response.json();
         if (status === false) throw new Error(`${message}`);
         if (data.cuentas?.length === 1 && data.cuentas[0].eventos) {
             const total: number = data.cuentas[0].eventos.length;

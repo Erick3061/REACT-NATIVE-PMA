@@ -24,7 +24,7 @@ export const stylesApp = StyleSheet.create({
       width: 0,
       height: 1
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.20,
     shadowRadius: 4,
     elevation: 5,
   }

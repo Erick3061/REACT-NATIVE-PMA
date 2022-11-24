@@ -4,9 +4,9 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { LayoutRectangle, Modal, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, TouchableHighlight, View, Platform, Animated } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { stylesApp } from '../App';
-import { useAppSelector } from '../app/hooks';
-import { screenHeight } from '../config/Dimensions';
+import { stylesApp } from '../../App';
+import { useAppSelector } from '../../app/hooks';
+import { screenHeight } from '../../config/Dimensions';
 
 interface option {
     label: string,
@@ -72,6 +72,22 @@ export const _renderModalMenu = (props: Props &
                     <View style={[styles.modal, { right: 20, top: props.positionActivator.y, borderRadius: roundness * 3, ...stylesApp.shadow }]}>
                         {_renderItems()}
                     </View>
+            )
+        } else if (area) {
+            return (
+                <Animated.View style={[styles.modal, {
+                    width: '100%',
+                    bottom: screenHeight - (area.height + area.y * 2),
+                    paddingBottom: area.y + 20,
+                    borderTopRightRadius: roundness * 3,
+                    borderTopLeftRadius: roundness * 3,
+                    maxHeight: 400,
+                    ...stylesApp.shadow
+                }]}>
+                    <ScrollView>
+                        {_renderItems()}
+                    </ScrollView>
+                </Animated.View>
             )
         }
         return undefined;
