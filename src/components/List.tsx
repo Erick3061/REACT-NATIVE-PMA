@@ -27,9 +27,10 @@ interface Props {
     renderSearch?: {
         placeholder: string;
     }
+    renderCanelBtn?: boolean;
     onChange: (item: Array<any>) => void;
 }
-export const List = ({ data, labelField, valueField, height, separator, separatorColor, multiSelect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch }: Props) => {
+export const List = ({ data, labelField, valueField, height, separator, separatorColor, multiSelect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch, renderCanelBtn }: Props) => {
     const [dataProvider, setDataProvider] = useState<DataProvider>(new DataProvider((r1, r2) => r1 !== r2));
     const containerList = useRef<View>(null);
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
@@ -130,7 +131,7 @@ export const List = ({ data, labelField, valueField, height, separator, separato
                     }
                 </View>
                 <View style={styles.containerBtns}>
-                    <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>
+                    {renderCanelBtn && <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>}
                     {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
                 </View>
                 <Toast visibilityTime={4000} config={toastConfig} />

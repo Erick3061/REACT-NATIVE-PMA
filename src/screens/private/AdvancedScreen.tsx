@@ -106,6 +106,7 @@ export const AdvancedScreen = () => {
                                             renderSearch={{ placeholder: 'Buscar cuenta' }}
                                             error={error ? true : false}
                                             multiSelect={{ maxSelect: data?.accounts.length ?? 50 }}
+                                            renderCancelBtn
                                         />
                                         {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
                                     </>
@@ -149,7 +150,7 @@ export const AdvancedScreen = () => {
                                             <>
                                                 <Select
                                                     maxHeight={vh * 30}
-                                                    animationType='slide'
+                                                    animationType='fade'
                                                     valueField='value'
                                                     labelField='name'
                                                     colorSelected={colors.primaryContainer}

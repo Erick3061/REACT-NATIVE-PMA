@@ -141,9 +141,11 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
                 </View>
             )
         } else if (data?.cuentas) {
+            const test = data.cuentas.flatMap(a => { return { Nombre: a.Nombre, Direccion: a.Direccion, Eventos: a.eventos } })
+
             return (
                 <View style={{ paddingVertical: 5 }}>
-                    <SectionList
+                    {/* <SectionList
                         sections={data.cuentas.map(acc => { return { title: { name: acc.Nombre, address: acc.Direccion, ref: createRef<ScrollView>() }, data: [{ events: acc.eventos ?? [] }] } })}
                         renderItem={({ item, section }) => {
                             const ref = section.title.ref;
@@ -170,7 +172,15 @@ export const ResultQueryScreen = ({ navigation, route }: Props) => {
                         )}
                         keyExtractor={(item, idx) => `${idx * .333}`}
                         stickySectionHeadersEnabled
-                    />
+                    /> */}
+                    {/* <Table
+                        // scrollRefHeader={ref}
+                        Data={test}
+                        titles={titles}
+                        fontSize={10}
+                        colorBackgroundTable={colors.background}
+                        showIndices
+                    /> */}
                 </View>
             )
         }

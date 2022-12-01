@@ -10,6 +10,8 @@ type PropsRow = {
 }
 
 export const Row = ({ data, fontSize, style, styleLabel, tamCol }: PropsRow) => {
+    console.log(data);
+
     return (
         <View style={[styles.containerRow, style]}>
             {data.map((col, idx) => {

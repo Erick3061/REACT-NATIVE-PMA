@@ -20,6 +20,7 @@ type Props = {
     multiSelect?: { maxSelect: number };
     animationType?: "slide" | "none" | "fade";
     maxHeight?: number;
+    renderCancelBtn?: boolean;
     renderSearch?: {
         placeholder: string;
     }
@@ -40,7 +41,8 @@ export const Select = React.forwardRef<any, Props>(
             animationType,
             maxHeight,
             renderSearch,
-            colorSelected
+            colorSelected,
+            renderCancelBtn
         } = props;
 
         const { colors, roundness } = useAppSelector(state => state.app.theme);
@@ -136,7 +138,7 @@ export const Select = React.forwardRef<any, Props>(
                                         },
                                         maxHeight
                                             ? {
-                                                height: (data.length + 1) * 55,
+                                                height: renderCancelBtn ? (data.length + 1) * 55 : (data.length) * 65,
                                                 maxHeight,
                                                 position: 'absolute',
                                                 top,
@@ -159,6 +161,7 @@ export const Select = React.forwardRef<any, Props>(
                                                 multiSelect={multiSelect}
                                                 renderSearch={renderSearch}
                                                 colorBtns={{ cancel: colors.error, confirm: colors.primary }}
+                                                renderCanelBtn={renderCancelBtn}
                                             />
                                         </TouchableWithoutFeedback>
                                     </View>

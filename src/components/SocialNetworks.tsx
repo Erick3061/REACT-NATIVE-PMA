@@ -16,7 +16,7 @@ export const SocialNetworks = () => {
                 )} />
             <IconButton iconColor={colors.primary} icon='twitter' onPress={() => Linking.openURL('https://twitter.com/pemsa_85')} />
             <IconButton iconColor={colors.primary} icon='instagram' onPress={() => Linking.openURL('https://instagram.com/pemsa_85/')} />
-            <IconButton iconColor={colors.primary} icon='whatsapp' onPress={() => Linking.openURL('https://wa.me/5212225544667')} />
+            {/* <IconButton iconColor={colors.primary} icon='whatsapp' onPress={() => Linking.openURL('https://wa.me/5212225544667')} /> */}
         </View>
     )
 }

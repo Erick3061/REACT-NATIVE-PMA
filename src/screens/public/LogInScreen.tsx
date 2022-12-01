@@ -16,7 +16,6 @@ import { setUser } from '../../features/appSlice';
 import { User } from '../../interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { SocialNetworks } from '../../components/SocialNetworks';
-import { colors } from '../../config/colors';
 
 type InputsLogIn = {
     email: string,
@@ -86,7 +85,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                 <Text variant='titleLarge' style={[styles.title, { color: colors.primary }]}>PEMSA monitoreo APP</Text>
                 <Image
                     source={require('../../assets/logo.png')}
-                    style={[styles.img, isDark ? { ...styles.imgDark, backgroundColor: colors.backdrop } : {}]}
+                    style={[styles.img, isDark ? { ...styles.imgDark, backgroundColor: colors.outline } : {}]}
                 />
                 <KeyboardAvoidingView style={styles.ContainerViewInputs}>
 
@@ -163,7 +162,6 @@ export const styles = StyleSheet.create({
         height: vh * 40,
         resizeMode: 'contain',
         borderRadius: 10,
-        opacity: .8
     },
     ContainerViewInputs: {
         width: '100%',

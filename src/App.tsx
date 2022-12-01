@@ -10,9 +10,7 @@ export const App = () => {
   return (
     <StoreProvider store={store}>
       <QueryClientProvider client={queryClient}>
-        <SafeAreaView style={{ flex: 1, backgroundColor: store.getState().app.theme.colors.background }}>
-          <Root />
-        </SafeAreaView>
+        <Root />
       </QueryClientProvider>
     </StoreProvider >
   )

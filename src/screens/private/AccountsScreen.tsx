@@ -105,6 +105,7 @@ export const AccountsScreen = () => {
                                                 onChange((value.length <= 1) ? _.get(value[0], 'Nombre') : 'Eliminar Cuentas Seleccionadas');
                                             }}
                                             error={error ? true : false}
+                                            renderCancelBtn
                                         />
                                         {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
                                     </>
