@@ -16,6 +16,7 @@ interface Props {
     colorOutline?: string;
     limitDays?: number;
     Textstyle?: StyleProp<TextStyle>;
+    hideInputs?: boolean;
     onChange: (dates: Array<{ name: string, date?: formatDate }>) => void;
 }
 
@@ -28,7 +29,7 @@ const CalendarState = ({ children }: any) => {
 }
 
 const RenderCalendar = (props: Props) => {
-    const { calendars, height, backgroundColor, textColor, colorOutline, onChange, limitDays, Textstyle } = props;
+    const { calendars, height, backgroundColor, textColor, colorOutline, onChange, limitDays, Textstyle, hideInputs } = props;
     const { dates, calendarSelected, setInitialDates, setCalendar, onDelete, onSelect } = useContext(CalendarContext);
 
     useEffect(() => {
@@ -42,6 +43,7 @@ const RenderCalendar = (props: Props) => {
 
     const _renderInputs = React.useCallback(() => {
         const minHeight: number = 50;
+        if (hideInputs) return undefined;
         if (dates)
             return (
                 dates.map((calendar, idx) => {
@@ -69,7 +71,7 @@ const RenderCalendar = (props: Props) => {
                 })
             )
         return undefined
-    }, [dates, backgroundColor, textColor, colorOutline]);
+    }, [dates, backgroundColor, textColor, colorOutline, hideInputs]);
 
     const _renderCalendar = React.useCallback(() => {
         const { theme: { roundness, colors } } = useAppSelector(state => state.app)

@@ -1,13 +1,15 @@
 import React from 'react';
 import { CardStyleInterpolators, createStackNavigator, HeaderStyleInterpolators, TransitionSpecs } from '@react-navigation/stack';
-import { ResultQueryScreen } from '../screens/private/ResultQueryScreen';
 import { DrawerScreens } from './DrawerScreens';
-import { TypeReport } from '../types/types';
-import { Account } from '../interfaces/interfaces';
+import { TypeReport, typeAccount } from '../types/types';
+import { Account, Events, Key } from '../interfaces/interfaces';
+import { ResultAccountScreen } from '../screens/private/ResultAccountScreen';
+import { ResultAccountsScreen } from '../screens/private/ResultAccountsScreen';
 
 export type rootPrivateScreens = {
     DrawerScreens: undefined;
-    ResultQueryScreen: { props: { accounts: Array<Account>, start: string, end: string, report: TypeReport } };
+    ResultAccountsScreen: { accounts: Array<number>, start?: string, end?: string, report: TypeReport, keys: Array<Key<Events>> | Array<Key<Account>>, typeAccount: typeAccount };
+    ResultAccountScreen: { account: number, start: string, end: string, report: TypeReport, events?: Array<Events>, keys: Array<Key<Events>>, typeAccount: typeAccount };
 }
 
 export const PrivateScreens = () => {
@@ -24,7 +26,8 @@ export const PrivateScreens = () => {
             }}
         >
             <Stack.Screen name='DrawerScreens' options={{ headerShown: false }} component={DrawerScreens} />
-            <Stack.Screen name='ResultQueryScreen' options={{ headerShown: false }} component={ResultQueryScreen} />
+            <Stack.Screen name='ResultAccountScreen' options={{ headerShown: false }} component={ResultAccountScreen} />
+            <Stack.Screen name='ResultAccountsScreen' options={{ headerShown: false }} component={ResultAccountsScreen} />
         </Stack.Navigator>
 
     )

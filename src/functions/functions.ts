@@ -1,44 +1,11 @@
-import { formatDate } from "../interfaces/interfaces";
+import { formatDate, Events, Key, Account } from '../interfaces/interfaces';
+import { TypeReport } from "../types/types";
 
 export const hextToRgb = (hex: string) => {
     const con: RegExpMatchArray | null = hex.replace('#', '').match(/.{1,2}/g);
     if (!con) return '0,0,0';
 
     return `${parseInt(con[0], 16)},${parseInt(con[1], 16)},${parseInt(con[2], 16)}`
-}
-
-export const LightenDarkenColor = (col: string, amt: number) => {
-
-    let usePound = false;
-
-    if (col[0] == "#") {
-        col = col.slice(1);
-        usePound = true;
-    }
-
-    const num = parseInt(col, 16);
-
-    let r = (num >> 16) + amt;
-
-    if (r > 255) r = 255;
-    else if (r < 0) r = 0;
-
-    let b = ((num >> 8) & 0x00FF) + amt;
-
-    if (b > 255) b = 255;
-    else if (b < 0) b = 0;
-
-    let g = (num & 0x0000FF) + amt;
-
-    if (g > 255) g = 255;
-    else if (g < 0) g = 0;
-
-    const color = (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
-    if (color.length < 7) {
-        const c = color.slice(1);
-        return ((usePound ? "#" : "") + c.padStart(7 - c.length + 1, '0'));
-    }
-    return (color);
 }
 
 export const getDate = (): formatDate => {
@@ -77,4 +44,148 @@ export const modDate = ({ hours, minutes, seconds, dateI, days, months }: { date
         time: { time, hour, minute, second },
         weekday
     };
+}
+
+export const getDay: (day: number) => string = (day) => {
+    switch (day) {
+        case 0: return 'lunes';
+        case 1: return 'martes';
+        case 2: return 'miércoles';
+        case 3: return 'jueves';
+        case 4: return 'viernes';
+        case 5: return 'sábado';
+        case 6: return 'domingo';
+        default: 'no existe';
+    }
+    return 'no existe';
+}
+
+export const getKeysAccount: (report: TypeReport) => Array<Key<Account>> = (report) => {
+    return (report === 'batery')
+        ?
+        [
+            {
+                label: 'Nombre',
+                key: 'nombre',
+                size: 102,
+                center: true
+            },
+            {
+                label: 'Número de eventos',
+                key: 'numeroEventos',
+                size: 102,
+                center: true
+            },
+            {
+                label: 'Estado',
+                key: 'estado',
+                size: 102,
+                center: true
+            },
+        ] : []
+}
+
+export const getKeys: (report: TypeReport) => Array<Key<Events>> = (report) => {
+    return (report === 'ap-ci')
+        ?
+        [
+            {
+                label: 'Fecha - Hora',
+                key: ['FechaOriginal', 'Hora'],
+                size: 102,
+                center: true
+            },
+            {
+                label: 'Partición',
+                key: 'Particion',
+                size: 71,
+                center: true
+            },
+            {
+                label: 'Evento',
+                key: 'DescripcionEvent',
+                size: 100,
+                center: true
+            },
+            {
+                label: 'Usuario',
+                key: 'CodigoUsuario',
+                size: 60,
+                center: true
+            },
+            {
+                label: 'Nombre usuario',
+                key: 'NombreUsuario',
+                size: 200,
+                center: true
+            },
+        ]
+        : (report === 'event-alarm')
+            ?
+            [
+                {
+                    label: 'Fecha - Hora',
+                    key: ['FechaOriginal', 'Hora'],
+                    size: 102,
+                    center: true
+                },
+                {
+                    label: 'Partición',
+                    key: 'Particion',
+                    size: 71,
+                    center: true
+                },
+                {
+                    label: 'Evento',
+                    key: 'DescripcionEvent',
+                    size: 100,
+                    center: true
+                },
+                {
+                    label: 'Usuario',
+                    key: 'CodigoUsuario',
+                    size: 60,
+                    center: true
+                },
+                {
+                    label: 'Zona',
+                    key: 'CodigoZona',
+                    size: 40,
+                    center: true
+                },
+                {
+                    label: 'Nombre',
+                    key: ['NombreUsuario', 'DescripcionZona'],
+                    size: 200,
+                    center: true
+                },
+            ]
+            : (report === 'apci-week')
+                ?
+                [
+
+                ]
+                : (report === 'state')
+                    ?
+                    [
+                        {
+                            label: 'Fecha Hora',
+                            key: ['FechaOriginal', 'Hora'],
+                            size: 200,
+                            center: true
+                        },
+                        {
+                            label: 'Estado',
+                            key: 'DescripcionAlarm',
+                            size: 200,
+                            center: true
+                        },
+                        {
+                            label: 'Usuario',
+                            key: 'NombreUsuario',
+                            size: 200,
+                            center: true
+                        },
+                    ]
+                    : [];
 }

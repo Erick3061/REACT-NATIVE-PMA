@@ -3,7 +3,8 @@ import { createContext } from 'react';
 import { Percentajes } from '../interfaces/interfaces';
 import { HeaderTableValues } from '../types/types';
 type State = {
-    data?: Array<any>;
+    data?: Array<Array<string>>;
+    filter?: Array<Array<string>>;
     titles?: HeaderTableValues;
     usePagination?: boolean;
     percentajes?: Percentajes;
@@ -17,7 +18,7 @@ const initialState: State = {
 }
 
 type Action =
-    | { type: 'updateData', payload?: Array<any> }
+    | { type: 'updateData', payload?: Array<Array<string>> }
     | { type: 'updateTitles', payload?: HeaderTableValues }
     | { type: 'updatePagination', payload?: boolean }
     ;
@@ -45,7 +46,7 @@ const Reducer = (state: State, action: Action) => {
 }
 
 interface ContextProps extends State {
-
+    updateData: (data: Array<Array<string>>) => void;
 }
 
 export const TableContext = createContext({} as ContextProps);
@@ -53,14 +54,15 @@ export const TableContext = createContext({} as ContextProps);
 export const TableProvider = ({ children }: any) => {
     const [state, dispatch] = useReducer(Reducer, initialState);
 
-    const updateData = () => {
-
+    const updateData = (data: Array<Array<string>>) => {
+        dispatch({ 'type': 'updateData', 'payload': data });
     }
 
     return (
         <TableContext.Provider
             value={{
-                ...state
+                ...state,
+                updateData
             }}
         >
             {children}

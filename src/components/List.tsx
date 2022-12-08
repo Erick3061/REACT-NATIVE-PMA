@@ -10,10 +10,10 @@ import Toast from 'react-native-toast-message';
 import { toastConfig } from '../navigation/Root';
 import Color from 'color';
 
-interface Props {
-    data: Array<any>;
-    valueField: string;
-    labelField: string;
+interface Props<T> {
+    data: Array<T>;
+    valueField: keyof T;
+    labelField: keyof T;
     height?: number;
     separator?: true;
     separatorColor?: string;
@@ -22,22 +22,22 @@ interface Props {
         confirm: string;
         cancel: string;
     };
-    itemsSelected: Array<any>;
+    itemsSelected: Array<T>;
     multiSelect?: { maxSelect: number };
     renderSearch?: {
         placeholder: string;
     }
     renderCanelBtn?: boolean;
-    onChange: (item: Array<any>) => void;
+    onChange: (item: Array<T>) => void;
 }
-export const List = ({ data, labelField, valueField, height, separator, separatorColor, multiSelect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch, renderCanelBtn }: Props) => {
+export const List = <T extends Object>({ data, labelField, valueField, height, separator, separatorColor, multiSelect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch, renderCanelBtn }: Props<T>) => {
     const [dataProvider, setDataProvider] = useState<DataProvider>(new DataProvider((r1, r2) => r1 !== r2));
     const containerList = useRef<View>(null);
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
     const [filter, setFilter] = useState<Array<any>>(data);
     const search = useRef<TextInput>(null);
 
-    const _onSelect = useCallback((item: Object) => {
+    const _onSelect = useCallback((item: T) => {
         if (!multiSelect) {
             onChange([item]);
         } else {
@@ -132,7 +132,7 @@ export const List = ({ data, labelField, valueField, height, separator, separato
                 </View>
                 <View style={styles.containerBtns}>
                     {renderCanelBtn && <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>}
-                    {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='enviar' onPress={() => onChange(selected)} /></View>}
+                    {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='aceptar' onPress={() => onChange(selected)} /></View>}
                 </View>
                 <Toast visibilityTime={4000} config={toastConfig} />
             </View>

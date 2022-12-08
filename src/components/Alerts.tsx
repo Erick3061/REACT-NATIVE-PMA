@@ -6,7 +6,6 @@ import { updateError, updateInfo, updateQuestion, updateTcyAp, updateThemeView }
 import { Ap } from './AP';
 import { TC } from './TC';
 import { Alert } from './Alert';
-import { LightenDarkenColor } from '../functions/functions';
 import { colors } from '../config/colors';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { vw, vh, screenHeight } from '../config/Dimensions';
@@ -96,7 +95,7 @@ export const Alerts = () => {
                                 <>
                                     <Button
                                         style={{ marginHorizontal: 5 }}
-                                        contentStyle={{ backgroundColor: LightenDarkenColor(colors.Success, -20) }}
+                                        contentStyle={{ backgroundColor: 'steelblue' }}
                                         labelStyle={{ textTransform: 'uppercase' }}
                                         mode='contained-tonal'
                                         onPress={() => dispatch(updateTcyAp({ ...tcyap, open: false, showTC: { confirm: true } }))}

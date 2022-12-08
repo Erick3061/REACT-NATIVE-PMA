@@ -24,8 +24,9 @@ export const _renderModalMenu = (props: Props &
     setOpen: React.Dispatch<React.SetStateAction<boolean>>,
     positionActivator?: LayoutRectangle,
 }) => {
-    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness, dark } } = useAppSelector(state => state.app);
     const [area, setArea] = useState<LayoutRectangle>();
+    const plus: number = 2;
 
     const _renderItems = () => {
         return props.options.map((o, idx) => {
@@ -35,7 +36,7 @@ export const _renderModalMenu = (props: Props &
                     underlayColor={Color(colors.primaryContainer).toString()}
                     style={[styles.containerItemModal,
                     {
-                        borderRadius: roundness * 3,
+                        borderRadius: roundness * plus,
                         borderColor: Color(colors.primaryContainer).toString(),
 
                     }]}
@@ -62,14 +63,14 @@ export const _renderModalMenu = (props: Props &
                         width: '100%',
                         bottom: screenHeight - (area.height + area.y * 2),
                         paddingBottom: area.y,
-                        borderTopRightRadius: roundness * 3,
-                        borderTopLeftRadius: roundness * 3,
+                        borderTopRightRadius: roundness * plus,
+                        borderTopLeftRadius: roundness * plus,
                         ...stylesApp.shadow
                     }]}>
                         {_renderItems()}
                     </Animated.View>
                     :
-                    <View style={[styles.modal, { right: 20, top: props.positionActivator.y, borderRadius: roundness * 3, ...stylesApp.shadow }]}>
+                    <View style={[styles.modal, { right: 20, top: props.positionActivator.y, borderRadius: roundness * plus, ...stylesApp.shadow }]}>
                         {_renderItems()}
                     </View>
             )
@@ -79,8 +80,8 @@ export const _renderModalMenu = (props: Props &
                     width: '100%',
                     bottom: screenHeight - (area.height + area.y * 2),
                     paddingBottom: area.y + 20,
-                    borderTopRightRadius: roundness * 3,
-                    borderTopLeftRadius: roundness * 3,
+                    borderTopRightRadius: roundness * plus,
+                    borderTopLeftRadius: roundness * plus,
                     maxHeight: 400,
                     ...stylesApp.shadow
                 }]}>
@@ -95,7 +96,8 @@ export const _renderModalMenu = (props: Props &
 
     return (
         <Modal visible={props.open} transparent animationType='fade'>
-            <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0,.15)' }}>
+            <StatusBar backgroundColor={colors.backdrop} />
+            <SafeAreaView style={{ flex: 1, backgroundColor: colors.backdrop }}>
                 <Pressable style={{ flex: 1 }} onPress={() => props.setOpen(false)} onLayout={layout => {
                     console.log(layout.nativeEvent.layout);
                     setArea(layout.nativeEvent.layout);
@@ -142,7 +144,7 @@ const styles = StyleSheet.create({
         padding: 15
     },
     containerItemModal: {
-        borderWidth: .2,
-        marginVertical: 5
+        borderWidth: 1,
+        marginVertical: 3
     }
 });

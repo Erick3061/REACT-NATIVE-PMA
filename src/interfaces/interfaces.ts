@@ -49,12 +49,28 @@ export interface User {
     token: string;
 }
 
+export enum BatteryStatus {
+    ERROR = "ERROR",
+    RESTORE = "RESTORE",
+    WITHOUT_EVENTS = "WITHOUT-EVENTS"
+}
+
 export interface Account {
     CodigoCte: string;
     CodigoAbonado: string;
     Nombre: string;
     Direccion: string;
     Status?: string;
+    nombre?: string;
+    numeroEventos?: number;
+    estado?: BatteryStatus;
+    eventos?: Array<Events>;
+}
+
+export interface Group {
+    Codigo: number;
+    Nombre: string;
+    Tipo: number;
 }
 
 export interface Percentajes {
@@ -64,11 +80,12 @@ export interface Percentajes {
     Pruebas?: number;
     Bateria?: number;
     Otros?: number;
-}
-
-export interface AccountExtended {
-    eventos?: Array<Events>;
-    porcentajes?: Percentajes
+    conRestaure?: number;
+    sinRestaure?: number;
+    sinEventos?: number;
+    abiertas?: number;
+    cerradas?: number;
+    sinEstado?: number;
 }
 
 export interface responseError {
@@ -79,12 +96,10 @@ export interface responseError {
 export interface GetReport {
     accounts: Array<number>;
     typeAccount: typeAccount;
+    dateStart?: string;
+    dateEnd?: string;
 }
 
-export interface Dates {
-    dateStart: string;
-    dateEnd: string;
-}
 
 export interface Events {
     FechaOriginal: string;
@@ -104,4 +119,12 @@ export interface Events {
     HoraPrimeraToma: string;
     FechaFinalizo: string;
     HoraFinalizo: string;
+}
+
+
+export interface Key<T> {
+    label: string,
+    key: keyof T | Array<keyof T>,
+    size?: number,
+    center?: boolean
 }

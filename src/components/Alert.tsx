@@ -8,7 +8,6 @@ import { vw } from '../config/Dimensions';
 import { CombinedDarkTheme, CombinedLightTheme } from '../config/theme/Theme';
 import { updateQuestion } from '../features/alertSlice';
 import { updateTheme } from '../features/appSlice';
-import { LightenDarkenColor } from '../functions/functions';
 
 type Props = {
     type: 'info' | 'error' | 'question' | 'warning' | 'success' | 'theme';
@@ -96,7 +95,6 @@ export const Alert = ({ icon, visible, dismissable, text, type, dispatch, textCa
 
 
     return (
-        // <Animated.View style={{ position: 'absolute', width: screenWidth, height: screenHeight, backgroundColor: 'rgba(0,0,0,0)', transform: [{ scale: aminIn }] }}>
         <Dialog
             style={{ backgroundColor: ThemeColors.background }}
             visible={isVisible}
@@ -178,7 +176,6 @@ export const Alert = ({ icon, visible, dismissable, text, type, dispatch, textCa
                 }
             </Dialog.Actions>
         </Dialog >
-        // </Animated.View>
     )
 }
 const styles = StyleSheet.create({
@@ -186,6 +183,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 5
     },
     btnConfirm: {
-        backgroundColor: LightenDarkenColor(colors.Success, -20)
+        backgroundColor: 'steelblue'
     }
 });

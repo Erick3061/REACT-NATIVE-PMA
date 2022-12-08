@@ -20,7 +20,7 @@ export const stylesApp = StyleSheet.create({
   shadow: {
     shadowOffset: {
       width: 0,
-      height: 1
+      height: 0
     },
     shadowOpacity: 0.20,
     shadowRadius: 4,
