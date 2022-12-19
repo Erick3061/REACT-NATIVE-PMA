@@ -1,13 +1,16 @@
-import React from 'react';
-import { ActivityIndicator, Modal, StyleSheet, Text, View } from 'react-native';
+import Color from 'color';
+import React, { useContext } from 'react';
+import { ActivityIndicator, Modal, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useAppSelector } from '../app/hooks';
-import { vw } from '../config/Dimensions';
+import { OrientationContext } from '../context/OrientationContext';
 export const Loading = () => {
-    const { colors, fonts, roundness } = useAppSelector(state => state.app.theme);
+    const { colors, fonts, roundness, dark } = useAppSelector(state => state.app.theme);
+    const { vw } = useContext(OrientationContext);
     return (
         <Modal visible transparent animationType='slide' hardwareAccelerated>
+            <StatusBar backgroundColor={colors.backdrop} />
             <View style={styles.centeredView}>
-                <View style={[styles.modalView, { backgroundColor: colors.background, borderRadius: roundness * 2, width: vw * 40, height: vw * 40, shadowColor: colors.primary }]}>
+                <View style={[styles.modalView, { backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background, borderRadius: roundness * 3, width: vw * 50, height: vw * 50, shadowColor: colors.primary }]}>
                     <ActivityIndicator color={colors.primary} size={vw * 5} />
                     <Text style={[{ color: colors.primary }, fonts.bodyMedium]} >Cargando...</Text>
                 </View>

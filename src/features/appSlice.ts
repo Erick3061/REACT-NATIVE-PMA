@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface appSlice {
     status: boolean;
     versionApp: string;
-    theme: MD3Theme & Theme;
+    theme: MD3Theme & Theme & { colors: { Info: string, Warning: string, Success: string, Question: string } };
     isShowWellcome: boolean;
     User?: User;
 };
@@ -38,7 +38,7 @@ export const appSlice = createSlice({
             state.User = undefined;
             state.status = false;
         },
-        updateTheme: (state, action: PayloadAction<MD3Theme & Theme>) => {
+        updateTheme: (state, action: PayloadAction<MD3Theme & Theme & { colors: { Info: string, Warning: string, Success: string, Question: string } }>) => {
             state.theme = action.payload;
         },
         setUser: (state, action: PayloadAction<User>) => {

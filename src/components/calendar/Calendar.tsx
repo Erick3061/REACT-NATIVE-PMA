@@ -4,9 +4,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { modDate } from '../../functions/functions';
 import { formatDate } from '../../interfaces/interfaces';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { screenHeight, screenWidth } from '../../config/Dimensions';
 import { useAppSelector } from '../../app/hooks';
 import { CalendarProvider, CalendarContext } from '../../context/CalendarContext';
+import { OrientationContext } from '../../context/OrientationContext';
+import { TextInput } from '../TextInput';
 
 interface Props {
     calendars: Array<{ label: string, date: Date }>;
@@ -31,6 +32,7 @@ const CalendarState = ({ children }: any) => {
 const RenderCalendar = (props: Props) => {
     const { calendars, height, backgroundColor, textColor, colorOutline, onChange, limitDays, Textstyle, hideInputs } = props;
     const { dates, calendarSelected, setInitialDates, setCalendar, onDelete, onSelect } = useContext(CalendarContext);
+    const { theme: { fonts } } = useAppSelector(state => state.app);
 
     useEffect(() => {
         const dates = calendars.map(cal => { return { name: cal.label, date: modDate({ dateI: cal.date }) } });
@@ -49,32 +51,25 @@ const RenderCalendar = (props: Props) => {
                 dates.map((calendar, idx) => {
                     return (
                         <View key={calendar.name + idx} style={[styles.caontainerInput, { height: height ?? minHeight, borderColor: colorOutline ?? 'black' }]}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <TouchableWithoutFeedback onPress={() => setCalendar(calendar.name)}>
-                                    <View style={{ flexDirection: 'row', height: height ?? minHeight, alignItems: 'flex-end', paddingBottom: 10 }}>
-                                        <Icon name='calendar' size={minHeight / 1.9} color={textColor} />
-                                        <Text style={[styles.date, Textstyle, { color: textColor ?? 'black', fontWeight: 'normal' }]}>{calendar.date?.date.date ?? '--/--/--'}</Text>
-                                    </View>
-                                </TouchableWithoutFeedback>
+                            <TouchableWithoutFeedback onPress={() => setCalendar(calendar.name)}>
                                 <View style={{ flexDirection: 'row', height: height ?? minHeight, alignItems: 'flex-end', paddingBottom: 10 }}>
-                                    {calendar.date && <Icon name='close' size={minHeight / 1.9} color={textColor} style={{ marginStart: 5 }} onPress={() => {
-                                        onDelete(calendar.name)
-                                    }} />}
+                                    <Text style={[styles.date, Textstyle, fonts.bodyLarge, { color: textColor ?? 'black', fontWeight: 'normal' }]}>{calendar.date?.date.date ?? '--/--/--'}</Text>
+                                    <Icon style={{ marginLeft: 10 }} name='calendar' size={minHeight / 1.9} color={textColor} />
                                 </View>
-
-                            </View>
-                            <View style={[styles.containerLabel, { backgroundColor: backgroundColor ?? 'white' }]}>
-                                <Text style={[styles.label, { color: textColor ?? 'black' }]}>{calendar.name}</Text>
+                            </TouchableWithoutFeedback>
+                            <View style={[styles.containerLabel]}>
+                                <Text style={[styles.label, fonts.bodySmall, { color: textColor ?? 'black' }]}>{calendar.name}</Text>
                             </View>
                         </View>
                     )
                 })
             )
         return undefined
-    }, [dates, backgroundColor, textColor, colorOutline, hideInputs]);
+    }, [dates, backgroundColor, textColor, colorOutline, hideInputs, fonts]);
 
     const _renderCalendar = React.useCallback(() => {
-        const { theme: { roundness, colors } } = useAppSelector(state => state.app)
+        const { theme: { roundness, colors } } = useAppSelector(state => state.app);
+        const { screenHeight, screenWidth } = useContext(OrientationContext);
         if (calendarSelected && dates)
             return (Platform.OS === 'ios')
                 ?
@@ -147,31 +142,31 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexWrap: 'wrap',
         flexDirection: 'row',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-between',
     },
     caontainerInput: {
-        borderWidth: 1,
+        // borderBottomWidth: 1,
+        borderWidth: .2,
         flexDirection: 'row',
         position: 'relative',
         alignItems: 'center',
-        paddingHorizontal: 5,
+        paddingHorizontal: 15,
         marginTop: 10,
         marginBottom: 4,
-        borderRadius: 5
+        marginHorizontal: 1,
+        borderRadius: 5,
+
     },
     containerLabel: {
         position: 'absolute',
-        height: 15,
-        borderRadius: 5,
-        top: -10,
-        left: 10,
+        top: 2,
+        left: 0,
     },
     label: {
         fontSize: 11,
-        paddingHorizontal: 5
+        paddingHorizontal: 10
     },
     date: {
-        marginHorizontal: 3,
         paddingBottom: 3
     }
 });

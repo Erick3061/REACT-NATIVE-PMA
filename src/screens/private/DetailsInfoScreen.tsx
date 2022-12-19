@@ -1,12 +1,13 @@
-import React from 'react'
-import { Image, View } from 'react-native'
-import { Text } from 'react-native-paper';
-import { vh } from '../../config/Dimensions';
-import { useAppDispatch } from '../../app/hooks';
-import { updateTcyAp } from '../../features/alertSlice';
+import React, { useContext, useState } from 'react'
+import { Image, Text, View } from 'react-native'
+import { OrientationContext } from '../../context/OrientationContext';
+import { useAppSelector } from '../../app/hooks';
+import { ModalTCAP } from '../../components/ModalTCAP';
 
 export const DetailsInfoScreen = () => {
-    const dispatch = useAppDispatch();
+    const { vh } = useContext(OrientationContext);
+    const { theme: { colors, fonts } } = useAppSelector(state => state.app);
+    const [visible, setVisible] = useState<boolean>(false)
     return (
         <View style={{ flex: 1, justifyContent: 'center' }}>
             <Image
@@ -18,15 +19,15 @@ export const DetailsInfoScreen = () => {
                 source={require('../../assets/logo2.png')}
             />
             <View style={{ paddingHorizontal: 25 }}>
-                <Text style={{ paddingVertical: 10, textAlign: 'center' }} variant='bodyLarge'>Versión: 2928</Text>
-                <Text style={{ paddingVertical: 10, }} variant='bodyLarge'>© 2021-2032 Protección Electrónica Monterrey S.A. de C.V</Text>
-                <Text style={{ paddingVertical: 10, }} variant='bodyLarge'>® Protección Electrónica Monterrey S.A. de C.V</Text>
+                <Text style={[fonts.titleSmall, { color: colors.text, paddingVertical: 10, textAlign: 'center' }]}>Versión: 2928</Text>
+                <Text style={[fonts.titleSmall, { color: colors.text, paddingVertical: 10, }]}>© 2021-2032 Protección Electrónica Monterrey S.A. de C.V</Text>
+                <Text style={[fonts.titleSmall, { color: colors.text, paddingVertical: 10, }]}>® Protección Electrónica Monterrey S.A. de C.V</Text>
                 <Text
-                    variant='titleMedium'
-                    style={{ paddingVertical: 20, textAlign: 'center', fontWeight: 'bold' }}
-                    onPress={() => dispatch(updateTcyAp({ open: true }))}
+                    style={[fonts.titleMedium, { color: colors.text, paddingVertical: 20, textAlign: 'center', fontWeight: 'bold' }]}
+                    onPress={() => setVisible(true)}
                 >Términos y condiciones y aviso de privacidad</Text>
             </View>
+            <ModalTCAP visible={visible} setVisible={setVisible} />
         </View>
     )
 }

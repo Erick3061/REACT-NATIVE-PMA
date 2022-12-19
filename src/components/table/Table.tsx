@@ -1,14 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, FlatList, ListRenderItemInfo } from 'react-native';
-import _ from 'lodash';
+import React, { useContext, useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Row } from './Row';
-import { IconButton, Surface } from 'react-native-paper';
-import { HeaderTableValues } from '../../types/types';
-import { screenWidth } from '../../config/Dimensions';
 import { stylesApp } from '../../App';
 import { TableProvider, TableContext } from '../../context/TableContext';
-import { time, Key } from '../../interfaces/interfaces';
-import useCallback from 'react';
+import { Key } from '../../interfaces/interfaces';
+import { OrientationContext } from '../../context/OrientationContext';
+import { useAppSelector } from '../../app/hooks';
+import Color from 'color';
 
 
 type Props<T> = {
@@ -44,6 +42,8 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
     // const [page, setPage] = useState(0);
     // const [numberOfItemsPerPage, setdNumberOfItemsPerPage] = useState(numberOfItemsPerPageList[0]);
     const { data, updateData } = useContext(TableContext);
+    const { screenWidth } = useContext(OrientationContext);
+    const { theme: { colors } } = useAppSelector(state => state.app);
 
     useEffect(() => {
         const data = Data.map((events, idx) => {
@@ -109,30 +109,40 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
         if (Header)
             return (
                 <View style={{ paddingVertical: 5 }}>
-                    {Header.title && <Text style={styles.textTitlesHeader}>{Header.title}</Text>}
-                    {Header.subtitle && <Text style={styles.textTitlesHeader}>{Header.subtitle}</Text>}
+                    {Header.title && <Text style={[styles.textTitlesHeader, { color: colors.text }]}>{Header.title}</Text>}
+                    {Header.subtitle && <Text style={[styles.textTitlesHeader, { color: colors.text }]}>{Header.subtitle}</Text>}
                 </View>
             )
         return undefined;
-    }, [Header])
+    }, [Header, colors])
 
     const _renderTH = React.useCallback(() => {
         if (titles && isShowHeader)
             return (
-                <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase' }} fontSize={fontSize + 2} data={titles.map(r => r.label)} />
+                <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase', color: colors.text }} fontSize={fontSize + 2} data={titles.map(r => r.label)} />
             )
         return undefined;
-    }, [titles, isShowHeader]);
+    }, [titles, isShowHeader, colors]);
 
     const _renderBody = React.useCallback(() => {
         if (data)
             if (data.length === 0) return <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>;
             else
                 return (
-                    data.map((ev, idx) => <Row tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })} style={{ borderBottomColor: 'rgba(0,0,0,.3)', borderBottomWidth: .2 }} fontSize={fontSize} key={idx * .333} data={ev} />)
+                    data.map((ev, idx) =>
+                        <Row
+                            key={idx + ev.toString()}
+                            tamCol={titles.map(s => { return { size: s.size ?? 10, center: s.center } })}
+                            style={{
+                                borderBottomColor: Color(colors.text).fade(.9).toString(), borderBottomWidth: 1
+                            }}
+                            styleLabel={{ color: colors.text }}
+                            fontSize={fontSize}
+                            data={ev} />
+                    )
                 )
-        return <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>;
-    }, [data])
+        return <Text style={{ textAlign: 'center', width: screenWidth - 30, color: colors.text }}>Sin Eventos</Text>;
+    }, [data, screenWidth, colors, Color])
 
     return (
         <View style={[styles.container, { backgroundColor: colorBackgroundTable ?? 'red' }]}>
@@ -175,7 +185,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     containerPagination: {
-        // height: 50,
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',

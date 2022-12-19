@@ -1,12 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useContext, useRef } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Text, View, TextInput as NativeTextInput } from 'react-native';
-import { Button } from 'react-native-paper';
-import { Input } from '../../components/Input';
+import { KeyboardAvoidingView, View, TextInput as NativeTextInput } from 'react-native';
 import { useEffect } from 'react';
-import Toast, { BaseToast, BaseToastProps, ErrorToast } from 'react-native-toast-message';
-import { vw } from '../../config/Dimensions';
-import { useAppSelector } from '../../app/hooks';
+import Toast from 'react-native-toast-message';
+import { OrientationContext } from '../../context/OrientationContext';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
 
 
 type ChagePassword = {
@@ -17,7 +16,7 @@ type ChagePassword = {
 
 export const ProfileScreen = () => {
     const { control, handleSubmit, reset, setValue, formState } = useForm<ChagePassword>({ defaultValues: { password: '', confirmPAssword: '', newPassword: '' } });
-
+    const { vw } = useContext(OrientationContext);
     const newPass = useRef<NativeTextInput>(null);
     const confPass = useRef<NativeTextInput>(null);
 
@@ -34,11 +33,6 @@ export const ProfileScreen = () => {
         setValue('password', '11');
         setValue('newPassword', '11');
         setValue('confirmPAssword', '11');
-        // Toast.show({
-        //     type: 'info',
-        //     text1: 'Hello',
-        //     text2: 'This is some something 👋'
-        // });
     }, []);
 
 
@@ -48,60 +42,58 @@ export const ProfileScreen = () => {
                 <Input
                     formInputs={control._defaultValues}
                     control={control}
+                    iconLeft='lock'
                     name={'password'}
-                    renderLefttIcon='lock'
                     keyboardType='default'
                     placeholder='**********'
                     rules={{ required: { value: true, message: 'Campo requerido' } }}
-                    isPassword
-                    mode='outlined'
+                    secureTextEntry
                     label='Contraseña'
                     onSubmitEditing={() => newPass.current?.focus()}
                     returnKeyType='next'
                 />
 
                 <Input
-                    refp={newPass}
+                    onRef={newPass => newPass = newPass}
                     formInputs={control._defaultValues}
                     control={control}
                     name={'newPassword'}
-                    renderLefttIcon='lock'
+                    iconLeft='lock'
                     keyboardType='default'
                     placeholder='**********'
                     rules={{ required: { value: true, message: 'Campo requerido' } }}
-                    isPassword
-                    mode='outlined'
+                    secureTextEntry
                     label='Contraseña nueva'
                     onSubmitEditing={() => confPass.current?.focus()}
                     returnKeyType='next'
                 />
 
                 <Input
-                    refp={confPass}
+                    onRef={confPass => confPass = confPass}
                     formInputs={control._defaultValues}
                     control={control}
                     name={'confirmPAssword'}
-                    renderLefttIcon='lock'
+                    iconLeft='lock'
                     keyboardType='default'
                     placeholder='**********'
                     rules={{ required: { value: true, message: 'Campo requerido' } }}
-                    isPassword
-                    mode='outlined'
+                    secureTextEntry
                     label='Confirma tu contraseña'
                     onSubmitEditing={handleSubmit(onSubmit)}
                     returnKeyType='done'
                 />
 
-                <View style={{ alignItems: 'center', paddingVertical: 15 }}>
+                <View style={{ alignItems: 'flex-end', paddingVertical: 15 }}>
                     <Button
-                        style={{}}
-                        icon={'login'}
+                        text='Cambiar contraseña'
+                        icon={'swap-horizontal'}
                         mode='contained'
                         loading={false}
                         onPress={handleSubmit(onSubmit)}
                         disabled={false}
                         labelStyle={{ textTransform: 'uppercase' }}
-                    > Iniciar Sesión </Button>
+                        contentStyle={{ paddingVertical: 5 }}
+                    />
                 </View>
             </KeyboardAvoidingView>
         </View>

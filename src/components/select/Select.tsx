@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Dimensions, I18nManager, Keyboard, Modal, Pressable, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
-import Toast from 'react-native-toast-message';
-import { TextInput } from 'react-native-paper';
-import _ from 'lodash';
+import { Dimensions, I18nManager, Keyboard, Modal, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { List } from '../List';
 import { stylesApp } from '../../App';
+import { TextInput } from '../TextInput';
+import Color from 'color';
 
 interface Props<T> {
     valueField: keyof T;
@@ -44,7 +43,7 @@ export const Select = <T extends Object>(props: Props<T>) => {
         renderCancelBtn
     } = props;
 
-    const { colors, roundness } = useAppSelector(state => state.app.theme);
+    const { colors, roundness, dark } = useAppSelector(state => state.app.theme);
     const { width: W, height: H } = Dimensions.get('window');
     const heightOption: number = 40;
     const ref = useRef<View>(null);
@@ -98,19 +97,33 @@ export const Select = <T extends Object>(props: Props<T>) => {
     const _renderDropDown = useCallback(() => {
         return (
             <TouchableWithoutFeedback>
-                <Pressable onPress={() => setVisible(true)}>
-                    <TextInput
-                        style={{}}
-                        value={value}
-                        mode='outlined'
-                        label={value !== '' ? 'Cuenta seleccionada' : label}
-                        placeholder={visible ? 'Buscando cuentas ...' : 'Seleccione una cuenta'}
-                        showSoftInputOnFocus={false}
-                        editable={false}
-                        right={value !== '' ? <TextInput.Icon color={colors.primary} icon='close' onPress={() => onSelect([])} /> : <TextInput.Icon color={colors.primary} icon={visible ? 'chevron-up' : 'chevron-down'} onPress={() => setVisible(true)} />}
-                        error={error}
-                    />
-                </Pressable>
+                <TextInput
+                    value={value}
+                    label={value !== '' ? 'Cuenta seleccionada' : label}
+                    placeholder={visible ? 'Buscando cuentas ...' : 'Seleccione una cuenta'}
+                    showSoftInputOnFocus={false}
+                    iconRight={value !== '' ? 'close' : visible ? 'chevron-up' : 'chevron-down'}
+                    editable={false}
+                    onPress={() => setVisible(true)}
+                    onRightPress={() => {
+                        if (value !== '') {
+                            onSelect([])
+                        } else {
+                            setVisible(true)
+                        }
+                    }}
+                    containerStyle={{
+                        borderRadius: roundness,
+                        borderWidth: .2,
+                        borderBottomWidth: .2,
+                        borderBottomColor: colors.primary,
+                        borderColor: colors.primary,
+                        paddingLeft: 15,
+                        marginVertical: 10,
+                    }}
+                    iconStyle={{ marginHorizontal: 15 }}
+                // error={error}
+                />
             </TouchableWithoutFeedback>
         )
     }, [error, value, visible, label, colors]);
@@ -135,7 +148,8 @@ export const Select = <T extends Object>(props: Props<T>) => {
                                     modal.Container,
                                     {
                                         width,
-                                        borderRadius: roundness * 2
+                                        borderRadius: roundness * 2,
+                                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background
                                     },
                                     maxHeight
                                         ? {
@@ -174,7 +188,7 @@ export const Select = <T extends Object>(props: Props<T>) => {
             )
         }
         return null
-    }, [visible, keyboardHeight, position]);
+    }, [visible, keyboardHeight, position, colors, dark]);
 
     return (
         <View style={{ justifyContent: 'center', flex: 1 }} ref={ref} onLayout={_measure}>

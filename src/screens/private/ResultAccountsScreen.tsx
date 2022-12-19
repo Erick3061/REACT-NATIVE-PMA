@@ -1,286 +1,26 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { createRef, useCallback, useEffect, useReducer, useState } from 'react';
-import { View, SectionList, ScrollView, Platform, Animated, ListRenderItemInfo, StyleSheet, Text } from 'react-native';
-import { Appbar, Button, IconButton, Searchbar, Surface, TextInput, } from 'react-native-paper';
+import { View, SectionList, ScrollView, Animated, ListRenderItemInfo, StyleSheet, Text } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
-import { useQueryClient } from '@tanstack/react-query';
-import Toast from 'react-native-toast-message';
 import { Loading } from '../../components/Loading';
 import Table from '../../components/table/Table';
 import { useReport } from '../../hooks/useQuery';
 import { Row } from '../../components/table/Row';
-import { HeaderTableValues, TypeReport } from '../../types/types';
+import { TypeReport } from '../../types/types';
 import { TargetPercentaje } from '../../components/TargetPercentaje';
 import Color from 'color';
 import { Menu, _renderModalMenu } from '../../components/select/Menu';
 import { Account, BatteryStatus } from '../../interfaces/interfaces';
 import { stylesApp } from '../../App';
-import { colors } from '../../config/colors';
-import { baseUrl } from '../../api/Api';
-import { color } from 'react-native-reanimated';
 import { getDay, modDate } from '../../functions/functions';
-import moment from 'moment';
-import { at } from 'lodash';
-import { ta } from 'date-fns/locale';
-import id from 'date-fns/esm/locale/id/index.js';
+import { TextInput } from '../../components/TextInput';
+import { IconButton } from '../../components/IconButton';
+import { Button } from '../../components/Button';
+import { AppBar } from '../../components/AppBar';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountsScreen'> { };
 
-// const TitlesApCi: HeaderTableValues = [
-//     { title: 'Fecha', keys: ['FechaOriginal'], center: true, size: 75 },
-//     { title: 'Hora', keys: ['Hora'], center: true, size: 60 },
-//     { title: 'Evento', keys: ['DescripcionEvent'], center: true, size: 100 },
-//     { title: 'Part', keys: ['Particion'], center: true, size: 40 },
-//     { title: '#Usu', keys: ['CodigoUsuario'], center: true, size: 35 },
-//     { title: 'Nombre', keys: ['NombreUsuario'], center: true, size: 200 },
-// ];
-
-// const TitlesEA: HeaderTableValues = [
-//     { title: 'Fecha', keys: ['FechaOriginal'], center: true, size: 75 },
-//     { title: 'Hora', keys: ['Hora'], center: true, size: 60 },
-//     { title: 'Evento', keys: ['DescripcionEvent'], center: true, size: 100 },
-//     { title: 'Part', keys: ['Particion'], center: true, size: 40 },
-//     { title: '#Usu', keys: ['CodigoUsuario'], center: true, size: 35 },
-//     { title: '#Zona', keys: ['CodigoZona'], center: true, size: 40 },
-//     { title: 'Nombre', keys: ['NombreUsuario', 'DescripcionZona'], center: true, size: 200 },
-// ];
-
-// export const ResultQueryScreen = ({ navigation, route }: Props) => {
-//     const { params: { props: { accounts, start, end } } } = route;
-//     const { theme: { colors, roundness, fonts } } = useAppSelector(state => state.app);
-//     const [visible, setVisible] = React.useState<boolean>(false);
-//     const [report, setReport] = useState<TypeReport>(route.params.props.report);
-//     const [titles, setTitles] = useState<HeaderTableValues>([]);
-//     const [key, setkey] = useState(accounts.length === 1 ? accounts[0].CodigoCte : 'Accounts');
-//     const queryClient = useQueryClient();
-
-//     useEffect(() => {
-//         setVisible(false);
-//         if (report === 'ApCi') {
-//             setTitles(TitlesApCi);
-//         } else {
-//             setTitles(TitlesEA);
-//         }
-//     }, [report]);
-
-//     const { isLoading, isFetching, data, refetch, error, isSuccess } = useEvents({
-//         key,
-//         accounts: accounts.map(acc => parseInt(acc.CodigoCte)),
-//         dateStart: start,
-//         dateEnd: end,
-//         type: report,
-//         typeAccount: 1
-//     });
-
-//     const _renderTable = useCallback(() => {
-//         if (data && data.cuentas?.length === 1) {
-//             return (
-//                 <View style={{ flex: 1 }}>
-//                     {(data.cuentas[0].percentajes) && <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around' }}>
-//                         {
-//                             (report === 'ApCi') ?
-//                                 <>
-//                                     <TarjetPercentaje
-//                                         text='Aperturas'
-//                                         max={100}
-//                                         percentag//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//                                     />
-//                                     <TarjetPercentaje
-//                                         text='Cierres'
-//                                         max={100}
-//                                         percentage={data.cuentas[0].percentajes?.Cierre}
-//                                         icon={{ name: 'lock-open', backgroundColor: 'red' }}
-//                                         textLarge='Cierres recibidas'
-//                                     />
-//                                 </>
-//                                 : (report === 'EA') ?
-//                                     <>
-//                                         <TarjetPercentaje
-//                                             text='Aperturas'
-//                                             max={100}
-//                                             percentage={data.cuentas[0].percentajes?.Apertura}
-//                                         // icon={{ name: 'lock-open', backgroundColor: 'green' }}
-//                                         />
-//                                         <TarjetPercentaje
-//                                             text='Cierres'
-//                                             max={100}
-//                                             percentage={data.cuentas[0].percentajes?.Cierre}
-//                                         // icon={{ name: 'lock-open', backgroundColor: 'green' }}
-//                                         />
-//                                         <TarjetPercentaje
-//                                             text='Alarma'
-//                                             max={100}
-//                                             percentage={data.cuentas[0].percentajes?.Alarma}
-//                                         // icon={{ name: 'lock-open', backgroundColor: 'green' }}
-//                                         />
-//                                         <TarjetPercentaje
-//                                             text='Pruebas'
-//                                             max={100}
-//                                             percentage={data.cuentas[0].percentajes?.Pruebas}
-//                                         // icon={{ name: 'lock-open', backgroundColor: 'green' }}
-//                                         />
-//                                         <TarjetPercentaje
-//                                             text='Bateria'
-//                                             max={100}
-//                                             percentage={data.cuentas[0].percentajes?.Bateria}
-//                                         // icon={{ name: 'lock-open', backgroundColor: 'green' }}
-//                                         />
-//                                         <TarjetPercentaje
-//                                             text='Otros'
-//                                             max={100}
-//                                             percentage={data.cuentas[0].percentajes?.Otros}
-//                                         // icon={{ name: 'lock-open', backgroundColor: 'green' }}
-//                                         />
-//                                     </>
-//                                     : undefined
-//                         }
-//                     </View>}
-//                     <Table
-//                         Header={{ title: data.cuentas[0].Nombre.trim(), subtitle: data.cuentas[0].Direccion.trim() }}
-//                         Data={data.cuentas[0].eventos}
-//                         titles={titles}
-//                         fontSize={10}
-//                         pagination={{ iconBackgroundColor: colors.primaryContainer }}
-//                         colorBackgroundTable={colors.background}
-//                         showIndices
-//                     />
-//                 </View>
-//             )
-//         } else if (data?.cuentas) {
-//             const test = data.cuentas.flatMap(a => { return { Nombre: a.Nombre, Direccion: a.Direccion, Eventos: a.eventos } })
-
-//             return (
-//                 <View style={{ paddingVertical: 5 }}>
-//                     {/* <SectionList
-//                         sections={data.cuentas.map(acc => { return { title: { name: acc.Nombre, address: acc.Direccion, ref: createRef<ScrollView>() }, data: [{ events: acc.eventos ?? [] }] } })}
-//                         renderItem={({ item, section }) => {
-//                             const ref = section.title.ref;
-//                             return (
-//                                 <Table
-//                                     scrollRefHeader={ref}
-//                                     Data={item.events}
-//                                     titles={titles}
-//                                     fontSize={10}
-//                                     isShowHeader={false}
-//                                     colorBackgroundTable={colors.background}
-//                                     showIndices
-//                                 />
-//                             )
-//                         }}
-//                         renderSectionHeader={({ section }) => (
-//                             <Surface elevation={1} style={{ marginHorizontal: 10, backgroundColor: colors.background, borderRadius: roundness }}>
-//                                 <Text style={{ paddingHorizontal: 5 }}>{section.title.name}</Text>
-//                                 <Text style={{ paddingHorizontal: 5 }}>{section.title.address}</Text>
-//                                 <ScrollView ref={section.title.ref} horizontal showsHorizontalScrollIndicator={false}>
-//                                     <Row data={titles.map(r => r.title)} tamCol={titles.map(s => { return { size: s.size ?? 50, center: s.center } })} fontSize={13} styleLabel={{ padding: 0, margin: 0 }} />
-//                                 </ScrollView>
-//                             </Surface>
-//                         )}
-//                         keyExtractor={(item, idx) => `${idx * .333}`}
-//                         stickySectionHeadersEnabled
-//                     /> */}
-//                     {/* <Table
-//                         // scrollRefHeader={ref}
-//                         Data={test}
-//                         titles={titles}
-//                         fontSize={10}
-//                         colorBackgroundTable={colors.background}
-//                         showIndices
-//                     /> */}
-//                 </View>
-//             )
-//         }
-//         return undefined;
-//     }, [data, titles]);
-
-//     return (
-//         <View style={{ flex: 1 }}>
-//             <Appbar.Header mode='small' theme={{ colors: { surface: colors.background } }}
-//                 style={{ borderBottomWidth: 1, borderColor: Color(colors.primary).alpha(.1).toString(), height: Platform.OS === 'ios' ? 44 : 56 }}>
-//                 <Appbar.BackAction onPress={() => { navigation.goBack() }} />
-//                 <Appbar.Content titleStyle={[fonts.bodyLarge, { fontWeight: 'bold' }]} title={report === 'ApCi' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'} />
-//                 <Menu
-//                     options={[
-
-//                         {
-//                             label: 'Cambiar reporte',
-//                             icon: 'swap-horizontal',
-//                             onPress: () => setVisible(true),
-//                         },
-//                         {
-//                             label: 'Descargar reporte',
-//                             icon: 'file-download-outline',
-
-//                             onPress: () => { },
-//                         },
-//                         {
-//                             label: 'Actualizar',
-//                             icon: 'refresh',
-//                             onPress: () => refetch(),
-//                         },
-//                     ]}
-//                 />
-//             </Appbar.Header>
-
-//             <View style={{ flex: 1 }}>
-//                 {(isLoading || isFetching) && <Loading />}
-//                 {_renderTable()}
-//             </View>
-
-//             {_renderModalMenu({
-//                 open: visible,
-//                 setOpen: setVisible,
-//                 options: [
-
-//                     {
-//                         label: 'APERTURA Y CIERRE',
-//                         icon: 'file-outline',
-//                         onPress: () => {
-//                             setReport('ApCi');
-//                             setVisible(false);
-//                             setTitles(TitlesApCi);
-//                             queryClient.removeQueries(['Events', key]);
-//                         },
-//                     },
-//                     {
-//                         label: 'EVENTO DE ALARMA',
-//                         icon: 'file-outline',
-
-//                         onPress: () => {
-//                             setReport('EA');
-//                             setVisible(false);
-//                             setTitles(TitlesEA);
-//                             queryClient.removeQueries(['Events', key]);
-//                         },
-//                     },
-//                 ],
-//             })}
-//         </View >
-//     );
-// };
 interface initialStateBB { RESTORE: boolean, ERROR: boolean, WITHOUT_EVENTS: boolean }
 interface initialStateState { Ap: boolean, Ci: boolean, Sa: boolean }
 
@@ -309,7 +49,7 @@ function reducerState(state: initialStateState, action: actionReducerState) {
 }
 
 export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, end, report, start, keys, typeAccount } } }: Props) => {
-    const { theme: { colors, fonts, roundness } } = useAppSelector(state => state.app);
+    const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
 
     const { data, isLoading, isFetching, refetch } = useReport({ accounts: [...accounts], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.sort()) });
 
@@ -359,33 +99,31 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
         if (data && data.percentajes) {
             const { percentajes } = data;
             return (
-                <View style={{ marginVertical: 5 }}>
-                    <View>
-                        <ScrollView horizontal alwaysBounceHorizontal contentContainerStyle={{ marginHorizontal: 15 }} showsHorizontalScrollIndicator={false}>
-                            {Object.entries(percentajes).map((el, idx) => (
-                                <TargetPercentaje
-                                    key={JSON.stringify(el)}
-                                    max={100}
-                                    text={
-                                        (el[0] === 'sinRestaure') ? 'Sin restaure'
-                                            : (el[0] === 'conRestaure') ? 'Con Restaure'
-                                                : (el[0] === 'abiertas') ? 'Abiertas'
-                                                    : (el[0] === 'cerradas') ? 'Cerradas'
-                                                        : (el[0] === 'sinEstado') ? 'Sin Estado'
-                                                            : 'sin Eventos'}
-                                    percentage={el[1]}
-                                    style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
-                                    icon={
-                                        (el[0] === 'sinRestaure') ? { name: 'alert-circle', backgroundColor: colorSR }
-                                            : (el[0] === 'conRestaure') ? { name: 'alert', backgroundColor: colorCR }
-                                                : (el[0] === 'abiertas') ? { name: 'lock-open', backgroundColor: colorA }
-                                                    : (el[0] === 'cerradas') ? { name: 'lock', backgroundColor: colorC }
-                                                        : (el[0] === 'sinEstado') ? { name: 'alert', backgroundColor: colorS }
-                                                            : { name: 'check', backgroundColor: colorSE }
-                                    } />
-                            ))}
-                        </ScrollView>
-                    </View>
+                <View style={{ paddingVertical: 5 }}>
+                    <ScrollView horizontal alwaysBounceHorizontal contentContainerStyle={[{ marginLeft: 5 }]} showsHorizontalScrollIndicator={false}>
+                        {Object.entries(percentajes).map((el, idx) => (
+                            <TargetPercentaje
+                                key={JSON.stringify(el)}
+                                max={100}
+                                text={
+                                    (el[0] === 'sinRestaure') ? 'Sin restaure'
+                                        : (el[0] === 'conRestaure') ? 'Con Restaure'
+                                            : (el[0] === 'abiertas') ? 'Abiertas'
+                                                : (el[0] === 'cerradas') ? 'Cerradas'
+                                                    : (el[0] === 'sinEstado') ? 'Sin Estado'
+                                                        : 'sin Eventos'}
+                                percentage={el[1]}
+                                style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
+                                icon={
+                                    (el[0] === 'sinRestaure') ? { name: 'alert-circle', backgroundColor: colorSR }
+                                        : (el[0] === 'conRestaure') ? { name: 'alert', backgroundColor: colorCR }
+                                            : (el[0] === 'abiertas') ? { name: 'lock-open', backgroundColor: colorA }
+                                                : (el[0] === 'cerradas') ? { name: 'lock', backgroundColor: colorC }
+                                                    : (el[0] === 'sinEstado') ? { name: 'alert', backgroundColor: colorS }
+                                                        : { name: 'check', backgroundColor: colorSE }
+                                } />
+                        ))}
+                    </ScrollView>
                 </View>
             )
         } else { return undefined }
@@ -400,14 +138,14 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
 
             return (
                 <>
-                    <Row key={'days'} tamCol={[{ size: 30 }, { size: sizeName }, ...tam]} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase' }} fontSize={11 + 2} data={['', '', ...filterData.fechas]} />
-                    <Row key={'nameDays'} tamCol={[{ size: 30 }, { size: sizeName }, ...tam]} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase' }} fontSize={11 + 2} data={['', '', ...days]} />
-                    <Row key={'header'} style={{ borderBottomWidth: 1, borderColor: colors.primaryContainer }} tamCol={[{ size: 30, center: true }, { size: sizeName }, ...tam]} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase' }} fontSize={11 + 2} data={['#', 'Nombre', ...ApCi]} />
+                    <Row key={'days'} tamCol={[{ size: 30 }, { size: sizeName }, ...tam]} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase', color: colors.text }} fontSize={11 + 2} data={['', '', ...filterData.fechas]} />
+                    <Row key={'nameDays'} tamCol={[{ size: 30 }, { size: sizeName }, ...tam]} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase', color: colors.text }} fontSize={11 + 2} data={['', '', ...days]} />
+                    <Row key={'header'} style={{ borderBottomWidth: 1, borderColor: Color(colors.text).fade(.9).toString() }} tamCol={[{ size: 30, center: true }, { size: sizeName }, ...tam]} styleLabel={{ fontWeight: 'bold', textTransform: 'uppercase', color: colors.text }} fontSize={11 + 2} data={['#', 'Nombre', ...ApCi]} />
                 </>
             )
         }
         return undefined;
-    }, [filterData]);
+    }, [filterData, colors]);
 
     const _renderDataDays = useCallback(() => {
         const sizeName: number = 200;
@@ -447,11 +185,11 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                                     return '';
                                 });
                                 return (
-                                    <Row key={(idx + 1) + acc.CodigoCte} style={{ borderBottomWidth: 1, borderColor: colors.primaryContainer }} data={[`${idx + 1}`, acc.Nombre, ...test ?? []]} fontSize={11} tamCol={[{ size: 30, center: true }, { size: sizeName }, ...tam]} />
+                                    <Row key={(idx + 1) + acc.CodigoCte} styleLabel={{ color: colors.text }} style={{ borderBottomWidth: 1, borderColor: Color(colors.text).fade(.9).toString() }} data={[`${idx + 1}`, acc.Nombre, ...test ?? []]} fontSize={11} tamCol={[{ size: 30, center: true }, { size: sizeName }, ...tam]} />
                                 )
                             } else {
                                 return (
-                                    <Row key={(idx + 1) + acc.CodigoCte} style={{ borderBottomWidth: 1, borderColor: colors.primaryContainer }} data={[`${idx + 1}`, acc.Nombre, ...SN]} fontSize={11} tamCol={[{ size: 30, center: true }, { size: sizeName }, ...tam]} />
+                                    <Row key={(idx + 1) + acc.CodigoCte} styleLabel={{ color: colors.text }} style={{ borderBottomWidth: 1, borderColor: Color(colors.text).fade(.9).toString() }} data={[`${idx + 1}`, acc.Nombre, ...SN]} fontSize={11} tamCol={[{ size: 30, center: true }, { size: sizeName }, ...tam]} />
                                 )
                             }
                         })
@@ -461,13 +199,13 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
             )
         }
         return undefined;
-    }, [filterData]);
+    }, [filterData, colors, dark, Color]);
 
     const _renderTables = useCallback((report: TypeReport) => {
         if (filterData)
             if (report === 'apci-week') {
                 return (
-                    <View style={[styles.container, { backgroundColor: colors.background }]}>
+                    <View style={[styles.container, { backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background }]}>
                         <ScrollView horizontal={true}>
                             <View>
                                 {_renderHead()}
@@ -494,19 +232,23 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                                         titles={keys}
                                         fontSize={10}
                                         isShowHeader={false}
-                                        colorBackgroundTable={colors.background}
+                                        colorBackgroundTable={dark ? Color(colors.background).darken(.4).toString() : colors.background}
                                         showIndices
                                     />
                                 )
                             }}
                             renderSectionHeader={({ section }) => (
-                                <Surface elevation={1} style={{ marginHorizontal: 10, backgroundColor: colors.background, borderRadius: roundness }}>
-                                    <Text style={{ paddingHorizontal: 5 }}>{section.title.name}</Text>
-                                    <Text style={{ paddingHorizontal: 5 }}>{section.title.address}</Text>
+                                <View style={{ marginHorizontal: 10, backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background, borderRadius: roundness }}>
+                                    <Text style={{ paddingHorizontal: 5, color: colors.text }}>{section.title.name}</Text>
+                                    <Text style={{ paddingHorizontal: 5, color: colors.text }}>{section.title.address}</Text>
                                     <ScrollView ref={section.title.ref} horizontal showsHorizontalScrollIndicator={false}>
-                                        <Row data={keys.map(r => r.label)} tamCol={keys.map(s => { return { size: s.size ?? 50, center: s.center } })} fontSize={13} styleLabel={{ padding: 0, margin: 0 }} />
+                                        <Row
+                                            data={keys.map(r => r.label)}
+                                            tamCol={keys.map(s => { return { size: s.size ?? 50, center: s.center } })}
+                                            fontSize={13}
+                                            styleLabel={{ padding: 0, margin: 0, color: colors.text, textTransform: 'uppercase' }} />
                                     </ScrollView>
-                                </Surface>
+                                </View>
                             )}
                             keyExtractor={(item, idx) => `${idx}`}
                             stickySectionHeadersEnabled
@@ -517,7 +259,7 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
             return undefined;
         }
         return undefined;
-    }, [filterData, keys]);
+    }, [filterData, keys, colors, roundness, dark]);
 
     const _renderCards = useCallback(() => {
         let shadowColor: string = colors.primary;
@@ -526,22 +268,23 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                 return (
                     <View style={[styles.item, {
                         borderRadius: roundness * 2,
-                        backgroundColor: colors.background
+                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background
 
                     }]}>
                         <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
                             <Text style={[fonts.titleSmall, { color: colors.text, flex: 1 }]}>#</Text>
-                            <Text style={{ flex: 1, textAlign: 'right', paddingRight: 10 }}>{index + 1}</Text>
+                            <Text style={{ flex: 1, textAlign: 'right', paddingRight: 10, color: colors.text }}>{index + 1}</Text>
                         </View>
                         {keys.map(({ key, label }, idx) => {
                             const color = (item['estado'] === BatteryStatus.ERROR) ? colorSR : (item['estado'] === BatteryStatus.RESTORE) ? colorCR : (item['estado'] === BatteryStatus.WITHOUT_EVENTS) ? colorSE : undefined
                             return (
                                 <View key={idx + label} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
-                                    <Text style={[fonts.titleSmall, { flex: 1 }, label === 'Estado' ? { color } : {}]}>{label}</Text>
+                                    <Text style={[fonts.titleSmall, { flex: 1, color: colors.text }, label === 'Estado' && { color }]}>{label}</Text>
                                     <Text adjustsFontSizeToFit numberOfLines={2} style={[{
                                         flex: 1,
                                         textAlign: 'right',
-                                    }, label === 'Estado' ? { color } : {}]} > {
+                                        color: colors.text
+                                    }, label === 'Estado' && { color }]} > {
                                             /*@ts-ignore */
                                             Array.isArray(key) ? 'arr' : item[key]
                                         }</Text>
@@ -555,19 +298,19 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                 return (
                     <View style={[styles.item, {
                         borderRadius: roundness * 2,
-                        backgroundColor: colors.background
+                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background
                     }]}>
                         <View key={index + 1} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
                             <Text style={[fonts.titleSmall, { color: colors.text, flex: 1 }]}>#</Text>
-                            <Text style={{ flex: 1, textAlign: 'right', paddingRight: 10 }}>{index + 1}</Text>
+                            <Text style={{ flex: 1, textAlign: 'right', paddingRight: 10, color: colors.text }}>{index + 1}</Text>
                         </View>
                         <View key={index + item.CodigoAbonado} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
-                            <Text style={[fonts.titleSmall, { flex: 1 }]}>Abonado</Text>
-                            <Text adjustsFontSizeToFit numberOfLines={2} style={{ flex: 1, textAlign: 'right', paddingRight: 10 }}>{item.CodigoAbonado}</Text>
+                            <Text style={[fonts.titleSmall, { flex: 1, color: colors.text }]}>Abonado</Text>
+                            <Text adjustsFontSizeToFit numberOfLines={2} style={{ flex: 1, textAlign: 'right', paddingRight: 10, color: colors.text }}>{item.CodigoAbonado}</Text>
                         </View>
                         <View key={index + item.Nombre} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
-                            <Text style={[fonts.titleSmall, { flex: 1 }]}>Nombre</Text>
-                            <Text adjustsFontSizeToFit numberOfLines={2} style={{ flex: 1, textAlign: 'right', paddingRight: 10 }}>{item.Nombre}</Text>
+                            <Text style={[fonts.titleSmall, { flex: 1, color: colors.text }]}>Nombre</Text>
+                            <Text adjustsFontSizeToFit numberOfLines={2} style={{ flex: 1, textAlign: 'right', paddingRight: 10, color: colors.text }}>{item.Nombre}</Text>
                         </View>
                         {keys.map(({ key, label }, idx) => {
                             if ((item.eventos && item.eventos[0])) {
@@ -578,16 +321,16 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                             }
                             return (
                                 <View key={idx + label} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
-                                    <Text style={[fonts.titleSmall, { flex: 1 }, label === 'Estado' ? { color: shadowColor } : {}]}>{label}</Text>
+                                    <Text style={[fonts.titleSmall, { flex: 1, color: colors.text }, label === 'Estado' && { color: shadowColor }]}>{label}</Text>
                                     {
                                         (item.eventos && item.eventos[0])
                                             ?
-                                            <Text style={[fonts.titleSmall, { flex: 1, textAlign: 'right' }, label === 'Estado' ? { color: shadowColor } : {}]}>
+                                            <Text style={[fonts.titleSmall, { flex: 1, textAlign: 'right', color: colors.text }, label === 'Estado' && { color: shadowColor }]}>
                                                 {
                                                     /**@ts-ignore */
                                                     Array.isArray(key) ? key.map(k => item.eventos[0][k]) : item.eventos[0][key]
                                                 }</Text>
-                                            : <Text style={[label === 'Estado' ? { color: shadowColor } : {}]}>----</Text>
+                                            : <Text style={[{ color: colors.text }, label === 'Estado' && { color: shadowColor }]}>----</Text>
                                     }
                                 </View>
                             )
@@ -595,40 +338,117 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                         )}
                         <View key={index + 'button'} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
                             <Text style={[fonts.titleSmall, { color: colors.text, flex: 1 }]}>{ }</Text>
-                            <Button onPress={() => { }}>Detalles</Button>
+                            <Button
+                                contentStyle={{ marginVertical: 4 }}
+                                labelStyle={[fonts.bodySmall, { textTransform: 'capitalize', fontWeight: 'bold' }]}
+                                mode='contained-tonal'
+                                text='Detalles'
+                                colorPressed={Color(colors.primary).fade(.8).toString()}
+                                onPress={() => { }}
+                            />
                         </View>
                     </View>
                 )
             return <></>
         };
 
+        const _renderSearchBar = useCallback(() => {
+            return (
+                <View style={[{ flex: 1 }]}>
+                    <TextInput
+                        containerStyle={[stylesApp.shadow, {
+                            elevation: 3,
+                            backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                            borderBottomWidth: 0,
+                            borderRadius: roundness,
+                            shadowRadius: roundness
+                        }]}
+                        inputStyle={[
+                            fonts.bodyLarge,
+                            {
+                                color: colors.text,
+                            }
+                        ]}
+                        iconLeft='magnify'
+                        placeholder='Buscar cuenta'
+                        placeholderTextColor={Color(colors.text).fade(.5).toString()}
+                    />
+                </View>
+            )
+        }, [colors, Color, roundness, dark, stylesApp]);
+
         const _renderButtonsBB = useCallback(() => {
             if (report === 'batery') {
                 return (
-                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginVertical: 5 }}>
-                        <Searchbar value='' style={{ flex: 1 }} />
-                        <IconButton style={{ backgroundColor: stateBB.ERROR ? colorSR : undefined }} iconColor={stateBB.ERROR ? colors.background : colorSR} icon={'alert-circle'} onPress={() => dispatchBB('updateERROR')} />
-                        <IconButton style={{ backgroundColor: stateBB.RESTORE ? colorCR : undefined }} iconColor={stateBB.RESTORE ? colors.background : colorCR} icon={'alert'} onPress={() => dispatchBB('updateRESTORE')} />
-                        <IconButton style={{ backgroundColor: stateBB.WITHOUT_EVENTS ? colorSE : undefined }} iconColor={stateBB.WITHOUT_EVENTS ? colors.background : colorSE} icon={'check'} onPress={() => dispatchBB('updateWITHOUT_EVENTS')} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5, marginHorizontal: 7 }}>
+                        {_renderSearchBar()}
+                        <IconButton
+                            style={[{ padding: 3, borderColor: colorSR, borderWidth: .2, marginHorizontal: 3 }]}
+                            color={stateBB.ERROR ? colors.background : colorSR}
+                            iconsize={30}
+                            name={'alert-circle'}
+                            onPress={() => dispatchBB('updateERROR')}
+                            colorActive={colorSR}
+                            active={stateBB.ERROR}
+                        />
+                        <IconButton
+                            style={[{ padding: 3, borderColor: colorCR, borderWidth: .2, marginHorizontal: 3 }]}
+                            color={stateBB.RESTORE ? colors.background : colorCR}
+                            iconsize={30}
+                            name={'alert'}
+                            onPress={() => dispatchBB('updateRESTORE')}
+                            colorActive={colorCR}
+                            active={stateBB.RESTORE}
+                        />
+                        <IconButton
+                            style={[{ padding: 3, borderColor: colorSE, borderWidth: .2, marginHorizontal: 3 }]}
+                            color={stateBB.WITHOUT_EVENTS ? colors.background : colorSE}
+                            iconsize={30}
+                            name={'check'}
+                            onPress={() => dispatchBB('updateWITHOUT_EVENTS')}
+                            colorActive={colorSE}
+                            active={stateBB.WITHOUT_EVENTS}
+                        />
                     </View>
                 )
             }
             return undefined;
-        }, [stateBB, report]);
+        }, [stateBB, report, colorCR, colorSR, colorSE, colors, dark]);
 
         const _renderButtonsState = useCallback(() => {
             if (report === 'state') {
                 return (
-                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginVertical: 5 }}>
-                        <Searchbar value='' style={{ flex: 1 }} />
-                        <IconButton style={{ backgroundColor: stateState.Ap ? colorA : undefined }} iconColor={stateState.Ap ? colors.background : colorA} icon={'lock-open'} onPress={() => dispatchState('updateAp')} />
-                        <IconButton style={{ backgroundColor: stateState.Ci ? colorC : undefined }} iconColor={stateState.Ci ? colors.background : colorC} icon={'lock'} onPress={() => dispatchState('updateCi')} />
-                        <IconButton style={{ backgroundColor: stateState.Sa ? colorS : undefined }} iconColor={stateState.Sa ? colors.background : colorS} icon={'alert'} onPress={() => dispatchState('updateSa')} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5, marginHorizontal: 7 }}>
+                        {_renderSearchBar()}
+                        <IconButton
+                            style={[{ padding: 3, borderColor: colorA, borderWidth: .2, marginHorizontal: 3 }]}
+                            color={stateState.Ap ? colors.background : colorA}
+                            name={'lock-open'}
+                            onPress={() => dispatchState('updateAp')}
+                            colorActive={colorA}
+                            active={stateState.Ap}
+                        />
+                        <IconButton
+                            style={[{ padding: 3, borderColor: colorC, borderWidth: .2, marginHorizontal: 3 }]}
+                            color={stateState.Ci ? colors.background : colorC}
+                            name={'lock'}
+                            onPress={() => dispatchState('updateCi')}
+                            colorActive={colorC}
+                            active={stateState.Ci}
+                        />
+                        <IconButton
+                            style={[{ padding: 3, borderColor: colorS, borderWidth: .2, marginHorizontal: 3 }]}
+                            color={stateState.Sa ? colors.background : colorS}
+                            name={'alert'}
+                            onPress={() => dispatchState('updateSa')}
+                            colorActive={colorS}
+                            active={stateState.Sa}
+                        />
                     </View>
                 )
             }
             return undefined;
-        }, [stateState, report]);
+        }, [stateState, report, dark, colorA, colorS, colorC, colors, roundness, fonts, Color]);
 
         return (
             <>
@@ -646,58 +466,60 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                 />
             </>
         )
-    }, [filterData, stateBB, stateState, keys]);
+    }, [filterData, stateBB, stateState, keys, colors, fonts, dark]);
 
     return (
         <>
             {(isLoading || isFetching) && <Loading />}
-            <Appbar.Header mode='small' theme={{ colors: { surface: colors.background } }}
-                style={{ borderBottomWidth: 1, borderColor: Color(colors.primary).alpha(.1).toString(), height: Platform.OS === 'ios' ? 44 : 56 }}>
-                <Appbar.BackAction onPress={() => { navigation.goBack() }} />
-                <Appbar.Content titleStyle={[fonts.bodyLarge, { fontWeight: 'bold' }]} title={
+            <AppBar
+                left={<IconButton name='arrow-left' style={{ marginLeft: 10 }} iconsize={30} onPress={() => navigation.goBack()} color={colors.primary} />}
+                label={
                     report === 'ap-ci' ? 'APERTURA Y CIERRE'
                         : (report === 'event-alarm') ? 'EVENTO DE ALARMA'
                             : (report === 'batery') ? 'PROBLEMAS DE BATERÍAS'
                                 : (report === 'state') ? 'ESTADO DE SUCURSALES'
                                     : (report === 'apci-week') ? 'HORARIO DE APERTURAS Y CIERRES'
                                         : ''}
-                />
-                <Menu
-                    options={
-                        [
-                            ...(report === 'apci-week') ? [
-                                {
-                                    icon: 'file-pdf-box',
-                                    label: 'Descargar Pdf con gráfica',
-                                    onPress: () => console.log('Pressed star'),
-                                },
-                                {
-                                    icon: 'file-pdf-box',
-                                    label: 'Descargar Pdf',
-                                    onPress: () => console.log('Pressed star'),
-                                },
-                                {
-                                    icon: 'file-excel',
-                                    label: 'Descargar Exel',
-                                    onPress: () => console.log('Pressed email'),
-                                }
-                            ] : [],
-                            // {
-                            //     icon: (view === 'default') ? 'table' : 'table-row',
-                            //     label: (view === 'default') ? 'Visualizar tabla' : 'Visualizar cards',
-                            //     onPress: () => (view === 'default') ? setView('table') : setView('default'),
-                            // },
-                            {
-                                icon: 'refresh',
-                                label: 'Recargar',
-                                onPress: () => refetch(),
-                            },
-                        ]
-                    }
-                />
-            </Appbar.Header>
+                right={
+                    <View style={{ marginRight: 10 }}>
+                        <Menu
+                            options={
+                                [
+                                    ...(report === 'apci-week') ? [
+                                        {
+                                            icon: 'file-pdf-box',
+                                            label: 'Descargar Pdf con gráfica',
+                                            onPress: () => console.log('Pressed star'),
+                                        },
+                                        {
+                                            icon: 'file-pdf-box',
+                                            label: 'Descargar Pdf',
+                                            onPress: () => console.log('Pressed star'),
+                                        },
+                                        {
+                                            icon: 'file-excel',
+                                            label: 'Descargar Exel',
+                                            onPress: () => console.log('Pressed email'),
+                                        }
+                                    ] : [],
+                                    // {
+                                    //     icon: (view === 'default') ? 'table' : 'table-row',
+                                    //     label: (view === 'default') ? 'Visualizar tabla' : 'Visualizar cards',
+                                    //     onPress: () => (view === 'default') ? setView('table') : setView('default'),
+                                    // },
+                                    {
+                                        icon: 'refresh',
+                                        label: 'Recargar',
+                                        onPress: () => refetch(),
+                                    },
+                                ]
+                            }
+                        />
+                    </View>
+                }
+            />
             <View style={{ flex: 1, marginHorizontal: 5 }}>
-                <Text style={[{ borderLeftWidth: 2, borderColor: colors.primary, color: colors.text }, fonts.bodyLarge]}>  {(data?.nombre) ? data.nombre : 'Grupo personalizado, cuentas individuales'}</Text>
+                <Text style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  {(data?.nombre) ? data.nombre : 'Grupo personalizado, cuentas individuales'}</Text>
                 {_renderPercentajes()}
                 {(report === 'state' || report === 'batery') ? _renderCards() : _renderTables(report)}
             </View>

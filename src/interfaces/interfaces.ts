@@ -16,7 +16,7 @@ export interface PropsAlert {
 }
 
 export interface Question {
-    confirm?: true;
+    confirm?: boolean;
     dismissable?: boolean;
 }
 
@@ -53,6 +53,10 @@ export enum BatteryStatus {
     ERROR = "ERROR",
     RESTORE = "RESTORE",
     WITHOUT_EVENTS = "WITHOUT-EVENTS"
+}
+export enum Orientation {
+    portrait = 'portrait',
+    landscape = 'landscape'
 }
 
 export interface Account {

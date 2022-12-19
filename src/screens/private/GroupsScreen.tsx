@@ -1,20 +1,21 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { View, KeyboardAvoidingView, Text } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { Group } from '../../interfaces/interfaces';
 import { Select } from '../../components/select/Select';
-import { Button, FAB, IconButton, Text } from 'react-native-paper';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { updateInfo } from '../../features/alertSlice';
+import { useAppSelector } from '../../app/hooks';
 import { Loading } from '../../components/Loading';
 import { ScrollView } from 'react-native-gesture-handler';
-import { vh } from '../../config/Dimensions';
 import { TypeReport } from '../../types/types';
 import { useGroups } from '../../hooks/useQuery';
 import { getKeys, getKeysAccount } from '../../functions/functions';
+import { OrientationContext } from '../../context/OrientationContext';
+import { Button } from '../../components/Button';
+import { Fab } from '../../components/Fab';
+import Color from 'color';
 
 type Stack = StackNavigationProp<rootPrivateScreens>;
 
@@ -30,19 +31,17 @@ const reports: Array<{ name: string, value: TypeReport, msg: string }> = [
 ];
 
 export const GroupsScreen = () => {
-    const { isLoading, data, refetch } = useGroups();
+    const { isLoading, data, refetch, isFetching } = useGroups();
     const { navigate } = useNavigation<Stack>();
-    const dispatch = useAppDispatch();
 
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
+    const { vh } = useContext(OrientationContext);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
     const [valueSelect, setValueSelect] = useState<Array<Group>>();
     const [report, setReport] = useState<typeof reports>();
-
-    const openInfo = ({ msg, title }: { msg: string, title: string }) => dispatch(updateInfo({ open: true, title, msg, icon: true }));
 
     const onSubmit: SubmitHandler<Accout> = async (props) => {
         if (valueSelect && valueSelect.length > 0 && report && report?.length > 0) {
@@ -89,7 +88,7 @@ export const GroupsScreen = () => {
                                 error={error ? true : false}
                                 renderCancelBtn
                             />
-                            {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                            {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -127,7 +126,7 @@ export const GroupsScreen = () => {
                                 }}
                                 error={error ? true : false}
                             />
-                            {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                            {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -144,64 +143,35 @@ export const GroupsScreen = () => {
                         isLoading ? <Loading />
                             :
                             <KeyboardAvoidingView>
+                                <Text style={[fonts.headlineSmall, { textAlign: 'center', color: colors.text, marginVertical: 10 }]}>Consulta por grupos</Text>
                                 {_renderSelectGroup()}
-                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
-                                    <View style={{ flex: 1 }}>
-                                        {_renderSelectReport()}
-                                    </View>
-                                    <IconButton
-                                        icon={'information-outline'}
-                                        onPress={() => openInfo({
-                                            title: (report && report.length !== 0) ? report[0].name : 'Seleccione un reporte',
-                                            msg: (report && report.length !== 0) ? report[0].msg : '',
-                                        })} />
-                                </View>
-
-                                <View style={{ padding: 10, alignItems: 'center' }}>
+                                {_renderSelectReport()}
+                                <View style={{ padding: 10, alignItems: 'flex-end' }}>
                                     <Button
+                                        text='CONSULTAR'
                                         loading={isLoading}
                                         style={{ marginVertical: 5 }}
-                                        mode='elevated'
-                                        onPress={handleSubmit(onSubmit)}>CONSULTAR</Button>
+                                        mode='contained'
+                                        onPress={handleSubmit(onSubmit)}
+                                        contentStyle={{ paddingVertical: 5 }}
+                                    />
                                 </View>
                             </KeyboardAvoidingView>
                     }
                 </ScrollView>
             </View>
-            <FAB
-                icon="refresh"
-                label='Actualizar'
-                animated
-                loading={isLoading}
-                style={styles.fab}
+            <Fab
+                loading={isLoading || isFetching}
+                icon='refresh'
+                iconColor={colors.primary}
+                style={{
+                    bottom: 15,
+                    right: 15,
+                    backgroundColor: colors.primaryContainer,
+                }}
                 onPress={() => refetch()}
+                underlayColor={Color(colors.primary).fade(.8).toString()}
             />
         </View >
     )
 }
-const styles = StyleSheet.create({
-    input: {
-        flex: 1, marginHorizontal: 5, fontWeight: '600', textAlign: 'center'
-    },
-    dropdown: {
-        height: 50,
-        borderColor: 'gray',
-        borderWidth: 0.5,
-        borderRadius: 8,
-        paddingHorizontal: 8,
-    },
-    iconStyle: {
-        width: 20,
-        height: 20,
-    },
-    inputSearchStyle: {
-        height: 40,
-        fontSize: 16,
-    },
-    fab: {
-        position: 'absolute',
-        margin: 16,
-        right: 0,
-        bottom: 0,
-    },
-});

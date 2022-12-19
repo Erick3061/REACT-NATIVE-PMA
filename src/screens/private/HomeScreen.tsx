@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { vh } from '../../config/Dimensions';
 import { useAppSelector } from '../../app/hooks';
 import { SocialNetworks } from '../../components/SocialNetworks';
+import { OrientationContext } from '../../context/OrientationContext';
 
 export const HomeScreen = () => {
-    const { theme: { fonts, colors } } = useAppSelector(state => state.app);
+    const { theme: { fonts, colors, dark } } = useAppSelector(state => state.app);
+    const { vh } = useContext(OrientationContext);
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Image
-                style={{ height: vh * 20, resizeMode: 'contain' }}
+                style={[dark && { backgroundColor: colors.outline, borderRadius: 10 }, { height: vh * 20, width: '90%', resizeMode: 'contain' }]}
                 source={require('../../assets/logo2.png')}
             />
             <SocialNetworks />

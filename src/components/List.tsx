@@ -1,14 +1,13 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput, Pressable } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Button, StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput, Pressable, Text } from 'react-native';
 import { DataProvider, LayoutProvider, RecyclerListView } from 'recyclerlistview';
-import _ from 'lodash';
-import { screenWidth } from '../config/Dimensions';
-import { Text } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../navigation/Root';
 import Color from 'color';
+import { OrientationContext } from '../context/OrientationContext';
+import { useAppSelector } from '../app/hooks';
 
 interface Props<T> {
     data: Array<T>;
@@ -36,14 +35,17 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
     const [filter, setFilter] = useState<Array<any>>(data);
     const search = useRef<TextInput>(null);
+    const { screenWidth } = useContext(OrientationContext);
+    const { theme: { colors, fonts } } = useAppSelector(state => state.app);
+
 
     const _onSelect = useCallback((item: T) => {
         if (!multiSelect) {
             onChange([item]);
         } else {
-            const index = selected.findIndex(f => _.isEqual(_.get(f, valueField), _.get(item, valueField)));
+            const index = selected.findIndex(f => (f[valueField] === item[valueField]));
             if (index > -1) {
-                setSelected(selected.filter(f => _.get(f, valueField) !== _.get(selected[index], valueField)));
+                setSelected(selected.filter(f => f[valueField] !== selected[index][valueField]));
             } else {
                 if (selected.length < multiSelect.maxSelect) {
                     setSelected([...selected, item]);
@@ -65,25 +67,25 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
     }, [dataProvider, height]);
 
     const _renderRow = useCallback((type: string | number, data: any, index: number, extendedState?: object | undefined) => {
-        const isSelected = selected.find(f => _.isEqual(_.get(f, valueField), _.get(data, valueField)));
+        const isSelected = selected.find(f => f[valueField] === data[valueField]);
         return (
             <>
                 <TouchableOpacity
                     onPress={() => _onSelect(data)}
                     style={[styles.item, { backgroundColor: isSelected ? colorSelected ?? 'lightskyblue' : undefined }]}
                 >
-                    <Text>{_.get(data, labelField)}</Text>
+                    <Text style={[fonts.labelMedium, { color: colors.text }]}>{data[labelField]}</Text>
                 </TouchableOpacity>
-                {separator && <View style={{ borderTopWidth: .2, borderColor: Color(separatorColor ?? 'silver').alpha(.5).toString() }}></View>}
+                {separator && <View style={{ borderTopWidth: .3, borderColor: Color(separatorColor ?? 'silver').fade(.5).toString() }}></View>}
             </>
         )
-    }, [dataProvider, labelField, valueField, height, separator, separatorColor, selected]);
+    }, [dataProvider, labelField, valueField, height, separator, separatorColor, selected, colors, fonts]);
 
     const _renderSearch = useCallback(() => {
         const [textQueryValue, setTextQueryValue] = useState<string>('');
         const debaucedValue = useDebouncedValue(textQueryValue, 200);
         useEffect(() => {
-            setFilter(() => data.filter(f => String(_.get(f, labelField)).toLowerCase().includes(debaucedValue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))));
+            setFilter(() => data.filter(f => String(f[labelField]).toLowerCase().includes(debaucedValue.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))));
         }, [debaucedValue]);
 
         useEffect(() => {

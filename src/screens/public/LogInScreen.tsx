@@ -1,13 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, TextInput as NativeTextInput } from 'react-native';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, TextInput as NativeTextInput, Text } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Input } from '../../components/Input';
 import { StackScreenProps } from "@react-navigation/stack";
 import { rootPublicScreen } from '../../navigation/PublicScreens';
-import { screenHeight, screenWidth, vh } from '../../config/Dimensions';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { updateTcyAp, updateInfo } from "../../features/alertSlice";
-import { Button, Text } from 'react-native-paper';
 import { Loading } from '../../components/Loading';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { CheckAuth, LogIn } from '../../api/Api';
@@ -16,6 +13,10 @@ import { setUser } from '../../features/appSlice';
 import { User } from '../../interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { SocialNetworks } from '../../components/SocialNetworks';
+import { ModalTCAP } from '../../components/ModalTCAP';
+import { Button } from '../../components/Button';
+import { Alert } from '../../components/Alert';
+import { OrientationContext } from '../../context/OrientationContext';
 
 type InputsLogIn = {
     email: string,
@@ -24,8 +25,11 @@ type InputsLogIn = {
 
 interface Props extends StackScreenProps<rootPublicScreen, 'LogInScreen'> { };
 export const LogInScreen = ({ navigation }: Props) => {
-    const { theme: { dark: isDark, colors } } = useAppSelector(store => store.app);
-    const { showTC } = useAppSelector(state => state.alerts.tcyap);
+    const { theme: { dark: isDark, colors, fonts } } = useAppSelector(store => store.app);
+    const { vh } = useContext(OrientationContext);
+    const [visible, setVisible] = useState<boolean>(false);
+    const [isHelp, setIsHelp] = useState<boolean>(false);
+    const [aceptTerms, setAceptTerms] = useState<boolean>(false);
     const dispatch = useAppDispatch();
     const { control, handleSubmit, reset, setValue, formState } = useForm<InputsLogIn>({ defaultValues: { email: '', password: '' } });
 
@@ -35,11 +39,8 @@ export const LogInScreen = ({ navigation }: Props) => {
             Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
         onSuccess: async data => {
-            if (data.termsAndConditions) {
-                setLogIn(data);
-            } else {
-                dispatch(updateTcyAp({ open: true, showTC: { dismissable: false } }))
-            }
+            if (data.termsAndConditions) setLogIn(data);
+            else setAceptTerms(true)
         },
     });
 
@@ -49,15 +50,13 @@ export const LogInScreen = ({ navigation }: Props) => {
         onError: async err => {
             Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
-        onSuccess: async data => {
-            setLogIn(data);
-        },
+        onSuccess: async data => { await setLogIn(data); },
     })
 
-    const setLogIn = async (data: User) => {
+    const setLogIn = async (user: User) => {
         try {
-            await AsyncStorage.setItem('token', data.token);
-            dispatch(setUser(data));
+            await AsyncStorage.setItem('token', data?.token ?? user.token);
+            dispatch(setUser(user));
         } catch (error) { Toast.show({ text1: 'Error', text2: String(error), type: 'error' }); }
     };
 
@@ -68,82 +67,70 @@ export const LogInScreen = ({ navigation }: Props) => {
     const nextInput = useRef<NativeTextInput>(null);
 
     useEffect(() => {
-        setValue('email', 'holder_1@pem-sa.com');
-        setValue('password', '123456');
-    }, [])
-
-    useEffect(() => {
-        if (showTC?.confirm) refetch();
-    }, [showTC]);
-
-
+        setValue('email', 'admin@pem-sa.com');
+        setValue('password', '1234');
+    }, []);
 
     return (
-        <ScrollView style={{ height: screenHeight, width: screenWidth }}>
-            {isLoading && <Loading />}
-            <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
-                <Text variant='titleLarge' style={[styles.title, { color: colors.primary }]}>PEMSA monitoreo APP</Text>
-                <Image
-                    source={require('../../assets/logo.png')}
-                    style={[styles.img, isDark ? { ...styles.imgDark, backgroundColor: colors.outline } : {}]}
-                />
-                <KeyboardAvoidingView style={styles.ContainerViewInputs}>
-
-                    <Input
-                        formInputs={control._defaultValues}
-                        control={control}
-                        name={'email'}
-                        renderLefttIcon='account'
-                        mode='outlined'
-                        placeholder='ejemplo@correo.com o usuario'
-                        keyboardType='email-address'
-                        rules={{ required: { value: true, message: 'Campo requerido' } }}
-                        label='correo'
-                        returnKeyType='next'
-                        onSubmitEditing={() => {
-                            nextInput.current?.focus();
-                        }}
+        <View style={{ flex: 1 }}>
+            <ScrollView>
+                {isLoading && <Loading />}
+                <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
+                    <Image
+                        source={require('../../assets/logo4.png')}
+                        style={[styles.img, isDark && { ...styles.imgDark, backgroundColor: colors.outline, height: vh * 40, }, { height: vh * 35, }]}
                     />
-                    <Input
-                        refp={nextInput}
-                        formInputs={control._defaultValues}
-                        control={control}
-                        name={'password'}
-                        renderLefttIcon='lock'
-                        mode='outlined'
-                        keyboardType='default'
-                        placeholder='**********'
-                        rules={{ required: { value: true, message: 'Campo requerido' } }}
-                        isPassword
-                        label='contraseña'
-                        onSubmitEditing={handleSubmit(onSubmit)}
-                        returnKeyType='done'
-                    />
-                </KeyboardAvoidingView>
-                <View style={styles.ContainerBtns}>
-                    <Button
-                        style={styles.Btns}
-                        icon={'login'}
-                        mode='elevated'
-                        loading={isLoading}
-                        onPress={handleSubmit(onSubmit)}
-                        disabled={isLoading}
-                        labelStyle={{ textTransform: 'uppercase' }}
-                    > Iniciar Sesión </Button>
-                    <Button
-                        style={styles.Btns}
-                        icon={'lock-question'}
-                        mode='elevated'
-                        loading={isLoading}
-                        onPress={() => dispatch(updateInfo({ open: true, icon: true, msg: 'Contacta a tu titular para recuperar tu contraseña' }))}
-                        disabled={isLoading}
-                    > Olvidé mi contraseña </Button>
+                    <Text style={[styles.title, fonts.headlineMedium, { color: colors.primary, fontWeight: 'bold' }]}>PEMSA monitoreo APP</Text>
+                    <KeyboardAvoidingView style={styles.ContainerViewInputs}>
+                        <Input
+                            formInputs={control._defaultValues}
+                            control={control}
+                            name={'email'}
+                            iconLeft='account'
+                            placeholder='ejemplo@correo.com'
+                            keyboardType='email-address'
+                            rules={{ required: { value: true, message: 'Campo requerido' } }}
+                            label='Correo'
+                            returnKeyType='next'
+                            onSubmitEditing={() => {
+                                nextInput.current?.focus();
+                            }}
+                        />
+                        <Input
+                            onRef={(nextInput) => { nextInput = nextInput }}
+                            formInputs={control._defaultValues}
+                            control={control}
+                            name={'password'}
+                            iconLeft='lock'
+                            keyboardType='default'
+                            secureTextEntry
+                            placeholder='**********'
+                            rules={{ required: { value: true, message: 'Campo requerido' } }}
+                            label='Contraseña'
+                            onSubmitEditing={handleSubmit(onSubmit)}
+                            returnKeyType='done'
+                        />
+                        <Text onPress={() => setIsHelp(true)} style={[{ color: colors.text, fontWeight: 'bold', textAlign: 'right', marginVertical: 10 }, fonts.titleMedium]}>Olvidé mi contraseña</Text>
+                    </KeyboardAvoidingView>
+                    <View style={styles.ContainerBtns}>
+                        <Button
+                            text='Iniciar Sesión'
+                            mode='contained'
+                            onPress={handleSubmit(onSubmit)}
+                            loading={isLoading}
+                            disabled={isLoading}
+                            labelStyle={{ paddingVertical: 5, paddingHorizontal: 20 }}
+                        />
+                    </View>
                 </View>
-            </View>
-            <SocialNetworks />
-            <Text onPress={() => dispatch(updateTcyAp({ open: true }))} variant='bodyMedium' style={[styles.terms, { color: colors.primary }]}>Términos y condiciones y aviso de privacidad</Text>
-            <Text variant='bodyMedium' style={[styles.version, { color: colors.primary }]}>Versión: {'222'}</Text>
-        </ScrollView>
+                <SocialNetworks />
+                <Text onPress={() => setVisible(true)} style={[styles.terms, { color: colors.primary }, fonts.titleSmall]}>Términos y condiciones y aviso de privacidad</Text>
+                <Text style={[styles.version, { color: colors.primary }, fonts.titleSmall]}>Versión: {'2.4.1'}</Text>
+            </ScrollView>
+            <Alert visible={isHelp} type='info' icon subtitle='Contacta a tu titular para recuperar tu contraseña' dismissable renderCancel onCancel={(cancel: boolean) => { setIsHelp(!cancel) }} />
+            <ModalTCAP visible={visible} setVisible={setVisible} />
+            <ModalTCAP visible={aceptTerms} setVisible={setAceptTerms} dismissable accept={{ cancel: () => setAceptTerms(false), confirm: () => { setAceptTerms(false); refetch() }, textCancel: 'cancelar', textConfirm: 'aceptar' }} />
+        </View>
     )
 }
 
@@ -154,12 +141,10 @@ export const styles = StyleSheet.create({
     },
     img: {
         width: '100%',
-        height: vh * 35,
         resizeMode: 'contain',
     },
     imgDark: {
         width: '80%',
-        height: vh * 40,
         resizeMode: 'contain',
         borderRadius: 10,
     },

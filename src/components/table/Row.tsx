@@ -33,5 +33,6 @@ const styles = StyleSheet.create({
     },
     textHeader: {
         margin: 2,
+        paddingVertical: 2
     },
 });

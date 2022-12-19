@@ -1,16 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Animated, StyleProp, TextStyle, Pressable, Image } from 'react-native';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Animated, StyleProp, TextStyle, Image, TouchableHighlight, Text } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { Button, Switch, Text, TouchableRipple } from 'react-native-paper';
-import { vh, vw, screenHeight } from '../../config/Dimensions';
-import { useAppSelector, useAppDispatch } from '../../app/hooks';
+import { useAppSelector } from '../../app/hooks';
 import { StackScreenProps } from '@react-navigation/stack';
 import { rootPublicScreen } from '../../navigation/PublicScreens';
 import { ScrollView } from 'react-native-gesture-handler';
-import { updateError, updateQuestion } from '../../features/alertSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import _ from 'lodash';
-import { baseUrl } from '../../api/Api';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Color from 'color';
+import { Alert } from '../../components/Alert';
+import Toast from 'react-native-toast-message';
+import { OrientationContext } from '../../context/OrientationContext';
 
 type PagerViewOnPageScrollEventData = { position: number; offset: number; }
 
@@ -64,39 +64,25 @@ const data: data = [
     },
 ];
 
-const DOT_SIZE = 15;
+const DOT_SIZE = 7;
 
 const Item = ({ title, description, scrollOffsetAnimatedValue }: {
     description: Array<{ text: string; style?: StyleProp<TextStyle> }>;
     title: string;
     scrollOffsetAnimatedValue: Animated.Value;
-    positionAnimatedValue: Animated.Value;
 }) => {
-    const inputRange = [0, 0.5, 0.99];
-    const inputRangeOpacity = [0, 0.5, 0.99];
-    const scale = scrollOffsetAnimatedValue.interpolate({ inputRange, outputRange: [1, 0, 1], });
-    const opacity = scrollOffsetAnimatedValue.interpolate({ inputRange: inputRangeOpacity, outputRange: [1, 0, 1], });
-    const { colors } = useAppSelector(state => state.app.theme);
+    const opacity = scrollOffsetAnimatedValue.interpolate({ inputRange: [0, 0.5, 0.99], outputRange: [1, 0, 1], });
+    const { theme: { colors, fonts } } = useAppSelector(state => state.app);
     return (
-        <Animated.View style={{ flex: 1, paddingHorizontal: 15, alignItems: 'center', transform: [{ scale }], opacity }} >
-            <Image
-                source={require('../../assets/logo2.png')}
-                style={[styles.imageStyle]}
-            />
-            <View>
-                <View >
-                    <Text variant='headlineSmall' style={{ ...styles.heading, color: colors.primary }}>{title}</Text>
-                </View>
-                <Animated.View style={[{ opacity, flexDirection: 'column' }]}>
-                    {
-                        description.map((el, key) =>
-                            <Text key={key} variant='bodyMedium' style={[el.style ?? styles.description, { color: colors.primary }]}>
-                                {el.text}
-                            </Text>
-                        )
-                    }
-                </Animated.View>
-            </View>
+        <Animated.View style={{ paddingHorizontal: 30, opacity }} >
+            <Text style={[styles.heading, fonts.headlineMedium, { color: colors.primary, }]}>{title}</Text>
+            {
+                description.map((el, key) =>
+                    <Text key={key} style={[fonts.bodyLarge, { color: colors.primary, textAlign: 'center' }]}>
+                        {el.text}
+                    </Text>
+                )
+            }
         </Animated.View>
     );
 };
@@ -125,7 +111,7 @@ const Dots = ({ positionAnimatedValue, scrollOffsetAnimatedValue }: { scrollOffs
                 />
                 {data.map((item) => {
                     return (
-                        <Animated.View key={item.key} style={[styles.paginationDot, { margin, borderWidth: 1, borderColor: 'lightgrey' }]} />
+                        <Animated.View key={item.key} style={[styles.paginationDot, { margin, borderWidth: 2, borderColor: 'lightgrey' }]} />
                     );
                 })}
             </View>
@@ -141,29 +127,28 @@ export const IntroductionScreen = ({ navigation }: Props) => {
     const [page, setPage] = useState<number>(0);
     const [showPages, setShowPages] = useState<boolean>(false);
     const { colors } = useAppSelector(state => state.app.theme);
-    const confirm = useAppSelector(state => state.alerts.question.confirm);
     const Pager = useRef<PagerView>(null);
-    const dispatch = useAppDispatch();
-    const wellcome = async () => {
+    const { vh } = useContext(OrientationContext);
+
+    const omitWellcome = async () => {
         try {
+            setShowPages(false);
             await AsyncStorage.setItem('isWellcomeOff', 'true');
-            dispatch(updateQuestion({ open: false, confirm: undefined, msg: '', dismissable: true, icon: true }));
             navigation.replace('LogInScreen');
-        } catch (error) { dispatch(updateError({ open: true, msg: `${error}` })) }
+        } catch (error) { Toast.show({ type: 'error', text1: 'Error', text2: `${error}` }); }
     }
-    useEffect(() => {
-        if (confirm !== undefined) {
-            wellcome();
-        }
-    }, [confirm])
 
     useEffect(() => {
         navigation.reset
-    }, [])
+    }, []);
 
 
     return (
         <View style={[styles.container]}>
+            <Image
+                source={require('../../assets/logo4.png')}
+                style={[styles.imageStyle, { height: vh * 30 }]}
+            />
             <AnimatedPagerView
                 initialPage={positionAnimatedValue}
                 style={{ flex: 1 }}
@@ -178,46 +163,46 @@ export const IntroductionScreen = ({ navigation }: Props) => {
                 )}
             >
                 {data.map((item, key) => (
-                    <ScrollView key={key}>
-                        <View collapsable={false} key={item.title}>
-                            <Item {...item} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} positionAnimatedValue={positionAnimatedValue} />
-                        </View>
+                    <ScrollView key={item.title}>
+                        <Item {...item} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} />
                     </ScrollView>
-                ))}
-            </AnimatedPagerView>
+                ))
+                }
+            </AnimatedPagerView >
             <Dots positionAnimatedValue={positionAnimatedValue} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} />
-            <View style={{ paddingHorizontal: 15 }}>
-                {
-                    <TouchableRipple onPress={() => setShowPages(!showPages)}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 5, padding: 5 }}>
-                            <Text style={{ textTransform: 'uppercase', color: colors.primary }}>omitir bienvenida</Text>
-                            <Switch value={showPages} onValueChange={() => setShowPages(!showPages)} />
-                        </View>
-                    </TouchableRipple>}
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginVertical: 5 }}>
-                    <Button
-                        mode='elevated'
-                        labelStyle={{ textTransform: 'uppercase' }}
-                        style={styles.btns}
-                        onPress={() => {
-                            if (page === data.length - 1) {
-                                if (showPages) { dispatch(updateQuestion({ open: true, msg: '¿Estas seguro de omitir la BIENVENIDA ?', dismissable: false, icon: true })); }
-                                else {
-                                    navigation.replace('LogInScreen');
-                                }
-                            }
-                            Pager.current?.setPage(page + 1)
-                        }}
-                    >{(page === data.length - 1) ? 'ir a inicio' : 'siguiente'}</Button>
-                </View>
+            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <TouchableHighlight
+                    style={[{ backgroundColor: colors.primary, padding: 8, borderRadius: 100, marginVertical: 30 }]}
+                    underlayColor={Color(colors.primary).alpha(.5).toString()}
+                    onPress={() => {
+                        if (page === data.length - 1) setShowPages(true);
+                        Pager.current?.setPage(page + 1);
+                    }}
+                >
+                    <Icon name='arrow-right-thin' size={37} color={colors.background} />
+                </TouchableHighlight>
             </View>
-        </View>
+            <Alert
+                icon
+                type='question'
+                title='¿Desea omitir la bienvenida?'
+                questionProps={{
+                    funcCancel: () => { setShowPages(false), navigation.replace('LogInScreen'); },
+                    funcConfirm: omitWellcome,
+                    textCancel: 'no',
+                    textConfirm: 'si'
+                }}
+                visible={showPages}
+            />
+        </View >
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        display: 'flex',
+        justifyContent: 'flex-end'
     },
     bootom: {
         flexDirection: 'row',
@@ -232,15 +217,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     imageStyle: {
-        // width: vw * 50,.
-        height: vh * 20,
         resizeMode: 'contain',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        marginTop: 50
     },
     heading: {
         textTransform: 'uppercase',
         fontWeight: '700',
-        textAlign: 'center'
+        textAlign: 'center',
+        marginBottom: 15
     },
     description: {
         textAlign: 'justify',

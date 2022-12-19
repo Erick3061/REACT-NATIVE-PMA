@@ -1,22 +1,23 @@
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Text } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { getKeys, modDate } from '../../functions/functions';
 import { formatDate, Account } from '../../interfaces/interfaces';
 import { Select } from '../../components/select/Select';
-import { Button, FAB, IconButton, Text } from 'react-native-paper';
-import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { updateInfo } from '../../features/alertSlice';
+import { useAppSelector } from '../../app/hooks';
 import { Loading } from '../../components/Loading';
 import Toast from 'react-native-toast-message';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Calendar } from '../../components/calendar/Calendar';
-import { vh } from '../../config/Dimensions';
 import { TypeReport } from '../../types/types';
 import { useMyAccounts } from '../../hooks/useQuery';
+import { OrientationContext } from '../../context/OrientationContext';
+import { Button } from '../../components/Button';
+import { Fab } from '../../components/Fab';
+import Color from 'color';
 
 type Stack = StackNavigationProp<rootPrivateScreens>;
 
@@ -38,19 +39,17 @@ const reports: Array<{ name: string, value: TypeReport, msg: string }> = [
 ];
 
 export const AccountsScreen = () => {
-    const { isLoading, data, refetch } = useMyAccounts();
+    const { isLoading, data, refetch, isFetching } = useMyAccounts();
     const { navigate } = useNavigation<Stack>();
-    const dispatch = useAppDispatch();
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
+    const { vh } = useContext(OrientationContext);
 
     const { control, handleSubmit, reset, setValue: setValueForm, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
     const [valueSelect, setValueSelect] = useState<Array<Account>>([]);
     const [report, setReport] = useState<typeof reports>();
     const [dates, setDates] = useState<Array<{ name: string, date?: formatDate }>>();
-
-    const openInfo = ({ msg, title }: { msg: string, title: string }) => dispatch(updateInfo({ open: true, title, msg, icon: true }));
 
     const onSubmit: SubmitHandler<Accout> = async (props) => {
         const accounts = data?.accounts.filter(f => valueSelect?.map(v => v.CodigoCte).includes(f.CodigoCte)) ?? [];
@@ -96,7 +95,7 @@ export const AccountsScreen = () => {
                                 error={error ? true : false}
                                 renderCancelBtn
                             />
-                            {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                            {error && <Text style={[fonts.titleSmall, { marginHorizontal: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -134,7 +133,7 @@ export const AccountsScreen = () => {
                                 }}
                                 error={error ? true : false}
                             />
-                            {error && <Text style={{ color: colors.error }}>{error.message}</Text>}
+                            {error && <Text style={[fonts.titleSmall, { marginHorizontal: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -152,8 +151,8 @@ export const AccountsScreen = () => {
                         isLoading ? <Loading />
                             :
                             <KeyboardAvoidingView>
-                                <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Seleccione el inicio y fin de la consulta;</Text>
-                                <Text style={{ textAlign: 'center' }} variant={'titleSmall'}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
+                                <Text style={[fonts.titleMedium, { color: colors.text, textAlign: 'center' }]}>Seleccione el inicio y fin de la consulta;</Text>
+                                <Text style={[fonts.titleMedium, { color: colors.text, textAlign: 'center' }]}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
                                 {_renderSelectAccount()}
                                 <Calendar
                                     calendars={calendars}
@@ -164,63 +163,34 @@ export const AccountsScreen = () => {
                                     onChange={setDates}
                                     Textstyle={fonts.titleMedium}
                                 />
-                                <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
-                                    <View style={{ flex: 1 }}>
-                                        {_renderSelectReport()}
-                                    </View>
-                                    <IconButton
-                                        icon={'information-outline'}
-                                        onPress={() => openInfo({
-                                            title: (report && report.length !== 0) ? report[0].name : 'Seleccione un reporte',
-                                            msg: (report && report.length !== 0) ? report[0].msg : '',
-                                        })} />
-                                </View>
+                                {_renderSelectReport()}
 
-                                <View style={{ padding: 10, alignItems: 'center' }}>
+                                <View style={{ padding: 10, alignItems: 'flex-end' }}>
                                     <Button
+                                        text='CONSULTAR'
                                         loading={isLoading}
                                         style={{ marginVertical: 5 }}
-                                        mode='elevated'
-                                        onPress={handleSubmit(onSubmit)}>CONSULTAR</Button>
+                                        mode='contained'
+                                        onPress={handleSubmit(onSubmit)}
+                                        contentStyle={{ paddingVertical: 5 }}
+                                    />
                                 </View>
                             </KeyboardAvoidingView>
                     }
                 </ScrollView>
             </View>
-            <FAB
-                icon="refresh"
-                label='Actualizar'
-                animated
-                loading={isLoading}
-                style={styles.fab}
+            <Fab
+                loading={isLoading || isFetching}
+                icon='refresh'
+                iconColor={colors.primary}
+                style={{
+                    bottom: 15,
+                    right: 15,
+                    backgroundColor: colors.primaryContainer,
+                }}
                 onPress={() => refetch()}
+                underlayColor={Color(colors.primary).fade(.8).toString()}
             />
         </View >
     )
 }
-const styles = StyleSheet.create({
-    input: {
-        flex: 1, marginHorizontal: 5, fontWeight: '600', textAlign: 'center'
-    },
-    dropdown: {
-        height: 50,
-        borderColor: 'gray',
-        borderWidth: 0.5,
-        borderRadius: 8,
-        paddingHorizontal: 8,
-    },
-    iconStyle: {
-        width: 20,
-        height: 20,
-    },
-    inputSearchStyle: {
-        height: 40,
-        fontSize: 16,
-    },
-    fab: {
-        position: 'absolute',
-        margin: 16,
-        right: 0,
-        bottom: 0,
-    },
-});

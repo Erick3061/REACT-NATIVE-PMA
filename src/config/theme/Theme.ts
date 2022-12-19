@@ -72,9 +72,9 @@ const darkTheme: MD3Theme = {
     onError: "rgb(105, 0, 5)",
     errorContainer: "rgb(147, 0, 10)",
     onErrorContainer: "rgb(255, 180, 171)",
-    background: "rgb(27, 27, 31)",
+    background: "rgb(70, 70, 79)",
     onBackground: "rgb(229, 225, 230)",
-    surface: "rgb(27, 27, 31)",
+    surface: "rgb(70, 70, 79)",
     onSurface: "rgb(229, 225, 230)",
     surfaceVariant: "rgb(70, 70, 79)",
     onSurfaceVariant: "rgb(199, 197, 208)",
@@ -99,7 +99,7 @@ const darkTheme: MD3Theme = {
   }
 };
 
-const CombinedLightTheme: MD3Theme & Theme = {
+const CombinedLightTheme: MD3Theme & Theme & { colors: { Info: string, Warning: string, Success: string, Question: string } } = {
   ...NavigationDefaultTheme,
   ...whiteTheme,
   colors: {
@@ -109,9 +109,13 @@ const CombinedLightTheme: MD3Theme & Theme = {
     text: whiteTheme.colors.primary,
     border: whiteTheme.colors.primary,
     notification: 'steelblue',
+    Info: colors.Info,
+    Warning: colors.Warning,
+    Success: colors.Success,
+    Question: colors.Question,
   },
 };
-const CombinedDarkTheme: MD3Theme & Theme = {
+const CombinedDarkTheme: MD3Theme & Theme & { colors: { Info: string, Warning: string, Success: string, Question: string } } = {
   ...NavigationDarkTheme,
   ...darkTheme,
   colors: {
@@ -120,7 +124,10 @@ const CombinedDarkTheme: MD3Theme & Theme = {
     card: darkTheme.colors.background,
     text: darkTheme.colors.primary,
     border: darkTheme.colors.primary,
-    notification: 'steelblue',
+    notification: 'steelblue', Info: colors.Info,
+    Warning: colors.Warning,
+    Success: colors.Success,
+    Question: colors.Question,
   },
 };
 
