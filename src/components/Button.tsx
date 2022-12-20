@@ -1,10 +1,10 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, PressableProps, StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
-import { Text } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAppSelector } from '../app/hooks';
 import Color from 'color';
 import { stylesApp } from '../App';
+import Text from './Text';
 
 type ButtonMode = 'text' | 'outlined' | 'contained' | 'elevated' | 'contained-tonal';
 
@@ -124,7 +124,7 @@ export const Button = (props: Props) => {
                 styles.button,
                 buttonStyle,
                 isMode('elevated') && { ...stylesApp.shadow, backgroundColor: colors.background },
-                pressed && { backgroundColor: colorPressed ?? Color(buttonStyle.backgroundColor).lighten(.4).toString() },
+                pressed && { backgroundColor: colorPressed ?? Color(buttonStyle.backgroundColor).fade(.2).toString() },
                 contentStyle
             ]}
         >
@@ -147,14 +147,14 @@ export const Button = (props: Props) => {
                         />
                     ) : null}
                     <Text
+                        variant='labelLarge'
                         style={[
-                            fonts.labelLarge,
                             styles.label,
                             (isMode('text') ? icon || loading ? styles.LabelTextAddons : styles.LabelText : styles.Label),
                             { color: textColor },
                             uppercase && styles.uppercaseLabel,
                             labelStyle,
-                            pressed && { color: colorTextPressed ?? Color(textColor).darken(.4).toString() }
+                            { color: colorTextPressed ?? textColor }
                         ]}
                         numberOfLines={1}
                     >{text}</Text>

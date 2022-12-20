@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, TextInput as NativeTextInput, Text } from 'react-native';
+import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, TextInput as NativeTextInput } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Input } from '../../components/Input';
 import { StackScreenProps } from "@react-navigation/stack";
@@ -17,6 +17,7 @@ import { ModalTCAP } from '../../components/ModalTCAP';
 import { Button } from '../../components/Button';
 import { Alert } from '../../components/Alert';
 import { OrientationContext } from '../../context/OrientationContext';
+import Text from '../../components/Text';
 
 type InputsLogIn = {
     email: string,
@@ -80,7 +81,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                         source={require('../../assets/logo4.png')}
                         style={[styles.img, isDark && { ...styles.imgDark, backgroundColor: colors.outline, height: vh * 40, }, { height: vh * 35, }]}
                     />
-                    <Text style={[styles.title, fonts.headlineMedium, { color: colors.primary, fontWeight: 'bold' }]}>PEMSA monitoreo APP</Text>
+                    <Text variant='headlineSmall' style={[styles.title]}>PEMSA monitoreo APP</Text>
                     <KeyboardAvoidingView style={styles.ContainerViewInputs}>
                         <Input
                             formInputs={control._defaultValues}
@@ -110,7 +111,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                             onSubmitEditing={handleSubmit(onSubmit)}
                             returnKeyType='done'
                         />
-                        <Text onPress={() => setIsHelp(true)} style={[{ color: colors.text, fontWeight: 'bold', textAlign: 'right', marginVertical: 10 }, fonts.titleMedium]}>Olvidé mi contraseña</Text>
+                        <Text variant='titleMedium' onPress={() => setIsHelp(true)} style={[{ fontWeight: '600', textAlign: 'right', marginVertical: 10 }]}>Olvidé mi contraseña</Text>
                     </KeyboardAvoidingView>
                     <View style={styles.ContainerBtns}>
                         <Button
@@ -124,8 +125,8 @@ export const LogInScreen = ({ navigation }: Props) => {
                     </View>
                 </View>
                 <SocialNetworks />
-                <Text onPress={() => setVisible(true)} style={[styles.terms, { color: colors.primary }, fonts.titleSmall]}>Términos y condiciones y aviso de privacidad</Text>
-                <Text style={[styles.version, { color: colors.primary }, fonts.titleSmall]}>Versión: {'2.4.1'}</Text>
+                <Text variant='titleSmall' onPress={() => setVisible(true)} style={[styles.terms]}>Términos y condiciones y aviso de privacidad</Text>
+                <Text variant='titleSmall' style={[styles.version]}>Versión: {'2.4.1'}</Text>
             </ScrollView>
             <Alert visible={isHelp} type='info' icon subtitle='Contacta a tu titular para recuperar tu contraseña' dismissable renderCancel onCancel={(cancel: boolean) => { setIsHelp(!cancel) }} />
             <ModalTCAP visible={visible} setVisible={setVisible} />

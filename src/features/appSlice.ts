@@ -2,15 +2,15 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../app/store";
 import { Theme } from "@react-navigation/native";
-import { MD3Theme } from "react-native-paper";
 import { CombinedLightTheme } from "../config/theme/Theme";
 import { User } from '../interfaces/interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ThemeBase } from "../types/types";
 
 interface appSlice {
     status: boolean;
     versionApp: string;
-    theme: MD3Theme & Theme & { colors: { Info: string, Warning: string, Success: string, Question: string } };
+    theme: ThemeBase & Theme;
     isShowWellcome: boolean;
     User?: User;
 };
@@ -38,7 +38,7 @@ export const appSlice = createSlice({
             state.User = undefined;
             state.status = false;
         },
-        updateTheme: (state, action: PayloadAction<MD3Theme & Theme & { colors: { Info: string, Warning: string, Success: string, Question: string } }>) => {
+        updateTheme: (state, action: PayloadAction<ThemeBase & Theme>) => {
             state.theme = action.payload;
         },
         setUser: (state, action: PayloadAction<User>) => {

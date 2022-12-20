@@ -6,7 +6,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { stylesApp } from '../../App';
 import { useAppSelector } from '../../app/hooks';
 import { OrientationContext } from '../../context/OrientationContext';
-import { colors } from '../../config/colors';
 import { Button } from '../Button';
 
 interface option {

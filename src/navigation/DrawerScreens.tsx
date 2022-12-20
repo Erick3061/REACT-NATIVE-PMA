@@ -1,6 +1,6 @@
 import React from "react";
 import { createDrawerNavigator, DrawerContentComponentProps, DrawerContentScrollView } from "@react-navigation/drawer";
-import { Pressable, StyleSheet, Text, View, PressableProps } from 'react-native';
+import { Pressable, StyleSheet, View, PressableProps } from 'react-native';
 import { HomeScreen } from '../screens/private/HomeScreen';
 import { ProfileScreen } from "../screens/private/ProfileScreen";
 import { useAppSelector } from '../app/hooks';
@@ -14,8 +14,8 @@ import { AdvancedScreen } from '../screens/private/AdvancedScreen';
 import Color from "color";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CombinedDarkTheme, CombinedLightTheme } from "../config/theme/Theme";
-import { stylesApp } from '../App';
 import { AppBar } from "../components/AppBar";
+import Text from "../components/Text";
 
 export type RootDrawerNavigator = {
     HomeScreen: undefined;
@@ -72,15 +72,22 @@ const RenderItem = (props: PropsItem) => {
             marginVertical: 5,
             marginRight: 15,
             borderTopRightRadius: borderRadius,
-            borderBottomRightRadius: borderRadius
+            borderBottomRightRadius: borderRadius,
+            borderRightWidth: active ? 1 : undefined,
+            borderTopWidth: active ? 1 : undefined,
+            borderBottomWidth: active ? 1 : undefined,
+            borderColor: Color(colors.primaryContainer).darken(.1).toString()
         },
         icon: {
             marginLeft: 20,
-            marginRight: 10
+            marginRight: 10,
+            transform: [{
+                scale: active ? 1.5 : 1,
+            }]
         },
         label: {
-            color: colors.primary,
-            fontWeight: !active ? 'normal' : 'bold'
+            fontWeight: !active ? 'normal' : 'bold',
+            color: active ? colors.primary : colors.onSurface
         }
     });
 
@@ -89,8 +96,8 @@ const RenderItem = (props: PropsItem) => {
             {({ pressed }) => {
                 return (
                     <>
-                        {icon && <Icon style={style.icon} name={icon} size={25} color={colors.primary} />}
-                        <Text style={[fonts.labelMedium, style.label]}>{label}</Text>
+                        {icon && <Icon style={style.icon} name={icon} size={25} color={active ? colors.primary : colors.onSurface} />}
+                        <Text variant="labelMedium" style={[style.label]}>{label}</Text>
                     </>
                 )
             }}
@@ -115,19 +122,17 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
                         <View style={{ backgroundColor: colors.primary, padding: 10, borderRadius: 100, height: 50, width: 50, justifyContent: 'center' }}>
                             <Text
-                                style={[fonts.headlineSmall,
-                                {
-                                    color: colors.background,
-                                    fontWeight: '600',
-                                    paddingHorizontal: 2,
-                                    margin: 0,
-                                    textAlign: 'center'
-                                }]}
+                                variant="headlineSmall"
+                                style={[
+                                    {
+                                        color: colors.background,
+                                        textAlign: 'center'
+                                    }]}
                             >{User.fullName.split(' ').map(el => el[0]).join('').slice(0, 2).toUpperCase()}</Text>
                         </View>
                         <View style={{ paddingHorizontal: 10 }}>
-                            <Text style={[fonts.titleLarge, { color: colors.text }]}>{User.fullName}</Text>
-                            <Text style={[fonts.titleSmall, { color: colors.text }]}>{User.email}</Text>
+                            <Text variant="titleLarge">{User.fullName}</Text>
+                            <Text variant="titleSmall">{User.email}</Text>
                         </View>
                     </View>
                 }
@@ -142,25 +147,25 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
                 />
 
                 <View style={{ paddingVertical: 5 }}>
-                    <Text style={{ color: Color(colors.primary).alpha(.6).toString(), marginLeft: 30, fontWeight: 'bold' }}>Consultas</Text>
+                    <Text style={{ color: colors.primary, fontWeight: '600', marginLeft: 30 }}>Consultas</Text>
                     <RenderItem active={routeNames[index] === 'AccountsScreen' && true} icon="home-variant" label="INDIVIDUAL" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('AccountsScreen')} />
                     <RenderItem active={routeNames[index] === 'GroupsScreen' && true} icon="home-group" label="GRUPAL" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('GroupsScreen')} />
                     <RenderItem active={routeNames[index] === 'AdvancedScreen' && true} icon="image-filter-center-focus-strong-outline" label="AVANZADO" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('AdvancedScreen')} />
                 </View>
 
                 <View style={{ paddingVertical: 5 }}>
-                    <Text style={{ color: Color(colors.primary).alpha(.6).toString(), marginLeft: 30 }}>Usuarios</Text>
+                    <Text style={{ color: colors.primary, fontWeight: '600', marginLeft: 30 }}>Usuarios</Text>
                     <RenderItem icon="account" label="ADMINISTRAR USUARIOS" />
                 </View>
 
                 <View style={{ paddingVertical: 5 }}>
-                    <Text style={{ color: Color(colors.primary).alpha(.6).toString(), marginLeft: 30 }}>Configuración</Text>
+                    <Text style={{ color: colors.primary, fontWeight: '600', marginLeft: 30 }}>Configuración</Text>
                     <RenderItem active={routeNames[index] === 'ProfileScreen' && true} icon="lock" label="CAMBIAR CONTRASEÑA" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('ProfileScreen')} />
                     <RenderItem active={routeNames[index] === 'DetailsInfoScreen' && true} icon="help-circle" label="PEMSA monitoreo APP" onPress={() => navigation.navigate<keyof RootDrawerNavigator>('DetailsInfoScreen')} />
                 </View>
             </DrawerContentScrollView>
             <View style={{ paddingBottom: 15 }}>
-                <Text style={{ color: Color(colors.primary).alpha(.6).toString(), marginLeft: 25 }}>Tema</Text>
+                <Text style={{ color: colors.primary, fontWeight: '600', marginLeft: 25 }}>Tema</Text>
                 <View style={{ alignItems: 'center', marginVertical: 5, marginBottom: 10 }}>
                     <View style={[styles.containerST, { borderRadius: roundness * 3 }]}>
                         <Pressable

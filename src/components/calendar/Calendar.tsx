@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View, TouchableWithoutFeedback, Button, TextStyle, StyleProp } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, View, TouchableWithoutFeedback, Button, TextStyle, StyleProp } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { modDate } from '../../functions/functions';
 import { formatDate } from '../../interfaces/interfaces';
@@ -7,7 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppSelector } from '../../app/hooks';
 import { CalendarProvider, CalendarContext } from '../../context/CalendarContext';
 import { OrientationContext } from '../../context/OrientationContext';
-import { TextInput } from '../TextInput';
+import Text from '../Text';
 
 interface Props {
     calendars: Array<{ label: string, date: Date }>;
@@ -32,7 +32,7 @@ const CalendarState = ({ children }: any) => {
 const RenderCalendar = (props: Props) => {
     const { calendars, height, backgroundColor, textColor, colorOutline, onChange, limitDays, Textstyle, hideInputs } = props;
     const { dates, calendarSelected, setInitialDates, setCalendar, onDelete, onSelect } = useContext(CalendarContext);
-    const { theme: { fonts } } = useAppSelector(state => state.app);
+    const { theme: { fonts, colors } } = useAppSelector(state => state.app);
 
     useEffect(() => {
         const dates = calendars.map(cal => { return { name: cal.label, date: modDate({ dateI: cal.date }) } });
@@ -50,22 +50,22 @@ const RenderCalendar = (props: Props) => {
             return (
                 dates.map((calendar, idx) => {
                     return (
-                        <View key={calendar.name + idx} style={[styles.caontainerInput, { height: height ?? minHeight, borderColor: colorOutline ?? 'black' }]}>
+                        <View key={calendar.name + idx} style={[styles.caontainerInput, { height: height ?? minHeight, borderColor: colorOutline ?? colors.outline }]}>
                             <TouchableWithoutFeedback onPress={() => setCalendar(calendar.name)}>
                                 <View style={{ flexDirection: 'row', height: height ?? minHeight, alignItems: 'flex-end', paddingBottom: 10 }}>
-                                    <Text style={[styles.date, Textstyle, fonts.bodyLarge, { color: textColor ?? 'black', fontWeight: 'normal' }]}>{calendar.date?.date.date ?? '--/--/--'}</Text>
-                                    <Icon style={{ marginLeft: 10 }} name='calendar' size={minHeight / 1.9} color={textColor} />
+                                    <Text variant='bodyLarge' style={[styles.date, Textstyle, { fontWeight: 'normal' }]}>{calendar.date?.date.date ?? '--/--/--'}</Text>
+                                    <Icon style={{ marginLeft: 10 }} name='calendar' size={minHeight / 1.9} color={colors.primary} />
                                 </View>
                             </TouchableWithoutFeedback>
                             <View style={[styles.containerLabel]}>
-                                <Text style={[styles.label, fonts.bodySmall, { color: textColor ?? 'black' }]}>{calendar.name}</Text>
+                                <Text variant='bodySmall' style={[styles.label]}>{calendar.name}</Text>
                             </View>
                         </View>
                     )
                 })
             )
         return undefined
-    }, [dates, backgroundColor, textColor, colorOutline, hideInputs, fonts]);
+    }, [dates, backgroundColor, textColor, colorOutline, hideInputs, colors]);
 
     const _renderCalendar = React.useCallback(() => {
         const { theme: { roundness, colors } } = useAppSelector(state => state.app);

@@ -11,7 +11,7 @@ import Svg, { G, Circle } from 'react-native-svg';
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export default function Donut({ percentage, radius = 35, strokeWidth = 5, duration = 100, color, delay = 500, textColor, max = 100 }
+export default function Donut({ percentage, radius = 35, strokeWidth = 5, duration = 100, color, delay = 0, textColor, max = 100 }
     : { percentage: number, radius?: number, strokeWidth?: number, duration?: number, color: string, delay?: number, textColor?: string, max: number }) {
     const animated = React.useRef(new Animated.Value(0)).current;
     const circleRef = React.useRef<any>(null);
@@ -36,7 +36,7 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
             const strokeDashoffset = circumference - (circumference * maxPerc) / 100;
             if (inputRef.current) {
                 inputRef.current.setNativeProps({
-                    text: `${Math.round(value)}.0${value < 100 ? '0' : ''}%`
+                    text: `${value < 100 ? value.toFixed(2) : value.toFixed(0)}%`
                 });
             }
             if (circleRef.current) {
@@ -48,6 +48,7 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
 
         })
     }, [animated, circleRef, inputRef]);
+
     const Animate = () => {
         animation(percentage);
         changeValues();

@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { useReport } from '../../hooks/useQuery';
 import { Loading } from '../../components/Loading';
-import { Account, Events } from '../../interfaces/interfaces';
+import { Account, Events, percentaje } from '../../interfaces/interfaces';
 import { useAppSelector } from '../../app/hooks';
 import Color from 'color';
 import { stylesApp } from '../../App';
@@ -43,25 +43,35 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                     return (
                         <View style={{ paddingVertical: 5 }}>
                             <ScrollView horizontal alwaysBounceHorizontal contentContainerStyle={[{ marginLeft: 5 }]} showsHorizontalScrollIndicator={false}>
-                                {Object.entries(percentajes).map((el, idx) => (
-                                    <TargetPercentaje
-                                        key={JSON.stringify(el)}
-                                        max={100}
-                                        text={el[0]} percentage={el[1]}
-                                        style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
-                                        icon={
-                                            (el[0] === 'Apertura')
-                                                ? { name: 'lock-open', backgroundColor: 'green' }
-                                                : (el[0] === 'Cierre')
-                                                    ? { name: 'lock', backgroundColor: colors.error }
-                                                    : (el[0] === 'Alarma')
-                                                        ? { name: 'bell', backgroundColor: '#eeb715' }
-                                                        : (el[0] === 'Pruebas')
-                                                            ? { name: 'test-tube', backgroundColor: 'steelblue' }
-                                                            : (el[0] === 'Bateria')
-                                                                ? { name: 'car-battery', backgroundColor: 'green' } : { name: 'help', backgroundColor: 'silver' }
-                                        } />
-                                ))}
+                                {Object.entries(percentajes).map((el, idx) => {
+                                    const { label, total, percentaje, text, events }: percentaje = el[1];
+                                    const title: string = label ?? el[0];
+                                    return (
+                                        <TargetPercentaje
+                                            key={JSON.stringify(el)}
+                                            max={100}
+                                            text={title}
+                                            amount={`${events}/${total}`}
+                                            percentage={percentaje}
+                                            textLarge={text}
+                                            style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
+                                            icon={
+                                                (el[0] === 'Aperturas')
+                                                    ? { name: 'lock-open', backgroundColor: colors.success }
+                                                    : (el[0] === 'Cierres')
+                                                        ? { name: 'lock', backgroundColor: colors.danger }
+                                                        : (el[0] === 'APCI')
+                                                            ? { name: 'security', backgroundColor: colors.success }
+                                                            : (el[0] === 'Alarma')
+                                                                ? { name: 'bell', backgroundColor: colors.danger }
+                                                                : (el[0] === 'Pruebas')
+                                                                    ? { name: 'cog', backgroundColor: colors.test }
+                                                                    : (el[0] === 'Battery')
+                                                                        ? { name: 'car-battery', backgroundColor: colors.warning }
+                                                                        : { name: 'help', backgroundColor: colors.other }
+                                            } />
+                                    )
+                                })}
                             </ScrollView>
                         </View>
                     )

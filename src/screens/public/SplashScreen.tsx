@@ -29,11 +29,16 @@ export const SplashScreen = ({ navigation }: Props) => {
                 Toast.show({
                     type: 'error',
                     text1: 'Error',
-                    text2: 'Credenciales inválidas',
+                    text2: `${err}`,
                     onHide: () => start({ time: 0 }),
                 });
             } catch (error) {
-                // dispatch(updateError({ open: true, msg: `${error}`, icon: true }))
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: `${error}`,
+                    onHide: () => start({ time: 0 }),
+                });
             }
         },
         onSuccess: data => {
@@ -44,10 +49,24 @@ export const SplashScreen = ({ navigation }: Props) => {
     const start = ({ time }: { time?: number }) => setTimeout(async () => {
         try {
             const open = await AsyncStorage.getItem('isWellcomeOff');
-            console.log('cambiar screen');
             (open === 'true') ? navigation.replace('LogInScreen') : navigation.replace('IntroductionScreen');
         } catch (error) {
-            // dispatch(updateError({ open: true, msg: `${error}` }))
+            try {
+                AsyncStorage.removeItem('token');
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: `${error}`,
+                    onHide: () => start({ time: 0 }),
+                });
+            } catch (error) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: `${error}`,
+                    onHide: () => start({ time: 0 }),
+                });
+            }
         }
     }, time ?? 1500);
 
@@ -55,13 +74,13 @@ export const SplashScreen = ({ navigation }: Props) => {
         Animated.sequence([
             Animated.timing(anim, {
                 toValue: 1.1,
-                duration: 500,
+                duration: 400,
                 easing: Easing.ease,
                 useNativeDriver: true,
             }),
             Animated.timing(anim, {
                 toValue: 1,
-                duration: 500,
+                duration: 400,
                 easing: Easing.ease,
                 useNativeDriver: true,
             })
@@ -74,7 +93,12 @@ export const SplashScreen = ({ navigation }: Props) => {
                 setToken(token);
             } else { start({}); }
         }).catch(err => {
-            // dispatch(updateError({ open: true, msg: `${err}` }))
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: `${err}`,
+                onHide: () => start({ time: 0 }),
+            });
         });
     }, []);
 

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Row } from './Row';
 import { stylesApp } from '../../App';
 import { TableProvider, TableContext } from '../../context/TableContext';
@@ -7,6 +7,7 @@ import { Key } from '../../interfaces/interfaces';
 import { OrientationContext } from '../../context/OrientationContext';
 import { useAppSelector } from '../../app/hooks';
 import Color from 'color';
+import Text from '../Text';
 
 
 type Props<T> = {
@@ -43,7 +44,7 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
     // const [numberOfItemsPerPage, setdNumberOfItemsPerPage] = useState(numberOfItemsPerPageList[0]);
     const { data, updateData } = useContext(TableContext);
     const { screenWidth } = useContext(OrientationContext);
-    const { theme: { colors } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
     useEffect(() => {
         const data = Data.map((events, idx) => {
@@ -109,8 +110,8 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
         if (Header)
             return (
                 <View style={{ paddingVertical: 5 }}>
-                    {Header.title && <Text style={[styles.textTitlesHeader, { color: colors.text }]}>{Header.title}</Text>}
-                    {Header.subtitle && <Text style={[styles.textTitlesHeader, { color: colors.text }]}>{Header.subtitle}</Text>}
+                    {Header.title && <Text variant='labelLarge'>{Header.title}</Text>}
+                    {Header.subtitle && <Text variant='labelLarge'>{Header.subtitle}</Text>}
                 </View>
             )
         return undefined;
@@ -145,7 +146,11 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
     }, [data, screenWidth, colors, Color])
 
     return (
-        <View style={[styles.container, { backgroundColor: colorBackgroundTable ?? 'red' }]}>
+        <View style={[styles.container, {
+            backgroundColor: colorBackgroundTable ?? colors.background,
+            borderRadius: roundness * 2,
+            padding: 5
+        }]}>
             {_renderHeader()}
             <ScrollView horizontal={true}
                 onScroll={({ nativeEvent }) => { scrollRefHeader?.current?.scrollTo({ x: nativeEvent.contentOffset.x, y: nativeEvent.contentOffset.y, animated: true }); }}
@@ -175,8 +180,6 @@ export default Table;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        borderRadius: 10,
-        marginHorizontal: 10,
         marginVertical: 5,
         ...stylesApp.shadow
     },

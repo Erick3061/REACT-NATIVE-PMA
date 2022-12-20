@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TextInputProps, TextInput as NativeTextInput, StyleSheet, Pressable, TouchableWithoutFeedback, LayoutRectangle, Animated, Easing, StyleProp, ViewStyle, TextStyle, GestureResponderEvent } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAppSelector } from '../app/hooks';
 import Color from 'color';
+import { IconButton } from './IconButton';
 
 export interface PropsTI extends TextInputProps {
     iconRight?: string;
@@ -15,9 +15,11 @@ export interface PropsTI extends TextInputProps {
     onPress?: ((event: GestureResponderEvent) => void) | null;
     onRightPress?: () => void;
 }
+export type Ref = NativeTextInput;
 
-export const TextInput = (props: PropsTI) => {
-    const { iconRight, iconLeft, secureTextEntry, label, containerStyle, inputStyle, iconStyle, onPress, onRightPress } = props;
+
+const TextInput: React.ForwardRefRenderFunction<Ref, PropsTI> = (props: PropsTI, ref) => {
+    const { iconRight, iconLeft, secureTextEntry, label, containerStyle, inputStyle, iconStyle, onPress, onRightPress, onRef } = props;
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
     const sizeIcon: number = 26;
     const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(true);
@@ -25,20 +27,21 @@ export const TextInput = (props: PropsTI) => {
     const [layoutInput, setLayoutInput] = useState<LayoutRectangle>();
     const [text, setText] = useState<string>();
 
-    const input = useRef<NativeTextInput>(null);
+    const input = useRef<any>(null);
     const translateYLabel = useRef(new Animated.Value(0)).current;
     const translateXLabel = useRef(new Animated.Value(0)).current;
     const FontSize = useRef(new Animated.Value(0)).current;
 
-    const color: string = isFocused ? colors.primary : Color(colors.primary).fade(.3).toString();
+    React.useImperativeHandle(ref, () => ({ ...input.current }));
+
+    const color: string = !isFocused ? colors.primary : Color(colors.primary).fade(.2).toString();
 
     const _renderIcon = useCallback((name?: string) => {
         if (name) {
             return (
-                <Icon
-                    style={[styles.icon, !label && { marginTop: layoutInput?.y }, iconStyle]}
+                <IconButton
+                    style={[styles.icon, !label && { marginTop: layoutInput?.y }, { marginRight: 0 }, iconStyle]}
                     name={name}
-                    size={sizeIcon}
                     color={color}
                     onPress={(e) => {
                         if (onRightPress) {
@@ -62,7 +65,9 @@ export const TextInput = (props: PropsTI) => {
         if (label && layoutInput) {
             const { height, width, x, y } = layoutInput;
             return (
-                <TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={(e) => {
+                    onPress && onPress(e)
+                }}>
                     <Animated.Text
                         style={[
                             {
@@ -76,7 +81,7 @@ export const TextInput = (props: PropsTI) => {
                                     outputRange: [fonts.bodyLarge.fontSize, fonts.bodySmall.fontSize]
                                 }),
                                 marginBottom: 0,
-                                color: Color(colors.primary).fade(.3).toString(),
+                                color: color,
                                 transform: [
                                     {
                                         translateY: translateYLabel
@@ -102,15 +107,14 @@ export const TextInput = (props: PropsTI) => {
             )
         }
         return undefined;
-    }, [label, layoutInput, translateYLabel, fonts, iconLeft, FontSize, colors, input]);
+    }, [label, layoutInput, translateYLabel, fonts, iconLeft, FontSize, colors, input, color, onPress]);
 
     const _renderIconPass = useCallback(() => {
         if (secureTextEntry && iconRight === undefined) {
             return (
-                <Icon
+                <IconButton
                     style={[styles.icon, iconStyle]}
                     name={isPasswordVisible ? 'eye-off' : 'eye'}
-                    size={sizeIcon}
                     color={color}
                     onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                 />
@@ -183,7 +187,7 @@ export const TextInput = (props: PropsTI) => {
                     {...props}
                     onLayout={({ nativeEvent }) => setLayoutInput(nativeEvent.layout)}
                     ref={input}
-                    style={[styles.input, fonts.bodyLarge, { color: colors.text }, inputStyle]}
+                    style={[styles.input, fonts.bodyLarge, { color: colors.onSurface }, inputStyle]}
                     selectionColor={Color(colors.primary).fade(.8).toString()}
                     onBlur={(e) => {
                         setIsFocused(false);
@@ -195,6 +199,7 @@ export const TextInput = (props: PropsTI) => {
                     }}
                     secureTextEntry={props.secureTextEntry && isPasswordVisible}
                     placeholder={(!isFocused && label) ? undefined : props.placeholder}
+                    placeholderTextColor={colors.outlineVariant}
                 />
                 {_renderLabel()}
                 {_renderIcon(iconRight)}
@@ -203,6 +208,8 @@ export const TextInput = (props: PropsTI) => {
         </TouchableWithoutFeedback>
     )
 }
+
+export default React.forwardRef(TextInput);
 
 const styles = StyleSheet.create({
     container: {

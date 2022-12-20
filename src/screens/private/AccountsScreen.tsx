@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React, { useCallback, useContext, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { View, StyleSheet, KeyboardAvoidingView, Text } from 'react-native';
+import { View, KeyboardAvoidingView } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { getKeys, modDate } from '../../functions/functions';
 import { formatDate, Account } from '../../interfaces/interfaces';
@@ -18,6 +18,7 @@ import { OrientationContext } from '../../context/OrientationContext';
 import { Button } from '../../components/Button';
 import { Fab } from '../../components/Fab';
 import Color from 'color';
+import Text from '../../components/Text';
 
 type Stack = StackNavigationProp<rootPrivateScreens>;
 
@@ -95,7 +96,7 @@ export const AccountsScreen = () => {
                                 error={error ? true : false}
                                 renderCancelBtn
                             />
-                            {error && <Text style={[fonts.titleSmall, { marginHorizontal: 15, color: colors.error }]}>{error.message}</Text>}
+                            {error && <Text variant='titleSmall' style={[{ marginHorizontal: 15, color: colors.danger }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -133,7 +134,7 @@ export const AccountsScreen = () => {
                                 }}
                                 error={error ? true : false}
                             />
-                            {error && <Text style={[fonts.titleSmall, { marginHorizontal: 15, color: colors.error }]}>{error.message}</Text>}
+                            {error && <Text variant='titleSmall' style={[{ marginHorizontal: 15, color: colors.danger }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -151,14 +152,14 @@ export const AccountsScreen = () => {
                         isLoading ? <Loading />
                             :
                             <KeyboardAvoidingView>
-                                <Text style={[fonts.titleMedium, { color: colors.text, textAlign: 'center' }]}>Seleccione el inicio y fin de la consulta;</Text>
-                                <Text style={[fonts.titleMedium, { color: colors.text, textAlign: 'center' }]}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
+                                <Text variant='titleMedium' style={[{ textAlign: 'center' }]}>Seleccione el inicio y fin de la consulta;</Text>
+                                <Text variant='titleMedium' style={[{ textAlign: 'center' }]}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
                                 {_renderSelectAccount()}
                                 <Calendar
                                     calendars={calendars}
                                     backgroundColor={colors.background}
                                     textColor={colors.text}
-                                    colorOutline={colors.outline}
+                                    colorOutline={colors.primary}
                                     limitDays={30}
                                     onChange={setDates}
                                     Textstyle={fonts.titleMedium}
@@ -189,7 +190,7 @@ export const AccountsScreen = () => {
                     backgroundColor: colors.primaryContainer,
                 }}
                 onPress={() => refetch()}
-                underlayColor={Color(colors.primary).fade(.8).toString()}
+                underlayColor={Color(colors.primaryContainer).fade(.2).toString()}
             />
         </View >
     )

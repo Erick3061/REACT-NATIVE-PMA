@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Animated, StyleProp, TextStyle, Image, TouchableHighlight, Text } from 'react-native';
+import { StyleSheet, View, Animated, StyleProp, TextStyle, Image, TouchableHighlight } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import { useAppSelector } from '../../app/hooks';
 import { StackScreenProps } from '@react-navigation/stack';
@@ -11,6 +11,7 @@ import Color from 'color';
 import { Alert } from '../../components/Alert';
 import Toast from 'react-native-toast-message';
 import { OrientationContext } from '../../context/OrientationContext';
+import Text from '../../components/Text';
 
 type PagerViewOnPageScrollEventData = { position: number; offset: number; }
 
@@ -75,14 +76,8 @@ const Item = ({ title, description, scrollOffsetAnimatedValue }: {
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
     return (
         <Animated.View style={{ paddingHorizontal: 30, opacity }} >
-            <Text style={[styles.heading, fonts.headlineMedium, { color: colors.primary, }]}>{title}</Text>
-            {
-                description.map((el, key) =>
-                    <Text key={key} style={[fonts.bodyLarge, { color: colors.primary, textAlign: 'center' }]}>
-                        {el.text}
-                    </Text>
-                )
-            }
+            <Text variant='headlineMedium' style={[styles.heading]}>{title}</Text>
+            {description.map((el, key) => <Text key={key} style={[{ textAlign: 'center' }]}>{el.text}</Text>)}
         </Animated.View>
     );
 };
@@ -111,7 +106,7 @@ const Dots = ({ positionAnimatedValue, scrollOffsetAnimatedValue }: { scrollOffs
                 />
                 {data.map((item) => {
                     return (
-                        <Animated.View key={item.key} style={[styles.paginationDot, { margin, borderWidth: 2, borderColor: 'lightgrey' }]} />
+                        <Animated.View key={item.key} style={[styles.paginationDot, { margin, borderWidth: 2, borderColor: colors.outlineVariant }]} />
                     );
                 })}
             </View>
@@ -126,7 +121,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
     const positionAnimatedValue = React.useRef(new Animated.Value(0)).current;
     const [page, setPage] = useState<number>(0);
     const [showPages, setShowPages] = useState<boolean>(false);
-    const { colors } = useAppSelector(state => state.app.theme);
+    const { colors, dark } = useAppSelector(state => state.app.theme);
     const Pager = useRef<PagerView>(null);
     const { vh } = useContext(OrientationContext);
 
@@ -147,7 +142,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
         <View style={[styles.container]}>
             <Image
                 source={require('../../assets/logo4.png')}
-                style={[styles.imageStyle, { height: vh * 30 }]}
+                style={[styles.imageStyle, { height: vh * 30 }, dark && { backgroundColor: colors.outline, borderRadius: 10, width: '60%' },]}
             />
             <AnimatedPagerView
                 initialPage={positionAnimatedValue}
@@ -173,7 +168,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <TouchableHighlight
                     style={[{ backgroundColor: colors.primary, padding: 8, borderRadius: 100, marginVertical: 30 }]}
-                    underlayColor={Color(colors.primary).alpha(.5).toString()}
+                    underlayColor={Color(colors.primary).fade(.5).toString()}
                     onPress={() => {
                         if (page === data.length - 1) setShowPages(true);
                         Pager.current?.setPage(page + 1);

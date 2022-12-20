@@ -1,13 +1,15 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput, Pressable, Text } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput as NativeTextInput } from 'react-native';
 import { DataProvider, LayoutProvider, RecyclerListView } from 'recyclerlistview';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../navigation/Root';
 import Color from 'color';
 import { OrientationContext } from '../context/OrientationContext';
 import { useAppSelector } from '../app/hooks';
+import Text from './Text';
+import TextInput from './TextInput';
+import { Button } from './Button';
 
 interface Props<T> {
     data: Array<T>;
@@ -34,9 +36,9 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
     const containerList = useRef<View>(null);
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
     const [filter, setFilter] = useState<Array<any>>(data);
-    const search = useRef<TextInput>(null);
+    const search = useRef<NativeTextInput>(null);
     const { screenWidth } = useContext(OrientationContext);
-    const { theme: { colors, fonts } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
 
     const _onSelect = useCallback((item: T) => {
@@ -74,12 +76,12 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
                     onPress={() => _onSelect(data)}
                     style={[styles.item, { backgroundColor: isSelected ? colorSelected ?? 'lightskyblue' : undefined }]}
                 >
-                    <Text style={[fonts.labelMedium, { color: colors.text }]}>{data[labelField]}</Text>
+                    <Text variant='labelMedium'>{data[labelField]}</Text>
                 </TouchableOpacity>
                 {separator && <View style={{ borderTopWidth: .3, borderColor: Color(separatorColor ?? 'silver').fade(.5).toString() }}></View>}
             </>
         )
-    }, [dataProvider, labelField, valueField, height, separator, separatorColor, selected, colors, fonts]);
+    }, [dataProvider, labelField, valueField, height, separator, separatorColor, selected, colors]);
 
     const _renderSearch = useCallback(() => {
         const [textQueryValue, setTextQueryValue] = useState<string>('');
@@ -92,24 +94,37 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
             if (textQueryValue.length === 0) {
                 setFilter(data);
             }
-        }, [textQueryValue])
-
+        }, [textQueryValue]);
 
         return (
             <TouchableWithoutFeedback>
-                <Pressable style={styles.containerInput} onPress={() => search.current?.focus()}>
-                    <Icon name='magnify' size={30} />
+                <View style={{ paddingHorizontal: 5 }}>
                     <TextInput
                         ref={search}
+                        iconLeft='magnify'
                         placeholder={renderSearch ? renderSearch.placeholder : 'Buscar'}
-                        style={styles.textInput}
-                        autoCapitalize='none'
+                        containerStyle={[
+                            {
+                                borderWidth: 1,
+                                borderBottomWidth: 1,
+                                borderColor: colors.outlineVariant,
+                                borderBottomColor: colors.outlineVariant,
+                                borderRadius: roundness * 2,
+                            },
+                            search.current?.isFocused() && {
+                                borderColor: colors.outline,
+                                borderBottomColor: colors.outline,
+                                borderWidth: 1,
+                                borderBottomWidth: 1,
+                            }
+                        ]}
                         onChangeText={setTextQueryValue}
+                        iconStyle={{ paddingBottom: 10 }}
                     />
-                </Pressable>
+                </View>
             </TouchableWithoutFeedback>
         )
-    }, [search]);
+    }, [search, colors, roundness]);
 
 
     useEffect(() => {
@@ -118,7 +133,7 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
 
     return (
         <TouchableWithoutFeedback>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, padding: 5 }}>
                 {renderSearch && _renderSearch()}
                 <View ref={containerList} style={[styles.container, { borderColor: separatorColor ?? 'silver' }]}>
                     {
@@ -133,8 +148,26 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
                     }
                 </View>
                 <View style={styles.containerBtns}>
-                    {renderCanelBtn && <View style={styles.btns}><Button color={colorBtns ? colorBtns.cancel : undefined} title='cancel' onPress={() => { onChange(itemsSelected) }} /></View>}
-                    {multiSelect && <View style={styles.btns}><Button color={colorBtns ? colorBtns.confirm : undefined} title='aceptar' onPress={() => onChange(selected)} /></View>}
+                    {
+                        renderCanelBtn &&
+                        <Button
+                            contentStyle={{ marginHorizontal: 5 }}
+                            mode='contained'
+                            text='cancelar'
+                            customButtonColor={colorBtns?.cancel}
+                            onPress={() => { onChange(itemsSelected) }}
+                        />
+                    }
+                    {
+                        multiSelect &&
+                        <Button
+                            contentStyle={{ marginHorizontal: 5 }}
+                            mode='contained'
+                            text='aceptar'
+                            customButtonColor={colorBtns?.confirm}
+                            onPress={() => onChange(selected)}
+                        />
+                    }
                 </View>
                 <Toast visibilityTime={4000} config={toastConfig} />
             </View>

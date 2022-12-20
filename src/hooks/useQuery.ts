@@ -1,7 +1,7 @@
 import { TypeReport, typeAccount } from "../types/types";
 import { useQuery } from '@tanstack/react-query';
 import { GetGroups, GetMyAccount, ReportEvents } from "../api/Api";
-import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { useAppDispatch } from '../app/hooks';
 import { LogOut } from '../features/appSlice';
 import Toast from 'react-native-toast-message';
 
@@ -37,6 +37,6 @@ export function useMyAccounts() {
 export function useGroups() {
     return useQuery(['MyGroups'], GetGroups, {
         onError: error => validError(String(error)),
-        onSuccess: () => Toast.show({ type: 'success', text2: 'Grupos Actualizadas correctamente...' })
+        onSuccess: () => Toast.show({ type: 'success', text2: 'Grupos Actualizadas correctamente...', })
     });
 }

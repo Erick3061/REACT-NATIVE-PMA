@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleProp, View, ViewStyle, TextStyle, StyleSheet, Text } from 'react-native';
+import { StyleProp, View, ViewStyle, TextStyle, StyleSheet } from 'react-native';
+import Text from '../Text';
 
 type PropsRow = {
     data: Array<string | Array<string>>;
@@ -33,6 +34,5 @@ const styles = StyleSheet.create({
     },
     textHeader: {
         margin: 2,
-        paddingVertical: 2
     },
 });

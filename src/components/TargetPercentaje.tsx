@@ -1,10 +1,11 @@
 import React from 'react'
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native'
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import { stylesApp } from '../App';
 import { useAppSelector } from '../app/hooks';
 import Donut from './Donut';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Color from 'color';
+import Text from './Text';
 
 interface Props {
     percentage?: number;
@@ -32,11 +33,12 @@ export const TargetPercentaje = ({ max, percentage, icon, text, textLarge, style
             }
             , style
         ]}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
-                <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', width: '100%' }}>
+                <View style={{ flex: 1, alignItems: 'flex-start' }}>
                     {icon &&
                         <View style={{ backgroundColor: icon.backgroundColor ?? colors.primary, borderRadius: 100, padding: 3, alignSelf: 'flex-start' }}>
                             <Icon
+                                style={{ padding: 2 }}
                                 name={icon.name}
                                 color={icon.colorIcon ?? colors.onPrimary}
                                 size={20}
@@ -44,13 +46,13 @@ export const TargetPercentaje = ({ max, percentage, icon, text, textLarge, style
                         </View>
                     }
                     <View style={{ marginHorizontal: 5, alignItems: 'center', flex: 1 }}>
-                        <Text style={[fonts.titleMedium, { color: colors.text, fontWeight: 'bold' }]}>{text}</Text>
-                        {amount && <Text style={[fonts.titleSmall, { color: colors.text }]}>{amount}</Text>}
+                        <Text variant='titleMedium' style={[{ color: colors.text, fontWeight: 'bold' }]}>{text}</Text>
+                        {amount && <Text variant='titleSmall' style={[{ color: colors.text, marginVertical: 2, fontWeight: '700' }]}>{amount}</Text>}
                     </View>
                 </View>
-                <Donut radius={35} color={colors.text} max={max} percentage={percentage ?? 0} strokeWidth={9} />
+                <Donut radius={35} color={colors.primary} max={max} percentage={percentage ?? 0} strokeWidth={9} />
             </View>
-            {textLarge && <Text style={[fonts.titleSmall, { color: colors.text }]}>{textLarge}</Text>}
+            {textLarge && <Text variant='titleSmall' style={[{ color: colors.text, marginVertical: 2, }]}>{textLarge}</Text>}
         </View>
     )
 }

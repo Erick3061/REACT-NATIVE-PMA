@@ -1,12 +1,13 @@
 import React, { useCallback, useContext, useRef, useState } from 'react';
-import { Animated, Easing, Modal, StatusBar, StyleSheet, View, Pressable, Text, SafeAreaView } from 'react-native';
+import { Animated, Easing, Modal, StatusBar, StyleSheet, View, Pressable, SafeAreaView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useAppSelector, useAppDispatch } from '../app/hooks';
+import { useAppSelector } from '../app/hooks';
 import { Button } from './Button';
 import { stylesApp } from '../App';
 import Color from 'color';
 import { OrientationContext } from '../context/OrientationContext';
+import Text from './Text';
 
 interface Props {
     type: 'info' | 'error' | 'question' | 'warning' | 'success' | 'theme';
@@ -33,7 +34,6 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
 
     const { theme: { colors, dark, fonts, roundness } } = useAppSelector((state) => state.app);
     const { vw, vh } = useContext(OrientationContext);
-    const alertDispatch = useAppDispatch();
     const opacity = useRef(new Animated.Value(0)).current;
     const zoom = useRef(new Animated.Value(2)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -52,12 +52,12 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
         setIsVisible(false);
     }
     const { iconColor, nameIcon } =
-        type === 'info' ? { nameIcon: 'information-outline', iconColor: colors.Info }
-            : type === 'warning' ? { nameIcon: 'alert-circle-outline', iconColor: colors.Warning }
-                : type === 'success' ? { nameIcon: 'check-circle-outline', iconColor: colors.Success }
+        type === 'info' ? { nameIcon: 'information-outline', iconColor: colors.info }
+            : type === 'warning' ? { nameIcon: 'alert-circle-outline', iconColor: colors.warning }
+                : type === 'success' ? { nameIcon: 'check-circle-outline', iconColor: colors.success }
                     : type === 'error' ? { nameIcon: 'close-circle-outline', iconColor: colors.error }
-                        : type === 'question' ? { nameIcon: 'help-circle-outline', iconColor: colors.Question }
-                            : { nameIcon: 'palette', iconColor: colors.Info };
+                        : type === 'question' ? { nameIcon: 'help-circle-outline', iconColor: colors.question }
+                            : { nameIcon: 'palette', iconColor: colors.info };
 
 
     React.useEffect(() => {
@@ -130,10 +130,10 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
             return (
                 <Animated.View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'flex-end', transform: [{ scale: aminIn }] }}>
                     <Button
+                        contentStyle={{ marginHorizontal: 5 }}
+                        customButtonColor={colors.danger}
                         text={textCancel ?? 'no'}
                         mode='contained'
-                        customButtonColor={colors.error}
-                        colorTextPressed={colors.background}
                         onPress={() => {
                             closeAlert()
                             funcCancel()
@@ -141,9 +141,9 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
                     />
                     <Button
                         contentStyle={{ marginHorizontal: 5 }}
-                        customButtonColor={colors.Success}
+                        customButtonColor={colors.success}
                         text={textConfirm ?? 'si'}
-                        mode='text'
+                        mode='contained'
                         onPress={() => {
                             closeAlert()
                             funcConfirm()
@@ -185,9 +185,9 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
                         <View>
                             <ScrollView>
                                 <Animated.View style={{ opacity }}>
-                                    {title && <Text style={[fonts.titleLarge, styles.title, { color: colors.text }]}>{title}</Text>}
-                                    {subtitle && <Text style={[fonts.titleMedium, styles.title, { color: colors.text }]}>{subtitle}</Text>}
-                                    {msg && <Text style={[fonts.titleSmall, styles.title, { color: colors.text }]}>{msg}</Text>}
+                                    {title && <Text variant='titleLarge' style={[styles.title]}>{title}</Text>}
+                                    {subtitle && <Text variant='titleMedium' style={[styles.title]}>{subtitle}</Text>}
+                                    {msg && <Text variant='titleSmall' style={[styles.title]}>{msg}</Text>}
                                 </Animated.View>
                             </ScrollView>
                         </View>

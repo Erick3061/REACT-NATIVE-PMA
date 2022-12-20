@@ -170,7 +170,7 @@ export const GroupsScreen = () => {
                     backgroundColor: colors.primaryContainer,
                 }}
                 onPress={() => refetch()}
-                underlayColor={Color(colors.primary).fade(.8).toString()}
+                underlayColor={Color(colors.primaryContainer).fade(.2).toString()}
             />
         </View >
     )

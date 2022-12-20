@@ -228,7 +228,7 @@ export const AdvancedScreen = () => {
                                     calendars={calendars}
                                     backgroundColor={colors.background}
                                     textColor={colors.text}
-                                    colorOutline={colors.outline}
+                                    colorOutline={colors.primary}
                                     limitDays={30}
                                     onChange={setDates}
                                     Textstyle={fonts.titleMedium}
@@ -259,7 +259,7 @@ export const AdvancedScreen = () => {
                     backgroundColor: colors.primaryContainer,
                 }}
                 onPress={() => refetch()}
-                underlayColor={Color(colors.primary).fade(.8).toString()}
+                underlayColor={Color(colors.primaryContainer).fade(.2).toString()}
             />
         </View >
     )

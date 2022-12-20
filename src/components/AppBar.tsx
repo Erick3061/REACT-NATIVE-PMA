@@ -1,9 +1,9 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { stylesApp } from '../App';
 import { useAppSelector } from '../app/hooks';
-import { IconButton } from './IconButton';
 import Color from 'color';
+import Text from './Text';
 
 interface Props {
     label: string;
@@ -16,7 +16,7 @@ export const AppBar = ({ label, left, right }: Props) => {
     return (
         <View style={[stylesApp.shadow, { backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background, flexDirection: 'row', alignItems: 'center', shadowColor: colors.text, height: 45 }]}>
             {left}
-            <Text style={[fonts.titleMedium, { marginHorizontal: 10, color: colors.text, flex: 1 }]}>{label}</Text>
+            <Text variant='titleMedium' style={[{ marginHorizontal: 10, flex: 1 }]}>{label}</Text>
             {right}
         </View>
     )

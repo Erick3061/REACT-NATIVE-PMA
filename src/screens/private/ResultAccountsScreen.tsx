@@ -11,10 +11,10 @@ import { TypeReport } from '../../types/types';
 import { TargetPercentaje } from '../../components/TargetPercentaje';
 import Color from 'color';
 import { Menu, _renderModalMenu } from '../../components/select/Menu';
-import { Account, BatteryStatus } from '../../interfaces/interfaces';
+import { Account, BatteryStatus, percentaje } from '../../interfaces/interfaces';
 import { stylesApp } from '../../App';
 import { getDay, modDate } from '../../functions/functions';
-import { TextInput } from '../../components/TextInput';
+import TextInput from '../../components/TextInput';
 import { IconButton } from '../../components/IconButton';
 import { Button } from '../../components/Button';
 import { AppBar } from '../../components/AppBar';
@@ -58,13 +58,13 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
     const [stateBB, dispatchBB] = useReducer(reducerBB, initialStateBB);//Problemas de baterias
     const [stateState, dispatchState] = useReducer(reducerState, initialStateState);//Estado de sucursales
 
-    const colorSR: string = colors.error;
-    const colorCR: string = '#eeb715';
-    const colorSE: string = 'green';
+    const colorSR: string = colors.danger;
+    const colorCR: string = colors.warning;
+    const colorSE: string = colors.success;
 
-    const colorA: string = 'green';
-    const colorC: string = colors.error;
-    const colorS: string = colors.notification;
+    const colorA: string = colors.success;
+    const colorC: string = colors.danger;
+    const colorS: string = colors.warning;
 
 
     useEffect(() => {
@@ -101,28 +101,29 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
             return (
                 <View style={{ paddingVertical: 5 }}>
                     <ScrollView horizontal alwaysBounceHorizontal contentContainerStyle={[{ marginLeft: 5 }]} showsHorizontalScrollIndicator={false}>
-                        {Object.entries(percentajes).map((el, idx) => (
-                            <TargetPercentaje
-                                key={JSON.stringify(el)}
-                                max={100}
-                                text={
-                                    (el[0] === 'sinRestaure') ? 'Sin restaure'
-                                        : (el[0] === 'conRestaure') ? 'Con Restaure'
-                                            : (el[0] === 'abiertas') ? 'Abiertas'
-                                                : (el[0] === 'cerradas') ? 'Cerradas'
-                                                    : (el[0] === 'sinEstado') ? 'Sin Estado'
-                                                        : 'sin Eventos'}
-                                percentage={el[1]}
-                                style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
-                                icon={
-                                    (el[0] === 'sinRestaure') ? { name: 'alert-circle', backgroundColor: colorSR }
-                                        : (el[0] === 'conRestaure') ? { name: 'alert', backgroundColor: colorCR }
-                                            : (el[0] === 'abiertas') ? { name: 'lock-open', backgroundColor: colorA }
-                                                : (el[0] === 'cerradas') ? { name: 'lock', backgroundColor: colorC }
-                                                    : (el[0] === 'sinEstado') ? { name: 'alert', backgroundColor: colorS }
-                                                        : { name: 'check', backgroundColor: colorSE }
-                                } />
-                        ))}
+                        {Object.entries(percentajes).map((el, idx) => {
+                            const { label, total, percentaje, text, events }: percentaje = el[1];
+                            const title: string = label ?? el[0];
+
+                            return (
+                                <TargetPercentaje
+                                    key={JSON.stringify(el)}
+                                    max={100}
+                                    text={title}
+                                    percentage={percentaje}
+                                    amount={`${events}/${total}`}
+                                    textLarge={text}
+                                    style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
+                                    icon={
+                                        (el[0] === 'sinRestaure') ? { name: 'alert-circle', backgroundColor: colorSR }
+                                            : (el[0] === 'conRestaure') ? { name: 'alert', backgroundColor: colorCR }
+                                                : (el[0] === 'abiertas') ? { name: 'lock-open', backgroundColor: colorA }
+                                                    : (el[0] === 'cerradas') ? { name: 'lock', backgroundColor: colorC }
+                                                        : (el[0] === 'sinEstado') ? { name: 'alert', backgroundColor: colorS }
+                                                            : { name: 'check', backgroundColor: colorSE }
+                                    } />
+                            )
+                        })}
                     </ScrollView>
                 </View>
             )

@@ -12,7 +12,7 @@ interface Props extends PressableProps {
     colorIconActive?: string;
 }
 export const IconButton = (props: Props) => {
-    const { name, iconsize, style, active, colorActive, color = 'steelblue' } = props;
+    const { name, iconsize, style, active, colorActive, color } = props;
     const iconProps = { color, name };
     const size: number = 25;
     const stl = Array.isArray(style) ? style.reduce((accumulator, currentValue) => { return { ...accumulator as {}, ...currentValue as {} } }) : style;

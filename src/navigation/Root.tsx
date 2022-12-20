@@ -1,71 +1,82 @@
 import React, { useEffect } from 'react';
-import { ColorSchemeName, SafeAreaView, StatusBar, Text, useColorScheme, View } from 'react-native';
+import { ColorSchemeName, SafeAreaView, StatusBar, useColorScheme, View } from 'react-native';
 import { useAppSelector, useAppDispatch } from '../app/hooks';
 import { PublicScreens } from './PublicScreens';
 import { updateTheme } from '../features/appSlice';
 import { CombinedDarkTheme, CombinedLightTheme } from '../config/theme/Theme';
 import { NavigationContainer } from '@react-navigation/native';
 import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
-import { colors as ColorsAlerts } from '../config/colors';
 import { PrivateScreens } from './PrivateScreens';
 import Color from 'color';
+import Text from '../components/Text';
+import { baseUrl } from '../api/Api';
+import { stylesApp } from '../App';
 
 export const toastConfig = {
-    success: (props: BaseToastProps) => {
-        const { colors, fonts, dark } = useAppSelector(state => state.app.theme);
+    success: ({ text1, text2 }: BaseToastProps) => {
+        const { colors, dark, roundness } = useAppSelector(state => state.app.theme);
         return (
-            <BaseToast
-                {...props}
-                style={{ borderLeftColor: ColorsAlerts.Success, backgroundColor: dark ? colors.inverseOnSurface : colors.background }}
-                text1Style={{ fontSize: fonts.bodyLarge.fontSize, color: colors.primary }}
-                text2Style={{ fontSize: fonts.bodyMedium.fontSize, color: colors.primary }}
-            />
-        )
-    },
-    error: (props: BaseToastProps) => {
-        const { colors, fonts, dark } = useAppSelector(state => state.app.theme);
-        return (
-            <BaseToast
-                {...props}
-                style={{ borderLeftColor: ColorsAlerts.Error, backgroundColor: dark ? colors.inverseOnSurface : colors.background }}
-                text1Style={{ fontSize: fonts.bodyLarge.fontSize, color: colors.primary }}
-                text2Style={{ fontSize: fonts.bodyMedium.fontSize, color: colors.primary }}
-            />
-        )
-    },
-    customError: (props: BaseToastProps) => {
-        const { colors, fonts, dark } = useAppSelector(state => state.app.theme);
-        return (
-            <View style={{
-                borderLeftWidth: 5,
-                borderLeftColor: ColorsAlerts.Error,
-                backgroundColor: dark ? colors.inverseOnSurface : colors.background,
-                borderRadius: 5,
-                padding: 5,
-                shadowColor: colors.primary,
-                shadowOffset: {
-                    width: 0,
-                    height: 2,
-                },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5,
-                width: '85%'
-            }}>
-                <Text style={[fonts.bodyLarge, { color: colors.primary, fontWeight: 'bold' }]}>{props.text1}</Text>
-                <Text style={[fonts.bodyMedium, { color: colors.primary }]}>{props.text2}</Text>
+            <View style={[
+                stylesApp.shadow,
+                {
+                    borderLeftWidth: 5,
+                    borderLeftColor: colors.success,
+                    backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                    shadowColor: colors.success,
+                    elevation: 2,
+                    padding: 5,
+                    paddingVertical: 15,
+                    width: '90%',
+                    borderRadius: roundness * 2,
+                }
+            ]}>
+                {text1 && <Text variant='bodyLarge' style={[{ fontWeight: 'bold' }]}>{text1}</Text>}
+                {text2 && <Text variant='bodyMedium' >{text2}</Text>}
             </View>
         )
     },
-    info: (props: BaseToastProps) => {
-        const { colors, fonts, dark } = useAppSelector(state => state.app.theme);
+    error: ({ text1, text2 }: BaseToastProps) => {
+        const { colors, dark, roundness } = useAppSelector(state => state.app.theme);
         return (
-            <BaseToast
-                {...props}
-                style={{ borderLeftColor: ColorsAlerts.Warning, backgroundColor: dark ? colors.inverseOnSurface : colors.background }}
-                text1Style={{ fontSize: fonts.bodyLarge.fontSize, color: colors.primary }}
-                text2Style={{ fontSize: fonts.bodyMedium.fontSize, color: colors.primary }}
-            />
+            <View style={[
+                stylesApp.shadow,
+                {
+                    borderLeftWidth: 5,
+                    borderLeftColor: colors.danger,
+                    backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                    shadowColor: colors.danger,
+                    elevation: 2,
+                    padding: 5,
+                    paddingVertical: 15,
+                    width: '90%',
+                    borderRadius: roundness * 2,
+                }
+            ]}>
+                {text1 && <Text variant='bodyLarge' style={[{ fontWeight: 'bold' }]}>{text1}</Text>}
+                {text2 && <Text variant='bodyMedium' >{text2}</Text>}
+            </View>
+        )
+    },
+    info: ({ text1, text2 }: BaseToastProps) => {
+        const { colors, dark, roundness } = useAppSelector(state => state.app.theme);
+        return (
+            <View style={[
+                stylesApp.shadow,
+                {
+                    borderLeftWidth: 5,
+                    borderLeftColor: colors.info,
+                    backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                    shadowColor: colors.info,
+                    elevation: 2,
+                    padding: 5,
+                    paddingVertical: 15,
+                    width: '90%',
+                    borderRadius: roundness * 2,
+                }
+            ]}>
+                {text1 && <Text variant='bodyLarge' style={[{ fontWeight: 'bold' }]}>{text1}</Text>}
+                {text2 && <Text variant='bodyMedium' >{text2}</Text>}
+            </View>
         )
     }
 }
@@ -85,7 +96,7 @@ export const Root = () => {
             <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
                 <StatusBar backgroundColor={dark ? Color(colors.background).darken(.4).toString() : colors.background} barStyle={dark ? 'light-content' : 'dark-content'} />
                 {(isAuth) ? <PrivateScreens /> : <PublicScreens />}
-                <Toast config={toastConfig} visibilityTime={3500} position='bottom' />
+                <Toast config={toastConfig} visibilityTime={3500} position='bottom' autoHide />
             </SafeAreaView>
         </NavigationContainer>
     )

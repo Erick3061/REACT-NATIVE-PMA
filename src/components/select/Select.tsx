@@ -3,7 +3,7 @@ import { Dimensions, I18nManager, Keyboard, Modal, TextInput as NativeTextInput,
 import { useAppSelector } from '../../app/hooks';
 import { List } from '../List';
 import { stylesApp } from '../../App';
-import { TextInput } from '../TextInput';
+import TextInput from '../TextInput';
 import Color from 'color';
 
 interface Props<T> {
@@ -175,7 +175,7 @@ export const Select = <T extends Object>(props: Props<T>) => {
                                             onChange={onSelect}
                                             multiSelect={multiSelect}
                                             renderSearch={renderSearch}
-                                            colorBtns={{ cancel: colors.error, confirm: colors.primary }}
+                                            colorBtns={{ cancel: colors.danger, confirm: colors.success }}
                                             renderCanelBtn={renderCancelBtn}
                                             height={40}
                                         />

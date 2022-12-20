@@ -2,7 +2,7 @@ import React from 'react';
 import { Control, Controller, RegisterOptions } from 'react-hook-form';
 import { Text } from 'react-native';
 import { useAppSelector } from '../app/hooks';
-import { TextInput, PropsTI } from './TextInput';
+import TextInput, { PropsTI } from './TextInput';
 
 interface Props<T> extends PropsTI {
     formInputs: T;

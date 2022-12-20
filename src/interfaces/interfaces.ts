@@ -77,19 +77,28 @@ export interface Group {
     Tipo: number;
 }
 
+export interface percentaje {
+    total: number;
+    events: number;
+    percentaje: number;
+    label?: string;
+    text?: string;
+}
+
 export interface Percentajes {
-    Apertura?: number;
-    Cierre?: number;
-    Alarma?: number;
-    Pruebas?: number;
-    Bateria?: number;
-    Otros?: number;
-    conRestaure?: number;
-    sinRestaure?: number;
-    sinEventos?: number;
-    abiertas?: number;
-    cerradas?: number;
-    sinEstado?: number;
+    Aperturas?: percentaje;
+    Cierres?: percentaje;
+    APCI?: percentaje;
+    Alarma?: percentaje;
+    Pruebas?: percentaje;
+    Battery?: percentaje;
+    Otros?: percentaje;
+    conRestaure?: percentaje;
+    sinRestaure?: percentaje;
+    sinEventos?: percentaje;
+    abiertas?: percentaje;
+    cerradas?: percentaje;
+    sinEstado?: percentaje;
 }
 
 export interface responseError {
