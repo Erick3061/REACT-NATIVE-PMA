@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { View, KeyboardAvoidingView, Text } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
-import { Group } from '../../interfaces/interfaces';
+import { Group, Orientation } from '../../interfaces/interfaces';
 import { Select } from '../../components/select/Select';
 import { useAppSelector } from '../../app/hooks';
 import { Loading } from '../../components/Loading';
@@ -36,7 +36,7 @@ export const GroupsScreen = () => {
 
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
-    const { vh } = useContext(OrientationContext);
+    const { vh, orientation } = useContext(OrientationContext);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
@@ -107,7 +107,7 @@ export const GroupsScreen = () => {
                     render={({ field: { value, onChange }, fieldState: { error } }) =>
                         <>
                             <Select
-                                maxHeight={vh * 30}
+                                maxHeight={(orientation == Orientation.portrait) ? vh * 30 : undefined}
                                 animationType='fade'
                                 valueField='value'
                                 labelField='name'
@@ -125,6 +125,7 @@ export const GroupsScreen = () => {
                                     }
                                 }}
                                 error={error ? true : false}
+                                renderCancelBtn={orientation === Orientation.landscape}
                             />
                             {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
@@ -137,7 +138,9 @@ export const GroupsScreen = () => {
 
     return (
         <View style={{ flex: 1, padding: 10, justifyContent: 'center' }}>
-            <View>
+            <View style={[
+                (orientation === Orientation.landscape) && { marginHorizontal: 100 }
+            ]}>
                 <ScrollView>
                     {
                         isLoading ? <Loading />

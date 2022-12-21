@@ -121,7 +121,7 @@ export const Select = <T extends Object>(props: Props<T>) => {
                         paddingLeft: 15,
                         marginVertical: 10,
                     }}
-                    iconStyle={{ marginHorizontal: 15 }}
+                    iconStyle={{ marginRight: 15 }}
                 // error={error}
                 />
             </TouchableWithoutFeedback>

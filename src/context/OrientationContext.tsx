@@ -11,7 +11,7 @@ type State = {
 }
 
 type Action =
-    | { type: 'changeOrientation', payload: State }
+    | { type: 'changeOrientation', payload: Orientation }
     ;
 
 const initialState: State = {
@@ -23,7 +23,7 @@ const initialState: State = {
 }
 
 interface ContextProps extends State {
-    changeOrientation: (props: State) => void;
+    changeOrientation: (props: Orientation) => void;
 }
 
 export const OrientationContext = createContext({} as ContextProps);
@@ -34,7 +34,7 @@ const Reducer = (state: State, action: Action): State => {
         case 'changeOrientation':
             return {
                 ...state,
-                ...action.payload
+                orientation: action.payload
             }
 
         default: return state;
@@ -46,28 +46,14 @@ export const OrientationProvider = ({ children }: any) => {
     const [state, dispatch] = useReducer(Reducer, initialState);
 
     Dimensions.addEventListener('change', ({ screen, window }) => {
-        const screenHeight: number = window.height;
-        const screenWidth: number = window.width;
-        const vw: number = screenWidth / 100;
-        const vh: number = screenHeight / 100;
         if (screen.height >= screen.width) {//portrait
-            dispatch({
-                type: 'changeOrientation', payload: {
-                    orientation: Orientation.portrait,
-                    screenHeight, screenWidth, vh, vw
-                }
-            });
+            dispatch({ type: 'changeOrientation', payload: Orientation.portrait });
         } else {//landscape
-            dispatch({
-                type: 'changeOrientation', payload: {
-                    orientation: Orientation.landscape,
-                    screenHeight, screenWidth, vh, vw
-                }
-            });
+            dispatch({ type: 'changeOrientation', payload: Orientation.landscape });
         }
     });
 
-    const changeOrientation = (props: State) => {
+    const changeOrientation = (props: Orientation) => {
         dispatch({ type: 'changeOrientation', payload: props });
     }
 

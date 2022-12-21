@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { quartersInYear } from 'date-fns';
 import { responseError, User, Account, GetReport, Group, BatteryStatus, Percentajes } from '../interfaces/interfaces';
 import { TypeReport } from '../types/types';
 
@@ -57,19 +58,17 @@ export const ReportEvents = async ({ body, type }: { body: GetReport, type?: Typ
     try {
         const response = await Api(`reports/${type}`, body, 'POST');
         const { status, message, ...data }: responseError & { nombre: string, cuentas?: Array<Account>, fechas?: Array<string>, total?: number, percentajes?: Percentajes } = await response.json();
+        const AP = ["O", "OS", "US11"];
+        const CI = ["C", "CS", "UR11"];
+        const APCI = ["C", "CS", "O", "OS", "UR11", "US11"];
+        const Alarm = ["A", "ACZ", "ASA", "ATR", "CPA", "FIRE", "GA", "P", "SAS", "SMOKE", "VE"];
+        const Prue = ["AGT", "AT", "ATP", "AUT", "TST", "TST0", "TST1", "TST3", "TSTR", "TX0"];
+        const Bat = ["BB"];
+        const otros = ['1381', "24H", "ACR", "BPS", "CAS", "CN", "CTB", "ET*", "FC*", "FCA", "FT", "FT*", "IA*", "MED", "PA", "PAF", "PR", "PRB", "RAS", "REB", "RES", "RFC", "RON", "S99", "STL", "SUP", "TAM", "TB", "TEL", "TESE", "TESS", "TPL", "TRB"];
 
         if (status === false) throw (`${message}`);
 
         if (data.cuentas?.length === 1 && data.cuentas[0].eventos) {
-            const AP = ["O", "OS", "US11"];
-            const CI = ["C", "CS", "UR11"];
-            const APCI = ["C", "CS", "O", "OS", "UR11", "US11"];
-            const Alarm = ["A", "ACZ", "ASA", "ATR", "CPA", "FIRE", "GA", "P", "SAS", "SMOKE", "VE"];
-            const Prue = ["AGT", "AT", "ATP", "AUT", "TST", "TST0", "TST1", "TST3", "TSTR", "TX0"];
-            const Bat = ["BB"];
-            const otros = ['1381', "24H", "ACR", "BPS", "CAS", "CN", "CTB", "ET*", "FC*", "FCA", "FT", "FT*", "IA*", "MED", "PA", "PAF", "PR", "PRB", "RAS", "REB", "RES", "RFC", "RON", "S99", "STL", "SUP", "TAM", "TB", "TEL", "TESE", "TESS", "TPL", "TRB"];
-
-
             const total: number = data.cuentas[0].eventos.length;
             if (type === 'ap-ci') {
                 let Aperturas = data.cuentas[0].eventos.filter(f => AP.find(ff => ff === f.CodigoAlarma)).length;
@@ -209,6 +208,53 @@ export const ReportEvents = async ({ body, type }: { body: GetReport, type?: Typ
                     cuentas: [...data.cuentas],
                     total: data.total,
                     percentajes
+                }
+            }
+        } else if (type === 'apci-week') {
+            if (data && data.cuentas) {
+                let reciberAp: number = 0, reciberCi: number = 0;
+                const acc = data.cuentas.map(acc => {
+                    if (acc.eventos && data.fechas) {
+                        const { eventos, ...rest } = acc;
+                        const df = data.fechas.map(day => {
+                            const perDay = acc.eventos?.filter(ev => ev.FechaOriginal === day);
+                            if (perDay && perDay.length > 0) {
+                                let Aperturas = perDay.filter(f => AP.find(ff => ff === f.CodigoAlarma)).slice(0, 1);
+                                let Cierres = perDay.filter(f => CI.find(ff => ff === f.CodigoAlarma)).reverse().slice(0, 1);
+                                reciberAp += Aperturas.length;
+                                reciberCi += Cierres.length;
+                                return [Aperturas, Cierres].flat()
+                            } else {
+                                return [];
+                            }
+                        }).flat();
+                        return { ...rest, eventos: df };
+                    } else {
+                        return acc;
+                    }
+                });
+                const total: number = acc.length * 7;
+                const percentajes: Percentajes = {
+                    Aperturas: {
+                        total,
+                        percentaje: reciberAp * 100 / total,
+                        events: reciberAp,
+                        label: 'Aperturas',
+                        text: 'Aperturas recibidas'
+                    },
+                    Cierres: {
+                        total,
+                        percentaje: reciberCi * 100 / total,
+                        events: reciberCi,
+                        label: 'Cierres',
+                        text: 'Cierres recibidos'
+                    },
+                }
+                return {
+                    nombre: data.nombre,
+                    fechas: data.fechas,
+                    cuentas: acc,
+                    percentajes,
                 }
             }
         }

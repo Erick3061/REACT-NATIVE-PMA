@@ -5,7 +5,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { View, StyleSheet, KeyboardAvoidingView, Text, TouchableHighlight } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { getKeys, getKeysAccount, modDate } from '../../functions/functions';
-import { formatDate, Account } from '../../interfaces/interfaces';
+import { formatDate, Account, Orientation } from '../../interfaces/interfaces';
 import { useEffect } from 'react';
 import { Select } from '../../components/select/Select';
 import { useAppSelector } from '../../app/hooks';
@@ -50,7 +50,7 @@ export const AdvancedScreen = () => {
     const { navigate } = useNavigation<Stack>();
 
     const { theme: { colors, fonts, roundness } } = useAppSelector(state => state.app);
-    const { vh } = useContext(OrientationContext);
+    const { vh, orientation } = useContext(OrientationContext);
 
     const { control, handleSubmit, reset, setValue: setValueForm } = useForm<Accout>({ defaultValues: { name: '', start: '', end: '', report: '' } });
 
@@ -134,7 +134,7 @@ export const AdvancedScreen = () => {
                     render={({ field: { value, onChange }, fieldState: { error } }) =>
                         <>
                             <Select
-                                maxHeight={vh * 30}
+                                maxHeight={(orientation == Orientation.portrait) ? vh * 30 : undefined}
                                 animationType='fade'
                                 valueField='value'
                                 labelField='name'

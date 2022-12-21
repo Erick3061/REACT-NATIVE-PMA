@@ -120,7 +120,9 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                                                 : (el[0] === 'abiertas') ? { name: 'lock-open', backgroundColor: colorA }
                                                     : (el[0] === 'cerradas') ? { name: 'lock', backgroundColor: colorC }
                                                         : (el[0] === 'sinEstado') ? { name: 'alert', backgroundColor: colorS }
-                                                            : { name: 'check', backgroundColor: colorSE }
+                                                            : (el[0] === 'Aperturas') ? { name: 'lock-open', backgroundColor: colorA }
+                                                                : (el[0] === 'Cierres') ? { name: 'lock', backgroundColor: colorC }
+                                                                    : { name: 'check', backgroundColor: colorSE }
                                     } />
                             )
                         })}
@@ -538,7 +540,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         borderRadius: 10,
-        marginHorizontal: 10,
+        marginHorizontal: 5,
         marginVertical: 5,
         ...stylesApp.shadow
     },

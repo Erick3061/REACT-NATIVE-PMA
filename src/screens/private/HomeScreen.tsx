@@ -1,13 +1,22 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { SocialNetworks } from '../../components/SocialNetworks';
 import Text from '../../components/Text';
 import { OrientationContext } from '../../context/OrientationContext';
+// import fds from 'fs'
 
 export const HomeScreen = () => {
     const { theme: { fonts, colors, dark } } = useAppSelector(state => state.app);
     const { vh } = useContext(OrientationContext);
+    // useEffect(() => {
+    //     fetch('https://arxiv.org/pdf/2111.09296.pdf')
+    //         .then((data) => {
+    //             console.log(data);
+    //         })
+    //         .catch(err => console.log(err));
+    // }, [])
+
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Image
