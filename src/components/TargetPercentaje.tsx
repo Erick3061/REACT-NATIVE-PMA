@@ -30,25 +30,24 @@ export const TargetPercentaje = ({ max, percentage, icon, text, textLarge, style
                 borderRadius: roundness * 3,
                 shadowColor: colors.primary,
                 padding: 10,
+                marginRight: 6
             }
             , style
         ]}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', width: '100%' }}>
-                <View style={{ flex: 1, alignItems: 'flex-start' }}>
-                    {icon &&
-                        <View style={{ backgroundColor: icon.backgroundColor ?? colors.primary, borderRadius: 100, padding: 3, alignSelf: 'flex-start' }}>
-                            <Icon
-                                style={{ padding: 2 }}
-                                name={icon.name}
-                                color={icon.colorIcon ?? colors.onPrimary}
-                                size={20}
-                            />
-                        </View>
-                    }
-                    <View style={{ marginHorizontal: 5, alignItems: 'center', flex: 1 }}>
-                        <Text variant='titleMedium' style={[{ color: colors.text, fontWeight: 'bold' }]}>{text}</Text>
-                        {amount && <Text variant='titleSmall' style={[{ color: colors.text, marginVertical: 2, fontWeight: '700' }]}>{amount}</Text>}
-                    </View>
+            {icon &&
+                <View style={{ backgroundColor: icon.backgroundColor ?? colors.primary, borderRadius: 100, padding: 3, alignSelf: 'flex-start' }}>
+                    <Icon
+                        style={{ padding: 2 }}
+                        name={icon.name}
+                        color={icon.colorIcon ?? colors.onPrimary}
+                        size={20}
+                    />
+                </View>
+            }
+            <View style={{ alignItems: 'center', width: '100%', flexDirection: 'row' }}>
+                <View style={{ marginHorizontal: 5, alignItems: 'center', flex: 1 }}>
+                    <Text variant='titleMedium' style={[{ color: colors.text, fontWeight: 'bold' }]}>{text}</Text>
+                    {amount && <Text variant='titleSmall' style={[{ color: colors.text, marginVertical: 2, fontWeight: '700' }]}>{amount}</Text>}
                 </View>
                 <Donut radius={35} color={colors.primary} max={max} percentage={percentage ?? 0} strokeWidth={9} />
             </View>
@@ -62,7 +61,7 @@ const styles = StyleSheet.create({
     constainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        margin: 2,
+        margin: 3,
         minWidth: 180,
         ...stylesApp.shadow
     }

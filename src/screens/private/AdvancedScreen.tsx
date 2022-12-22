@@ -15,7 +15,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useMyAccounts } from '../../hooks/useQuery';
 import { TypeReport } from '../../types/types';
 import { Calendar } from '../../components/calendar/Calendar';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import { Button } from '../../components/Button';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Color from 'color';
@@ -45,12 +45,12 @@ const reports: Array<{ name: string, value: TypeReport, msg: string, setDates: b
 ]
 
 export const AdvancedScreen = () => {
-    const { isLoading, data, refetch, isFetching } = useMyAccounts();
+    const { isLoading, data, refetch, isFetching, error } = useMyAccounts();
 
     const { navigate } = useNavigation<Stack>();
 
     const { theme: { colors, fonts, roundness } } = useAppSelector(state => state.app);
-    const { vh, orientation } = useContext(OrientationContext);
+    const { vh, orientation, handleError } = useContext(HandleContext);
 
     const { control, handleSubmit, reset, setValue: setValueForm } = useForm<Accout>({ defaultValues: { name: '', start: '', end: '', report: '' } });
 
@@ -173,7 +173,11 @@ export const AdvancedScreen = () => {
     useEffect(() => {
         if (report && report.length > 0 && report[0].setDates) setHideCalendars(false);
         else setHideCalendars(true);
-    }, [report])
+    }, [report]);
+
+    useEffect(() => {
+        if (error) handleError(String(error));
+    }, [error]);
 
 
     return (

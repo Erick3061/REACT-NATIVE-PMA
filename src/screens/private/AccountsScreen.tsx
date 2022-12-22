@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { View, KeyboardAvoidingView } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
@@ -14,7 +14,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Calendar } from '../../components/calendar/Calendar';
 import { TypeReport } from '../../types/types';
 import { useMyAccounts } from '../../hooks/useQuery';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import { Button } from '../../components/Button';
 import { Fab } from '../../components/Fab';
 import Color from 'color';
@@ -40,11 +40,11 @@ const reports: Array<{ name: string, value: TypeReport, msg: string }> = [
 ];
 
 export const AccountsScreen = () => {
-    const { isLoading, data, refetch, isFetching } = useMyAccounts();
+    const { isLoading, data, refetch, isFetching, error } = useMyAccounts();
     const { navigate } = useNavigation<Stack>();
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
-    const { vh, orientation } = useContext(OrientationContext);
+    const { vh, orientation, handleError } = useContext(HandleContext);
 
     const { control, handleSubmit, reset, setValue: setValueForm, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
@@ -103,7 +103,7 @@ export const AccountsScreen = () => {
             )
         }
         return undefined;
-    }, [data, control, valueSelect, colors])
+    }, [data, control, valueSelect, colors]);
 
     const _renderSelectReport = useCallback(() => {
         if (reports) {
@@ -121,7 +121,7 @@ export const AccountsScreen = () => {
                                 labelField='name'
                                 colorSelected={colors.primaryContainer}
                                 value={value}
-                                label='Seleccione reporte'
+                                label='Seleccionar reporte'
                                 itemsSelected={report ?? []}
                                 data={reports}
                                 onChange={(value) => {
@@ -133,8 +133,9 @@ export const AccountsScreen = () => {
                                     }
                                 }}
                                 error={error ? true : false}
+                                renderCancelBtn={orientation === Orientation.landscape}
                             />
-                            {error && <Text variant='titleSmall' style={[{ marginHorizontal: 15, color: colors.danger }]}>{error.message}</Text>}
+                            {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
                     }
                 />
@@ -143,6 +144,9 @@ export const AccountsScreen = () => {
         return undefined;
     }, [control, report, setReport, reports, vh, colors])
 
+    useEffect(() => {
+        if (error) handleError(String(error));
+    }, [error]);
 
     return (
         <View style={{ flex: 1, padding: 10, justifyContent: 'center' }}>

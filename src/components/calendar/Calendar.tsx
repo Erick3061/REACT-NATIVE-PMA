@@ -6,7 +6,7 @@ import { formatDate } from '../../interfaces/interfaces';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppSelector } from '../../app/hooks';
 import { CalendarProvider, CalendarContext } from '../../context/CalendarContext';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import Text from '../Text';
 
 interface Props {
@@ -69,7 +69,7 @@ const RenderCalendar = (props: Props) => {
 
     const _renderCalendar = React.useCallback(() => {
         const { theme: { roundness, colors } } = useAppSelector(state => state.app);
-        const { screenHeight, screenWidth } = useContext(OrientationContext);
+        const { screenHeight, screenWidth } = useContext(HandleContext);
         if (calendarSelected && dates)
             return (Platform.OS === 'ios')
                 ?

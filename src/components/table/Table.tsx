@@ -4,7 +4,7 @@ import { Row } from './Row';
 import { stylesApp } from '../../App';
 import { TableProvider, TableContext } from '../../context/TableContext';
 import { Key } from '../../interfaces/interfaces';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import { useAppSelector } from '../../app/hooks';
 import Color from 'color';
 import Text from '../Text';
@@ -43,7 +43,7 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
     // const [page, setPage] = useState(0);
     // const [numberOfItemsPerPage, setdNumberOfItemsPerPage] = useState(numberOfItemsPerPageList[0]);
     const { data, updateData } = useContext(TableContext);
-    const { screenWidth } = useContext(OrientationContext);
+    const { screenWidth } = useContext(HandleContext);
     const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
     useEffect(() => {

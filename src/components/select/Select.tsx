@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Dimensions, I18nManager, Keyboard, Modal, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { Dimensions, I18nManager, Keyboard, Modal, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet, StatusBar, Platform } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { List } from '../List';
 import { stylesApp } from '../../App';
 import TextInput from '../TextInput';
 import Color from 'color';
+import { HandleContext } from '../../context/HandleContext';
 
 interface Props<T> {
     valueField: keyof T;
@@ -73,10 +74,10 @@ export const Select = <T extends Object>(props: Props<T>) => {
     const _measure = useCallback(() => {
         if (ref && ref?.current) {
             ref.current.measure((_width, _height, px, py, fx, fy) => {
-                const width = Math.floor(px);
-                const top = Math.floor(py) + Math.floor(fy) + 2;
-                const bottom = H - top;
-                const left = I18nManager.isRTL
+                let width = Math.floor(px);
+                let top = Math.floor(py) + Math.floor(fy) + 2;
+                let bottom = H - top;
+                let left = I18nManager.isRTL
                     ? W - Math.floor(px) - Math.floor(fx)
                     : Math.floor(fx);
                 setPosition({ width, top, bottom: Math.floor(bottom), left, height: Math.floor(py) });
@@ -131,6 +132,12 @@ export const Select = <T extends Object>(props: Props<T>) => {
     const _renderModal = useCallback(() => {
         if (position) {
             const { width, bottom, height, left, top } = position;
+            const { top: topSafe, screenHeight, bottom: bottomSafe } = useContext(HandleContext);
+            let isDes: boolean = false;
+            if (maxHeight) {
+                isDes = ((screenHeight - topSafe) - bottomSafe) < (maxHeight + top - topSafe);
+            }
+
             return (
                 <Modal
                     transparent
@@ -147,21 +154,17 @@ export const Select = <T extends Object>(props: Props<T>) => {
                                 <View style={[
                                     modal.Container,
                                     {
+                                        height: maxHeight ?? '100%',
                                         width,
                                         borderRadius: roundness * 2,
-                                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background
+                                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                                        shadowColor: colors.onSurface
                                     },
-                                    maxHeight
-                                        ? {
-                                            height: renderCancelBtn ? (data.length + 1) * heightOption + 20 : (data.length) * heightOption + 30,
-                                            maxHeight,
-                                            position: 'absolute',
-                                            top,
-                                            left
-                                        }
-                                        : {
-                                            height: '100%'
-                                        }
+                                    maxHeight ? {
+                                        position: 'absolute',
+                                        top: !isDes ? Platform.OS === 'ios' ? top : top : undefined,
+                                        bottom: isDes ? 0 : undefined
+                                    } : {}
                                 ]}>
                                     <TouchableWithoutFeedback>
                                         <List
@@ -188,7 +191,7 @@ export const Select = <T extends Object>(props: Props<T>) => {
             )
         }
         return null
-    }, [visible, keyboardHeight, position, colors, dark]);
+    }, [visible, keyboardHeight, position, colors, dark, heightOption, maxHeight]);
 
     return (
         <View style={{ justifyContent: 'center', flex: 1 }} ref={ref} onLayout={_measure}>

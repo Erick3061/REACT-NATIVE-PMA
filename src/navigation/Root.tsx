@@ -1,16 +1,16 @@
-import React, { useEffect } from 'react';
-import { ColorSchemeName, SafeAreaView, StatusBar, useColorScheme, View } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
+import { ColorSchemeName, SafeAreaView, StatusBar, useColorScheme, View, LayoutRectangle } from 'react-native';
 import { useAppSelector, useAppDispatch } from '../app/hooks';
 import { PublicScreens } from './PublicScreens';
 import { updateTheme } from '../features/appSlice';
 import { CombinedDarkTheme, CombinedLightTheme } from '../config/theme/Theme';
 import { NavigationContainer } from '@react-navigation/native';
-import Toast, { BaseToast, BaseToastProps } from 'react-native-toast-message';
+import Toast, { BaseToastProps } from 'react-native-toast-message';
 import { PrivateScreens } from './PrivateScreens';
 import Color from 'color';
 import Text from '../components/Text';
-import { baseUrl } from '../api/Api';
 import { stylesApp } from '../App';
+import { HandleContext } from '../context/HandleContext';
 
 export const toastConfig = {
     success: ({ text1, text2 }: BaseToastProps) => {
@@ -24,7 +24,7 @@ export const toastConfig = {
                     backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
                     shadowColor: colors.success,
                     elevation: 2,
-                    padding: 5,
+                    padding: 10,
                     paddingVertical: 15,
                     width: '90%',
                     borderRadius: roundness * 2,
@@ -46,7 +46,7 @@ export const toastConfig = {
                     backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
                     shadowColor: colors.danger,
                     elevation: 2,
-                    padding: 5,
+                    padding: 10,
                     paddingVertical: 15,
                     width: '90%',
                     borderRadius: roundness * 2,
@@ -68,7 +68,7 @@ export const toastConfig = {
                     backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
                     shadowColor: colors.info,
                     elevation: 2,
-                    padding: 5,
+                    padding: 10,
                     paddingVertical: 15,
                     width: '90%',
                     borderRadius: roundness * 2,
@@ -86,17 +86,32 @@ export const Root = () => {
     const { colors, dark } = theme;
     const dispatch = useAppDispatch();
     const color: ColorSchemeName = useColorScheme();
+    const [layout, setLayout] = useState<LayoutRectangle>();
+    const { setToBo } = useContext(HandleContext);
 
     useEffect(() => {
         color === 'dark' ? dispatch(updateTheme(CombinedDarkTheme)) : dispatch(updateTheme(CombinedLightTheme));
     }, [color]);
 
+    useEffect(() => {
+        if (layout) { setToBo(layout); }
+    }, [layout]);
+
     return (
         <NavigationContainer theme={theme}>
-            <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+            <SafeAreaView style={{ flex: 1 }}>
                 <StatusBar backgroundColor={dark ? Color(colors.background).darken(.4).toString() : colors.background} barStyle={dark ? 'light-content' : 'dark-content'} />
-                {(isAuth) ? <PrivateScreens /> : <PublicScreens />}
-                <Toast config={toastConfig} visibilityTime={3500} position='bottom' autoHide />
+                <View
+                    style={{ flex: 1 }}
+                    onLayout={({ nativeEvent: { layout } }) => setLayout(layout)}
+                >
+                    {(isAuth) ? <PrivateScreens /> : <PublicScreens />}
+                </View>
+                <Toast
+                    config={toastConfig}
+                    position='bottom'
+                    autoHide={false}
+                />
             </SafeAreaView>
         </NavigationContainer>
     )

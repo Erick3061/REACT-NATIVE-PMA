@@ -5,6 +5,7 @@ import { useAppSelector } from '../app/hooks';
 import Color from 'color';
 import { stylesApp } from '../App';
 import Text from './Text';
+import { TypescaleKey } from '../types/types';
 
 type ButtonMode = 'text' | 'outlined' | 'contained' | 'elevated' | 'contained-tonal';
 
@@ -13,6 +14,7 @@ interface Props extends PressableProps {
     icon?: string;
     loading?: boolean;
     labelStyle?: StyleProp<TextStyle>;
+    variantText?: keyof typeof TypescaleKey;
     contentStyle?: StyleProp<ViewStyle>;
     mode?: ButtonMode;
     uppercase?: boolean;
@@ -24,7 +26,9 @@ interface Props extends PressableProps {
     colorTextPressed?: string;
 }
 export const Button = (props: Props) => {
-    const { loading, labelStyle, contentStyle, mode = 'text', icon, text, uppercase = true, disabled, customButtonColor, customTextColor, borderRadiusBtn, colorPressed, colorTextPressed } = props;
+    const { loading, labelStyle, contentStyle, mode = 'text', icon,
+        text, uppercase = true, disabled, customButtonColor, customTextColor,
+        borderRadiusBtn, colorPressed, colorTextPressed, variantText } = props;
     const { color: customLabelColor, fontSize: customLabelSize } = StyleSheet.flatten(labelStyle) || {};
     const iconSize = 18;
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
@@ -147,7 +151,7 @@ export const Button = (props: Props) => {
                         />
                     ) : null}
                     <Text
-                        variant='labelLarge'
+                        variant={variantText ?? 'labelLarge'}
                         style={[
                             styles.label,
                             (isMode('text') ? icon || loading ? styles.LabelTextAddons : styles.LabelText : styles.Label),

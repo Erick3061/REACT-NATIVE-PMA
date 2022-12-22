@@ -5,7 +5,7 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import Toast from 'react-native-toast-message';
 import { toastConfig } from '../navigation/Root';
 import Color from 'color';
-import { OrientationContext } from '../context/OrientationContext';
+import { HandleContext } from '../context/HandleContext';
 import { useAppSelector } from '../app/hooks';
 import Text from './Text';
 import TextInput from './TextInput';
@@ -37,7 +37,7 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
     const [filter, setFilter] = useState<Array<any>>(data);
     const search = useRef<NativeTextInput>(null);
-    const { screenWidth } = useContext(OrientationContext);
+    const { screenWidth } = useContext(HandleContext);
     const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
 

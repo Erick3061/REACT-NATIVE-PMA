@@ -6,7 +6,7 @@ import { useAppSelector } from '../app/hooks';
 import { Button } from './Button';
 import { stylesApp } from '../App';
 import Color from 'color';
-import { OrientationContext } from '../context/OrientationContext';
+import { HandleContext } from '../context/HandleContext';
 import Text from './Text';
 
 interface Props {
@@ -33,7 +33,7 @@ interface Props {
 export const Alert = ({ icon, visible, dismissable, type, timeClose, func, questionProps, msg, subtitle, title, renderCancel, textCancel, onCancel }: Props) => {
 
     const { theme: { colors, dark, fonts, roundness } } = useAppSelector((state) => state.app);
-    const { vw, vh } = useContext(OrientationContext);
+    const { vw, vh } = useContext(HandleContext);
     const opacity = useRef(new Animated.Value(0)).current;
     const zoom = useRef(new Animated.Value(2)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -179,7 +179,11 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
                         setIsVisible(false)
                     }
                 }} />
-                <View style={[styles.modal, { backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background, borderRadius: roundness * 3, minHeight, minWidth, width: '90%' }]}>
+                <View style={[styles.modal, {
+                    backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                    borderRadius: roundness * 3, minHeight, minWidth, width: '90%',
+                    shadowColor: colors.onSurface
+                }]}>
                     {_renderIcon()}
                     <View style={{ justifyContent: 'center', flex: 1 }}>
                         <View>

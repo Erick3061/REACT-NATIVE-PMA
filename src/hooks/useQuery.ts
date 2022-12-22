@@ -1,17 +1,7 @@
 import { TypeReport, typeAccount } from "../types/types";
-import { useQuery } from '@tanstack/react-query';
-import { GetGroups, GetMyAccount, ReportEvents } from "../api/Api";
-import { useAppDispatch } from '../app/hooks';
-import { LogOut } from '../features/appSlice';
+import { useQuery, QueryObserverOptions } from '@tanstack/react-query';
+import { CheckAuth, GetGroups, GetMyAccount, ReportEvents } from "../api/Api";
 import Toast from 'react-native-toast-message';
-
-const validError = (err: string) => {
-    const dispatch = useAppDispatch();
-    if (err.toLowerCase().includes('la sesión expiro')) {
-        dispatch(LogOut());
-    }
-    Toast.show({ type: 'error', text1: 'Error', text2: err });
-}
 
 export function useReport({ accounts, dateEnd, dateStart, key, type, typeAccount }: {
     type: TypeReport,
@@ -22,21 +12,31 @@ export function useReport({ accounts, dateEnd, dateStart, key, type, typeAccount
     key: string;
 }) {
     console.log(['Events', key, type, dateStart, dateEnd]);
-    return useQuery(['Events', key, type], () => ReportEvents({ type, body: { accounts, dateStart, dateEnd, typeAccount } }), {
-        onError: error => validError(String(error))
+    return useQuery(['Events', key, type, dateStart, dateEnd], () => ReportEvents({ type, body: { accounts, dateStart, dateEnd, typeAccount } }), {
+        onError: error => Toast.show({ type: 'error', text1: 'Error', text2: String(error) }),
     })
 }
 
 export function useMyAccounts() {
     return useQuery(['MyAccounts'], GetMyAccount, {
-        onError: error => validError(String(error)),
-        onSuccess: () => Toast.show({ type: 'success', text2: 'Cuentas Actualizadas correctamente...' })
+        onError: error => Toast.show({ type: 'error', text1: 'Error', text2: String(error) }),
+        onSuccess: () => Toast.show({ type: 'success', text2: 'Cuentas Actualizadas correctamente...', autoHide: true })
     });
 }
 
 export function useGroups() {
     return useQuery(['MyGroups'], GetGroups, {
-        onError: error => validError(String(error)),
-        onSuccess: () => Toast.show({ type: 'success', text2: 'Grupos Actualizadas correctamente...', })
+        onError: error => Toast.show({ type: 'error', text1: 'Error', text2: String(error) }),
+        onSuccess: () => Toast.show({ type: 'success', text2: 'Grupos Actualizadas correctamente...', autoHide: true })
     });
 }
+
+export function useCheckAuth({ enabled, retry }: QueryObserverOptions) {
+    return useQuery(['checkAuth'], () => CheckAuth(), {
+        enabled,
+        retry,
+        onError: error => Toast.show({ type: 'error', text1: 'Error', text2: String(error) }),
+        onSuccess: () => Toast.show({ type: 'success', text2: 'Grupos Actualizadas correctamente...', autoHide: true })
+    });
+}
+

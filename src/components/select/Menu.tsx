@@ -5,7 +5,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { stylesApp } from '../../App';
 import { useAppSelector } from '../../app/hooks';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import { Button } from '../Button';
 
 interface option {
@@ -25,8 +25,7 @@ export const _renderModalMenu = (props: Props &
     positionActivator?: LayoutRectangle,
 }) => {
     const { theme: { colors, roundness, dark } } = useAppSelector(state => state.app);
-    const { screenHeight } = useContext(OrientationContext);
-    const [area, setArea] = useState<LayoutRectangle>();
+    const { screenHeight, top, bottom } = useContext(HandleContext);
     const plus: number = 2;
 
     const _renderItems = () => {
@@ -49,36 +48,41 @@ export const _renderModalMenu = (props: Props &
     }
 
     const _renderOptions = useCallback(() => {
-        if (props.positionActivator && area) {
+        if (props.positionActivator) {
             return (
                 Platform.OS === 'ios'
                     ?
                     <Animated.View style={[styles.modal, {
                         width: '100%',
-                        bottom: screenHeight - (area.height + area.y * 2),
-                        paddingBottom: area.y,
-                        borderTopRightRadius: roundness * plus,
-                        borderTopLeftRadius: roundness * plus,
+                        bottom,
+                        borderRadius: roundness * plus,
                         backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
-                        ...stylesApp.shadow
+                        shadowColor: colors.onSurface
                     }]}>
                         {_renderItems()}
                     </Animated.View>
                     :
-                    <View style={[styles.modal, {
-                        right: 20, top: props.positionActivator.y, borderRadius: roundness * plus, ...stylesApp.shadow, backgroundColor: dark ?
-                            Color(colors.background).darken(.4).toString() : colors.background
-                    }]}>
+                    <View style={[
+                        styles.modal,
+                        stylesApp.shadow,
+                        {
+                            right: 20,
+                            top: props.positionActivator.y + 10, borderRadius: roundness * plus,
+                            backgroundColor: dark
+                                ? Color(colors.background).darken(.4).toString()
+                                : colors.background,
+                            shadowColor: colors.onSurface
+                        }]}>
                         {_renderItems()}
                     </View>
             )
-        } else if (area) {
+        } else {
             return (
                 <View
                     style={[styles.modal, {
                         width: '100%',
-                        bottom: screenHeight - (area.height + area.y * 2),
-                        paddingBottom: area.y + 20,
+                        bottom: screenHeight - (top + bottom * 2),
+                        paddingBottom: bottom + 20,
                         borderTopRightRadius: roundness * plus,
                         borderTopLeftRadius: roundness * plus,
                         maxHeight: 400,
@@ -91,18 +95,14 @@ export const _renderModalMenu = (props: Props &
                 </View>
             )
         }
-        return undefined;
-    }, [props.positionActivator, area, screenHeight, colors]);
+    }, [props.positionActivator, screenHeight, colors]);
 
     return (
         <Modal visible={props.open} transparent animationType='fade'>
             <StatusBar backgroundColor={colors.backdrop} />
             <SafeAreaView style={{ flex: 1, backgroundColor: colors.backdrop }}>
                 <Pressable style={{ flex: 1 }}
-                    onPress={() => props.setOpen(false)}
-                    onLayout={layout => {
-                        setArea(layout.nativeEvent.layout);
-                    }} />
+                    onPress={() => props.setOpen(false)} />
                 {_renderOptions()}
             </SafeAreaView>
         </Modal>
@@ -110,11 +110,10 @@ export const _renderModalMenu = (props: Props &
 }
 
 export const Menu = (props: Props) => {
-    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
+    const { theme: { colors } } = useAppSelector(state => state.app);
     const [open, setOpen] = useState<boolean>(false);
     const [positionActivator, setPositionActivator] = useState<LayoutRectangle>();
     const activator = useRef<TouchableHighlight>(null);
-    const slide = useRef(new Animated.Value(0)).current;
 
     return (
         <>

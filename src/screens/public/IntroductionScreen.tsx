@@ -10,7 +10,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Color from 'color';
 import { Alert } from '../../components/Alert';
 import Toast from 'react-native-toast-message';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import Text from '../../components/Text';
 
 type PagerViewOnPageScrollEventData = { position: number; offset: number; }
@@ -123,7 +123,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
     const [showPages, setShowPages] = useState<boolean>(false);
     const { colors, dark } = useAppSelector(state => state.app.theme);
     const Pager = useRef<PagerView>(null);
-    const { vh } = useContext(OrientationContext);
+    const { vh } = useContext(HandleContext);
 
     const omitWellcome = async () => {
         try {
@@ -142,7 +142,11 @@ export const IntroductionScreen = ({ navigation }: Props) => {
         <View style={[styles.container]}>
             <Image
                 source={require('../../assets/logo4.png')}
-                style={[styles.imageStyle, { height: vh * 30 }, dark && { backgroundColor: colors.outline, borderRadius: 10, width: '60%' },]}
+                style={[
+                    styles.imageStyle,
+                    { height: vh * 30 },
+                    dark && { tintColor: colors.onSurface }
+                ]}
             />
             <AnimatedPagerView
                 initialPage={positionAnimatedValue}

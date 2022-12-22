@@ -16,7 +16,7 @@ import { SocialNetworks } from '../../components/SocialNetworks';
 import { ModalTCAP } from '../../components/ModalTCAP';
 import { Button } from '../../components/Button';
 import { Alert } from '../../components/Alert';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import Text from '../../components/Text';
 
 type InputsLogIn = {
@@ -27,7 +27,7 @@ type InputsLogIn = {
 interface Props extends StackScreenProps<rootPublicScreen, 'LogInScreen'> { };
 export const LogInScreen = ({ navigation }: Props) => {
     const { theme: { dark: isDark, colors, fonts } } = useAppSelector(store => store.app);
-    const { vh } = useContext(OrientationContext);
+    const { vh } = useContext(HandleContext);
     const [visible, setVisible] = useState<boolean>(false);
     const [isHelp, setIsHelp] = useState<boolean>(false);
     const [aceptTerms, setAceptTerms] = useState<boolean>(false);
@@ -79,7 +79,11 @@ export const LogInScreen = ({ navigation }: Props) => {
                 <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
                     <Image
                         source={require('../../assets/logo4.png')}
-                        style={[styles.img, isDark && { ...styles.imgDark, backgroundColor: colors.outline, height: vh * 40, }, { height: vh * 35, }]}
+                        style={[
+                            styles.img,
+                            isDark && { tintColor: colors.onSurface },
+                            { height: vh * 35, }
+                        ]}
                     />
                     <Text variant='headlineSmall' style={[styles.title]}>PEMSA monitoreo APP</Text>
                     <KeyboardAvoidingView style={styles.ContainerViewInputs}>
@@ -143,11 +147,6 @@ export const styles = StyleSheet.create({
     img: {
         width: '100%',
         resizeMode: 'contain',
-    },
-    imgDark: {
-        width: '80%',
-        resizeMode: 'contain',
-        borderRadius: 10,
     },
     ContainerViewInputs: {
         width: '100%',

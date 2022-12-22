@@ -18,6 +18,7 @@ import TextInput from '../../components/TextInput';
 import { IconButton } from '../../components/IconButton';
 import { Button } from '../../components/Button';
 import { AppBar } from '../../components/AppBar';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountsScreen'> { };
 
@@ -54,6 +55,9 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
     const { data, isLoading, isFetching, refetch } = useReport({ accounts: [...accounts], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.sort()) });
 
     const [filterData, setFilterData] = useState<typeof data>();
+    const queryClient = useQueryClient();
+    const keyQuery = ["Events", String(accounts), report, start, end];
+
 
     const [stateBB, dispatchBB] = useReducer(reducerBB, initialStateBB);//Problemas de baterias
     const [stateState, dispatchState] = useReducer(reducerState, initialStateState);//Estado de sucursales
@@ -113,7 +117,6 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                                     percentage={percentaje}
                                     amount={`${events}/${total}`}
                                     textLarge={text}
-                                    style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
                                     icon={
                                         (el[0] === 'sinRestaure') ? { name: 'alert-circle', backgroundColor: colorSR }
                                             : (el[0] === 'conRestaure') ? { name: 'alert', backgroundColor: colorCR }
@@ -357,10 +360,10 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
 
         const _renderSearchBar = useCallback(() => {
             return (
-                <View style={[{ flex: 1 }]}>
+                <View style={[{ flex: 1, marginRight: 5 }]}>
                     <TextInput
                         containerStyle={[stylesApp.shadow, {
-                            elevation: 3,
+                            elevation: 2,
                             backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
                             borderBottomWidth: 0,
                             borderRadius: roundness,
@@ -475,7 +478,17 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
         <>
             {(isLoading || isFetching) && <Loading />}
             <AppBar
-                left={<IconButton name='arrow-left' style={{ marginLeft: 10 }} iconsize={30} onPress={() => navigation.goBack()} color={colors.primary} />}
+                left={
+                    <IconButton name='arrow-left'
+                        style={{ marginLeft: 10 }}
+                        iconsize={30}
+                        onPress={() => {
+                            queryClient.removeQueries({ queryKey: keyQuery })
+                            navigation.goBack()
+                        }}
+                        color={colors.primary}
+                    />
+                }
                 label={
                     report === 'ap-ci' ? 'APERTURA Y CIERRE'
                         : (report === 'event-alarm') ? 'EVENTO DE ALARMA'
@@ -521,7 +534,7 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                     </View>
                 }
             />
-            <View style={{ flex: 1, marginHorizontal: 5 }}>
+            <View style={{ flex: 1, margin: 5 }}>
                 <Text style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  {(data?.nombre) ? data.nombre : 'Grupo personalizado, cuentas individuales'}</Text>
                 {_renderPercentajes()}
                 {(report === 'state' || report === 'batery') ? _renderCards() : _renderTables(report)}
@@ -535,6 +548,7 @@ const styles = StyleSheet.create({
         padding: 5,
         margin: 5,
         ...stylesApp.shadow,
+        elevation: 2,
         // borderWidth: 1
     },
     container: {
@@ -542,7 +556,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginHorizontal: 5,
         marginVertical: 5,
-        ...stylesApp.shadow
+        ...stylesApp.shadow,
+        elevation: 2,
     },
     textTitlesHeader: {
         paddingHorizontal: 5,

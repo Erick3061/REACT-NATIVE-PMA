@@ -7,11 +7,12 @@ import {
     StyleSheet,
 } from 'react-native';
 import Svg, { G, Circle } from 'react-native-svg';
+import { Platform } from 'react-native';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-export default function Donut({ percentage, radius = 35, strokeWidth = 5, duration = 100, color, delay = 0, textColor, max = 100 }
+export default function Donut({ percentage, radius = 35, strokeWidth = 5, duration = 100, color, delay = 100, textColor, max = 100 }
     : { percentage: number, radius?: number, strokeWidth?: number, duration?: number, color: string, delay?: number, textColor?: string, max: number }) {
     const animated = React.useRef(new Animated.Value(0)).current;
     const circleRef = React.useRef<any>(null);
@@ -20,7 +21,6 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
     const halfCircle = radius + strokeWidth;
 
     const animation = (toValue: any) => {
-        animated.setValue(0);
         return Animated.timing(animated, {
             delay,
             toValue,
@@ -58,6 +58,7 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
     }
 
     React.useEffect(() => {
+        animated.setValue(0);
         Animate();
     }, [percentage])
 
@@ -77,7 +78,6 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
                         cx="50%"
                         cy="50%"
                         r={radius}
-                        fill="transparent"
                         stroke={color}
                         strokeWidth={strokeWidth}
                         strokeLinecap="round"
@@ -88,7 +88,6 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
                         cx="50%"
                         cy="50%"
                         r={radius}
-                        fill="transparent"
                         stroke={color}
                         strokeWidth={strokeWidth}
                         strokeLinejoin="round"
@@ -102,7 +101,7 @@ export default function Donut({ percentage, radius = 35, strokeWidth = 5, durati
                 editable={false}
                 style={[
                     StyleSheet.absoluteFillObject,
-                    { fontSize: radius / 3, color: textColor ?? color, opacity: 1 },
+                    { fontSize: Platform.OS === 'ios' ? radius / 3.5 : radius / 3, color: textColor ?? color, opacity: 1 },
                     styles.text,
                 ]}
             />

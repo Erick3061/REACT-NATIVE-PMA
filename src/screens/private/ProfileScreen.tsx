@@ -3,7 +3,7 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { KeyboardAvoidingView, View, TextInput as NativeTextInput } from 'react-native';
 import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 
@@ -16,7 +16,7 @@ type ChagePassword = {
 
 export const ProfileScreen = () => {
     const { control, handleSubmit, reset, setValue, formState } = useForm<ChagePassword>({ defaultValues: { password: '', confirmPAssword: '', newPassword: '' } });
-    const { vw } = useContext(OrientationContext);
+    const { vw } = useContext(HandleContext);
     const newPass = useRef<NativeTextInput>(null);
     const confPass = useRef<NativeTextInput>(null);
 

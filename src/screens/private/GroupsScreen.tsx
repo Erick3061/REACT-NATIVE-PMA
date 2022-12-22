@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { View, KeyboardAvoidingView, Text } from 'react-native';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
@@ -12,7 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { TypeReport } from '../../types/types';
 import { useGroups } from '../../hooks/useQuery';
 import { getKeys, getKeysAccount } from '../../functions/functions';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 import { Button } from '../../components/Button';
 import { Fab } from '../../components/Fab';
 import Color from 'color';
@@ -31,12 +31,12 @@ const reports: Array<{ name: string, value: TypeReport, msg: string }> = [
 ];
 
 export const GroupsScreen = () => {
-    const { isLoading, data, refetch, isFetching } = useGroups();
+    const { isLoading, data, refetch, isFetching, error } = useGroups();
     const { navigate } = useNavigation<Stack>();
 
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
-    const { vh, orientation } = useContext(OrientationContext);
+    const { vh, orientation, handleError } = useContext(HandleContext);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
@@ -95,7 +95,7 @@ export const GroupsScreen = () => {
             )
         }
         return undefined;
-    }, [data, control, valueSelect, colors])
+    }, [data, control, valueSelect, colors]);
 
     const _renderSelectReport = useCallback(() => {
         if (reports) {
@@ -134,7 +134,11 @@ export const GroupsScreen = () => {
             )
         }
         return undefined;
-    }, [control, report, setReport, reports, vh, colors])
+    }, [control, report, setReport, reports, vh, colors]);
+
+    useEffect(() => {
+        if (error) handleError(String(error));
+    }, [error]);
 
     return (
         <View style={{ flex: 1, padding: 10, justifyContent: 'center' }}>

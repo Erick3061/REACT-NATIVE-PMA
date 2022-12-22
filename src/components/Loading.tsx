@@ -2,10 +2,10 @@ import Color from 'color';
 import React, { useContext } from 'react';
 import { ActivityIndicator, Modal, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { useAppSelector } from '../app/hooks';
-import { OrientationContext } from '../context/OrientationContext';
+import { HandleContext } from '../context/HandleContext';
 export const Loading = () => {
     const { colors, fonts, roundness, dark } = useAppSelector(state => state.app.theme);
-    const { vw } = useContext(OrientationContext);
+    const { vw } = useContext(HandleContext);
     return (
         <Modal visible transparent animationType='slide' hardwareAccelerated>
             <StatusBar backgroundColor={colors.backdrop} />

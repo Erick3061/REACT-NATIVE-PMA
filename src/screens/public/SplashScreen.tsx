@@ -6,66 +6,41 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { rootPublicScreen } from '../../navigation/PublicScreens';
 import { useDispatch } from 'react-redux';
 import Toast from 'react-native-toast-message';
-import { useQuery } from '@tanstack/react-query';
-import { CheckAuth } from '../../api/Api';
+import { HandleContext } from '../../context/HandleContext';
+import { useCheckAuth } from '../../hooks/useQuery';
 import { setUser } from '../../features/appSlice';
-import { OrientationContext } from '../../context/OrientationContext';
 
 interface Props extends StackScreenProps<rootPublicScreen, 'SplashScreen'> { };
 
 export const SplashScreen = ({ navigation }: Props) => {
     const anim = useRef(new Animated.Value(1)).current;
-    const isDark: boolean = useAppSelector(state => state.app.theme.dark);
-    const { vh } = useContext(OrientationContext);
-    const [token, setToken] = useState<string | undefined>(undefined);
+    const { theme: { dark, colors } } = useAppSelector(state => state.app);
+    const { vh } = useContext(HandleContext);
+    const [token, setToken] = useState<string>();
     const dispatch = useDispatch();
 
-    useQuery(['checkAuth'], () => CheckAuth(), {
-        retry: 0,
-        enabled: token ? true : false,
-        onError: async err => {
-            try {
-                AsyncStorage.removeItem('token');
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: `${err}`,
-                    onHide: () => start({ time: 0 }),
-                });
-            } catch (error) {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: `${error}`,
-                    onHide: () => start({ time: 0 }),
-                });
-            }
-        },
-        onSuccess: data => {
-            dispatch(setUser(data));
-        }
-    });
+    const { data, error } = useCheckAuth({ enabled: token ? true : false });
+    const toast = (error: string) => {
+        Toast.show({
+            type: 'error',
+            text1: 'Error',
+            text2: error,
+            autoHide: true,
+            visibilityTime: 4000,
+            onHide: () => start({ time: 0 }),
+        });
+    }
 
     const start = ({ time }: { time?: number }) => setTimeout(async () => {
         try {
             const open = await AsyncStorage.getItem('isWellcomeOff');
-            (open === 'true') ? navigation.replace('LogInScreen') : navigation.replace('IntroductionScreen');
+            (open) ? navigation.replace('LogInScreen') : navigation.replace('IntroductionScreen');
         } catch (error) {
             try {
                 AsyncStorage.removeItem('token');
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: `${error}`,
-                    onHide: () => start({ time: 0 }),
-                });
+                toast(String(error))
             } catch (error) {
-                Toast.show({
-                    type: 'error',
-                    text1: 'Error',
-                    text2: `${error}`,
-                    onHide: () => start({ time: 0 }),
-                });
+                toast(String(error))
             }
         }
     }, time ?? 1500);
@@ -88,36 +63,32 @@ export const SplashScreen = ({ navigation }: Props) => {
     ).start();
 
     useEffect(() => {
+        if (data) dispatch(setUser(data));
+        if (error) {
+            AsyncStorage.removeItem('token').then(() => start({})).catch(error => toast(String(error)));
+        }
+    }, [data, error]);
+
+    useEffect(() => {
         AsyncStorage.getItem('token').then(async token => {
             if ((typeof token === 'string')) {
                 setToken(token);
             } else { start({}); }
-        }).catch(err => {
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: `${err}`,
-                onHide: () => start({ time: 0 }),
-            });
+        }).catch(error => {
+            toast(String(error))
         });
     }, []);
 
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            {
-                isDark
-                    ?
-                    <Animated.Image
-                        style={{ width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] }}
-                        source={require('../../assets/logo3.png')}
-                    />
-                    :
-                    <Animated.Image
-                        style={{ width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] }}
-                        source={require('../../assets/logo4.png')}
-                    />
-            }
+            <Animated.Image
+                style={[
+                    { width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] },
+                    dark && { tintColor: colors.onSurface }
+                ]}
+                source={require('../../assets/logo4.png')}
+            />
         </View>
     )
 }

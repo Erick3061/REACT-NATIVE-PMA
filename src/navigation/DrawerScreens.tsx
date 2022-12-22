@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CombinedDarkTheme, CombinedLightTheme } from "../config/theme/Theme";
 import { AppBar } from "../components/AppBar";
 import Text from "../components/Text";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type RootDrawerNavigator = {
     HomeScreen: undefined;
@@ -113,6 +114,7 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
     const { colors, fonts, roundness, dark } = theme;
     const dispatch = useDispatch();
     const iconSize: number = 20;
+    const queryClient = useQueryClient();
 
     return (
         <View style={{ flex: 1 }}>
@@ -187,6 +189,7 @@ const MenuContent = ({ navigation, state }: DrawerContentComponentProps) => {
                 <RenderItem icon="logout" label="Cerrar sesión" onPress={async () => {
                     try {
                         await AsyncStorage.removeItem('token');
+                        queryClient.clear();
                         dispatch(LogOut())
                     } catch (error) { }
                 }} />

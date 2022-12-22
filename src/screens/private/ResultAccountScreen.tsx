@@ -1,5 +1,5 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { ListRenderItemInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
@@ -14,13 +14,16 @@ import Table from '../../components/table/Table';
 import { Menu } from '../../components/select/Menu';
 import { AppBar } from '../../components/AppBar';
 import { IconButton } from '../../components/IconButton';
+import { HandleContext } from '../../context/HandleContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountScreen'> { };
 export const ResultAccountScreen = ({ navigation, route: { params: { account, end, report, start, keys, events, typeAccount } } }: Props) => {
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
-    const { data, isLoading, isFetching, refetch } = useReport({ accounts: [account], dateStart: start, dateEnd: end, type: report, typeAccount, key: `${account}` ?? '1234567890' });
+    const { data, isLoading, isFetching, refetch, error } = useReport({ accounts: [account], dateStart: start, dateEnd: end, type: report, typeAccount, key: String(account) });
     const [view, setView] = useState<'table' | 'default'>('table');
-
+    const { handleError } = useContext(HandleContext);
+    const queryClient = useQueryClient();
 
     const _renderItem = ({ index, item, separators }: ListRenderItemInfo<Events>) => {
         return (
@@ -54,7 +57,6 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                                             amount={`${events}/${total}`}
                                             percentage={percentaje}
                                             textLarge={text}
-                                            style={{ marginHorizontal: 5, marginRight: idx === Object.entries(percentajes).length - 1 ? 30 : 0 }}
                                             icon={
                                                 (el[0] === 'Aperturas')
                                                     ? { name: 'lock-open', backgroundColor: colors.success }
@@ -122,11 +124,28 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
         return undefined;
     }, [data, view, dark, Color, colors]);
 
+    useEffect(() => {
+        if (error) handleError(String(error));
+    }, [error]);
+
+    const keyQuery = ["Events", String(account), report, start, end];
+
+
     return (
         <>
             {(isLoading || isFetching) && <Loading />}
             <AppBar
-                left={<IconButton name='arrow-left' style={{ marginLeft: 10 }} iconsize={30} onPress={() => navigation.goBack()} color={colors.primary} />}
+                left={
+                    <IconButton name='arrow-left'
+                        style={{ marginLeft: 10 }}
+                        iconsize={30}
+                        onPress={() => {
+                            queryClient.removeQueries({ queryKey: keyQuery })
+                            navigation.goBack()
+                        }}
+                        color={colors.primary}
+                    />
+                }
                 label={report === 'ap-ci' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'}
                 right={
                     <View style={{ marginRight: 10 }}>
@@ -162,7 +181,7 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                     </View>
                 }
             />
-            <View style={{ flex: 1, marginHorizontal: 5 }}>
+            <View style={{ flex: 1, margin: 5 }}>
                 <Text style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  Entre las fechas {start} a {end}</Text>
                 {_renderPercentajes()}
                 {_renderData()}

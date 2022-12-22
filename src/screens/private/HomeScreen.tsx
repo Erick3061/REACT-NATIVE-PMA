@@ -3,12 +3,12 @@ import { Image, StyleSheet, View } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { SocialNetworks } from '../../components/SocialNetworks';
 import Text from '../../components/Text';
-import { OrientationContext } from '../../context/OrientationContext';
+import { HandleContext } from '../../context/HandleContext';
 // import fds from 'fs'
 
 export const HomeScreen = () => {
     const { theme: { fonts, colors, dark } } = useAppSelector(state => state.app);
-    const { vh } = useContext(OrientationContext);
+    const { vh } = useContext(HandleContext);
     // useEffect(() => {
     //     fetch('https://arxiv.org/pdf/2111.09296.pdf')
     //         .then((data) => {
@@ -20,7 +20,8 @@ export const HomeScreen = () => {
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Image
-                style={[dark && { backgroundColor: colors.outline, borderRadius: 10 }, { height: vh * 20, width: '90%', resizeMode: 'contain', marginVertical: 15 }]}
+                style={[dark && { tintColor: colors.onSurface },
+                { height: vh * 20, width: '90%', resizeMode: 'contain', marginVertical: 15 }]}
                 source={require('../../assets/logo2.png')}
             />
             <SocialNetworks />

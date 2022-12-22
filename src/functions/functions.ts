@@ -92,13 +92,13 @@ export const getKeys: (report: TypeReport) => Array<Key<Events>> = (report) => {
             {
                 label: 'Fecha - Hora',
                 key: ['FechaOriginal', 'Hora'],
-                size: 102,
+                size: 115,
                 center: true
             },
             {
                 label: 'Partición',
                 key: 'Particion',
-                size: 71,
+                size: 73,
                 center: true
             },
             {
@@ -110,7 +110,7 @@ export const getKeys: (report: TypeReport) => Array<Key<Events>> = (report) => {
             {
                 label: 'Usuario',
                 key: 'CodigoUsuario',
-                size: 60,
+                size: 62,
                 center: true
             },
             {
@@ -126,13 +126,13 @@ export const getKeys: (report: TypeReport) => Array<Key<Events>> = (report) => {
                 {
                     label: 'Fecha - Hora',
                     key: ['FechaOriginal', 'Hora'],
-                    size: 102,
+                    size: 115,
                     center: true
                 },
                 {
                     label: 'Partición',
                     key: 'Particion',
-                    size: 71,
+                    size: 73,
                     center: true
                 },
                 {
@@ -144,7 +144,7 @@ export const getKeys: (report: TypeReport) => Array<Key<Events>> = (report) => {
                 {
                     label: 'Usuario',
                     key: 'CodigoUsuario',
-                    size: 60,
+                    size: 62,
                     center: true
                 },
                 {

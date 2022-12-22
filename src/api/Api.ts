@@ -1,9 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { quartersInYear } from 'date-fns';
 import { responseError, User, Account, GetReport, Group, BatteryStatus, Percentajes } from '../interfaces/interfaces';
 import { TypeReport } from '../types/types';
 
-// export const baseUrl = 'https://pem-sa.ddns.me:3007/api';
 export const baseUrl = 'http://192.168.1.93:3000';
 
 export const Api = async (endpoint: string, data: object = {}, method: 'GET' | 'POST' | 'PATCH' = 'GET', tokenTemp?: string) => {
@@ -19,9 +17,13 @@ type response = responseError & User;
 
 export const LogIn = async (props: { email: string, password: string }) => {
     try {
-        const response = await Api('auth', props, 'POST')
+        const response = await Api('auth', props, 'POST');
+        if (!response.ok) {
+            return response.json()
+                .catch(() => { throw (response.status); })
+                .then(({ message }) => { throw (message || response.status); });
+        }
         const { status, message, ...data }: response = await response.json();
-        if (status === false) throw (`${message}`);
         return data;
     } catch (error) { throw (`${error}`) }
 }
@@ -29,26 +31,39 @@ export const LogIn = async (props: { email: string, password: string }) => {
 export const CheckAuth = async (terms?: string) => {
     try {
         const response = await Api(`${terms ? 'user/accept-terms' : 'auth/check-auth'}`, {}, 'GET', terms ?? undefined);
+        if (!response.ok) {
+            return response.json()
+                .catch(() => { throw (response.status); })
+                .then(({ message }) => { throw (message || response.status); });
+        }
         const { status, message, ...data }: response = await response.json();
-        if (status === false) throw (`${message}`);
         return data;
     } catch (error) { throw (`${error}`); }
 };
 
 export const GetMyAccount = async () => {
     try {
-        const response = await Api(`accounts/my-individual-accounts`, {}, 'GET');
+        const response: Response = await Api(`accounts/my-individual-accounts`, {}, 'GET');
+        if (!response.ok) {
+            return response.json()
+                .catch(() => { throw (response.status); })
+                .then(({ message }) => { throw (message || response.status); });
+        }
         const { status, message, ...data }: responseError & { accounts: Array<Account> } = await response.json();
-        if (status === false) throw (`${message}`);
         return data;
+
     } catch (error) { throw (`${error}`); }
 };
 
 export const GetGroups = async () => {
     try {
         const response = await Api(`accounts/my-groups`, {}, 'GET');
+        if (!response.ok) {
+            return response.json()
+                .catch(() => { throw (response.status); })
+                .then(({ message }) => { throw (message || response.status); });
+        }
         const { status, message, ...data }: responseError & { groups: Array<Group> } = await response.json();
-        if (status === false) throw (`${message}`);
         return data;
     } catch (error) { throw (`${error}`); }
 };
