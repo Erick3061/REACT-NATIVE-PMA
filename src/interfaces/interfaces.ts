@@ -47,6 +47,7 @@ export interface User {
     termsAndConditions: boolean;
     roles: Array<string>;
     token: string;
+    refreshToken: string;
 }
 
 export enum BatteryStatus {
@@ -134,10 +135,14 @@ export interface Events {
     HoraFinalizo: string;
 }
 
-
 export interface Key<T> {
     label: string,
     key: keyof T | Array<keyof T>,
     size?: number,
     center?: boolean
+}
+
+export interface CheckAuthProps {
+    terms?: string,
+    token?: string
 }

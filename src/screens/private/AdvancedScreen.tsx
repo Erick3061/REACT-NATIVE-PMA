@@ -50,7 +50,7 @@ export const AdvancedScreen = () => {
     const { navigate } = useNavigation<Stack>();
 
     const { theme: { colors, fonts, roundness } } = useAppSelector(state => state.app);
-    const { vh, orientation, handleError } = useContext(HandleContext);
+    const { handleError, orientation } = useContext(HandleContext);
 
     const { control, handleSubmit, reset, setValue: setValueForm } = useForm<Accout>({ defaultValues: { name: '', start: '', end: '', report: '' } });
 
@@ -134,7 +134,7 @@ export const AdvancedScreen = () => {
                     render={({ field: { value, onChange }, fieldState: { error } }) =>
                         <>
                             <Select
-                                maxHeight={(orientation == Orientation.portrait) ? vh * 30 : undefined}
+                                maxHeight={200}
                                 animationType='fade'
                                 valueField='value'
                                 labelField='name'
@@ -152,6 +152,7 @@ export const AdvancedScreen = () => {
                                     }
                                 }}
                                 error={error ? true : false}
+                                renderCancelBtn
                             />
                             {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
@@ -160,7 +161,7 @@ export const AdvancedScreen = () => {
             )
         }
         return undefined;
-    }, [control, report, setReport, reports, vh, colors, valueSelect])
+    }, [control, report, setReport, reports, colors, valueSelect])
 
     useEffect(() => {
         if (valueSelect?.length === 0) setValueForm('name', '');
@@ -181,53 +182,63 @@ export const AdvancedScreen = () => {
 
 
     return (
-        <View style={{ flex: 1, padding: 10, justifyContent: 'center' }}>
-            <View>
+        <View style={{ flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center' }}>
+            <Loading loading={isLoading} />
+            <View style={[
+                { width: '100%' },
+                orientation === Orientation.landscape && {
+                    width: '80%'
+                }
+            ]}>
                 <ScrollView>
                     {
-                        isLoading ? <Loading />
-                            :
-                            <KeyboardAvoidingView>
-                                {_renderSelectAccounts()}
-                                <View style={{ padding: 10, maxHeight: vh * 25 }}>
-                                    {(valueSelect && valueSelect.length > 0) &&
-                                        <ScrollView >
-                                            {
-                                                valueSelect?.map(acc =>
-                                                    <View
-                                                        key={acc.CodigoCte}
-                                                        style={[
-                                                            stylesApp.shadow,
-                                                            {
-                                                                backgroundColor: colors.background,
-                                                                flexDirection: 'row',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'space-between',
-                                                                borderWidth: .2,
-                                                                borderColor: colors.primary,
-                                                                borderRadius: roundness,
-                                                                paddingHorizontal: 10,
-                                                                paddingVertical: 5,
-                                                                margin: 2,
-                                                                elevation: 2
-                                                            }
-                                                        ]}
+                        <KeyboardAvoidingView>
+                            {_renderSelectAccounts()}
+                            <View style={{ padding: 10, maxHeight: 100 }}>
+                                {(valueSelect && valueSelect.length > 0) &&
+                                    <ScrollView >
+                                        {
+                                            valueSelect?.map(acc =>
+                                                <View
+                                                    key={acc.CodigoCte}
+                                                    style={[
+                                                        stylesApp.shadow,
+                                                        {
+                                                            backgroundColor: colors.background,
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            borderWidth: .2,
+                                                            borderColor: colors.primary,
+                                                            borderRadius: roundness,
+                                                            paddingHorizontal: 10,
+                                                            paddingVertical: 5,
+                                                            margin: 2,
+                                                            elevation: 2
+                                                        }
+                                                    ]}
+                                                >
+                                                    <Text style={[fonts.titleMedium, { color: colors.text, textAlign: 'left' }]}>{acc.Nombre}</Text>
+                                                    <TouchableHighlight
+                                                        style={{ borderRadius: roundness * 2, padding: 1 }}
+                                                        onPress={() => setValueSelect(valueSelect.filter(f => f.CodigoCte !== acc.CodigoCte))}
+                                                        underlayColor={Color(colors.primary).fade(.8).toString()}
                                                     >
-                                                        <Text style={[fonts.titleMedium, { color: colors.text, textAlign: 'left' }]}>{acc.Nombre}</Text>
-                                                        <TouchableHighlight
-                                                            style={{ borderRadius: roundness * 2, padding: 1 }}
-                                                            onPress={() => setValueSelect(valueSelect.filter(f => f.CodigoCte !== acc.CodigoCte))}
-                                                            underlayColor={Color(colors.primary).fade(.8).toString()}
-                                                        >
-                                                            <Icon name='close' color={colors.error} size={25} />
-                                                        </TouchableHighlight>
-                                                    </View>
-                                                )
-                                            }
-                                        </ScrollView>
-                                    }
-                                </View>
-
+                                                        <Icon name='close' color={colors.error} size={25} />
+                                                    </TouchableHighlight>
+                                                </View>
+                                            )
+                                        }
+                                    </ScrollView>
+                                }
+                            </View>
+                            {_renderSelectReport()}
+                            <View style={[
+                                orientation === Orientation.landscape && {
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-end'
+                                }
+                            ]}>
                                 <Calendar
                                     calendars={calendars}
                                     backgroundColor={colors.background}
@@ -238,7 +249,6 @@ export const AdvancedScreen = () => {
                                     Textstyle={fonts.titleMedium}
                                     hideInputs={hideCalendars}
                                 />
-                                {_renderSelectReport()}
                                 <View style={{ padding: 10, alignItems: 'flex-end' }}>
                                     <Button
                                         text='CONSULTAR'
@@ -249,7 +259,8 @@ export const AdvancedScreen = () => {
                                         contentStyle={{ paddingVertical: 5 }}
                                     />
                                 </View>
-                            </KeyboardAvoidingView>
+                            </View>
+                        </KeyboardAvoidingView>
                     }
                 </ScrollView>
             </View>

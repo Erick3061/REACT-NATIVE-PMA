@@ -11,6 +11,8 @@ import Color from 'color';
 import Text from '../components/Text';
 import { stylesApp } from '../App';
 import { HandleContext } from '../context/HandleContext';
+import { OrientationLocker } from 'react-native-orientation-locker';
+import { Orientation } from '../interfaces/interfaces';
 
 export const toastConfig = {
     success: ({ text1, text2 }: BaseToastProps) => {
@@ -87,7 +89,7 @@ export const Root = () => {
     const dispatch = useAppDispatch();
     const color: ColorSchemeName = useColorScheme();
     const [layout, setLayout] = useState<LayoutRectangle>();
-    const { setToBo } = useContext(HandleContext);
+    const { setToBo, changeOrientation } = useContext(HandleContext);
 
     useEffect(() => {
         color === 'dark' ? dispatch(updateTheme(CombinedDarkTheme)) : dispatch(updateTheme(CombinedLightTheme));
@@ -98,21 +100,27 @@ export const Root = () => {
     }, [layout]);
 
     return (
-        <NavigationContainer theme={theme}>
-            <SafeAreaView style={{ flex: 1 }}>
-                <StatusBar backgroundColor={dark ? Color(colors.background).darken(.4).toString() : colors.background} barStyle={dark ? 'light-content' : 'dark-content'} />
-                <View
-                    style={{ flex: 1 }}
-                    onLayout={({ nativeEvent: { layout } }) => setLayout(layout)}
-                >
-                    {(isAuth) ? <PrivateScreens /> : <PublicScreens />}
-                </View>
-                <Toast
-                    config={toastConfig}
-                    position='bottom'
-                    autoHide={false}
-                />
-            </SafeAreaView>
-        </NavigationContainer>
+        <>
+            <OrientationLocker
+                orientation='UNLOCK'
+                onChange={resp => resp.includes('PORTRAIT') ? changeOrientation(Orientation.portrait) : changeOrientation(Orientation.landscape)}
+            />
+            <NavigationContainer theme={theme}>
+                <SafeAreaView style={{ flex: 1 }}>
+                    {/* <StatusBar backgroundColor={dark ? Color(colors.background).darken(.4).toString() : colors.background} barStyle={dark ? 'light-content' : 'dark-content'} /> */}
+                    <View
+                        style={{ flex: 1 }}
+                        onLayout={({ nativeEvent: { layout } }) => setLayout(layout)}
+                    >
+                        {(isAuth) ? <PrivateScreens /> : <PublicScreens />}
+                    </View>
+                    <Toast
+                        config={toastConfig}
+                        position='bottom'
+                        autoHide={false}
+                    />
+                </SafeAreaView>
+            </NavigationContainer>
+        </>
     )
 }

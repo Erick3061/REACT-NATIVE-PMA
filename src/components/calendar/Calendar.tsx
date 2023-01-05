@@ -1,8 +1,8 @@
 import React, { useContext, useEffect } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, View, TouchableWithoutFeedback, Button, TextStyle, StyleProp } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, View, TouchableWithoutFeedback, Button, TextStyle, StyleProp, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { modDate } from '../../functions/functions';
-import { formatDate } from '../../interfaces/interfaces';
+import { formatDate, Orientation } from '../../interfaces/interfaces';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppSelector } from '../../app/hooks';
 import { CalendarProvider, CalendarContext } from '../../context/CalendarContext';
@@ -32,7 +32,9 @@ const CalendarState = ({ children }: any) => {
 const RenderCalendar = (props: Props) => {
     const { calendars, height, backgroundColor, textColor, colorOutline, onChange, limitDays, Textstyle, hideInputs } = props;
     const { dates, calendarSelected, setInitialDates, setCalendar, onDelete, onSelect } = useContext(CalendarContext);
-    const { theme: { fonts, colors } } = useAppSelector(state => state.app);
+    const { theme: { colors, roundness } } = useAppSelector(state => state.app);
+    const { orientation } = useContext(HandleContext);
+
 
     useEffect(() => {
         const dates = calendars.map(cal => { return { name: cal.label, date: modDate({ dateI: cal.date }) } });
@@ -68,17 +70,23 @@ const RenderCalendar = (props: Props) => {
     }, [dates, backgroundColor, textColor, colorOutline, hideInputs, colors]);
 
     const _renderCalendar = React.useCallback(() => {
-        const { theme: { roundness, colors } } = useAppSelector(state => state.app);
-        const { screenHeight, screenWidth } = useContext(HandleContext);
         if (calendarSelected && dates)
             return (Platform.OS === 'ios')
                 ?
-                <Modal visible={calendarSelected !== undefined ? true : false} transparent animationType='fade'>
-                    <View style={{ width: screenWidth, height: screenHeight, position: 'relative', justifyContent: 'center', alignItems: 'center' }}>
-                        <Pressable style={{ width: '100%', height: '100%', backgroundColor: colors.backdrop }} onPress={() => {
-                            setCalendar(undefined)
-                        }} />
-                        <View style={{ position: 'absolute', backgroundColor: colors.background, borderRadius: roundness * 2, padding: 10 }} >
+                <Modal visible={calendarSelected !== undefined ? true : false} transparent animationType='fade' supportedOrientations={['landscape', 'portrait']} >
+                    <SafeAreaView style={[
+                        { flex: 1, justifyContent: 'center', alignItems: 'center' },
+                        orientation === Orientation.landscape && {
+                            justifyContent: 'flex-start'
+                        }
+                    ]} >
+                        <Pressable style={{ width: '100%', height: '100%', backgroundColor: colors.backdrop }} onPress={() => setCalendar(undefined)} />
+                        <View style={[
+                            { position: 'absolute', backgroundColor: colors.background, borderRadius: roundness * 2, padding: 10 },
+                            orientation === Orientation.landscape && {
+                                top: 0
+                            }
+                        ]} >
                             <DateTimePicker
                                 display={'inline'}
                                 locale="es-ES"
@@ -99,7 +107,7 @@ const RenderCalendar = (props: Props) => {
                                 }} />
                             </View>
                         </View>
-                    </View>
+                    </SafeAreaView>
                 </Modal>
                 :
                 (calendarSelected !== undefined) &&
@@ -117,7 +125,7 @@ const RenderCalendar = (props: Props) => {
                     }}
                 />
         return undefined;
-    }, [calendarSelected])
+    }, [calendarSelected, colors, roundness, orientation, dates])
 
     return (
         <View style={[styles.containerInputs]}>

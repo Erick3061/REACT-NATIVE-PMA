@@ -43,7 +43,7 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
     // const [page, setPage] = useState(0);
     // const [numberOfItemsPerPage, setdNumberOfItemsPerPage] = useState(numberOfItemsPerPageList[0]);
     const { data, updateData } = useContext(TableContext);
-    const { screenWidth } = useContext(HandleContext);
+    // const { screenWidth } = useContext(HandleContext);
     const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
     useEffect(() => {
@@ -127,7 +127,7 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
 
     const _renderBody = React.useCallback(() => {
         if (data)
-            if (data.length === 0) return <Text style={{ textAlign: 'center', width: screenWidth - 30 }}>Sin Eventos</Text>;
+            if (data.length === 0) return <Text style={{ textAlign: 'center', width: 100 }}>Sin Eventos</Text>;
             else
                 return (
                     data.map((ev, idx) =>
@@ -142,8 +142,8 @@ const RenderTable = <T extends Object>({ Header, Data, titles, fontSize, scrollR
                             data={ev} />
                     )
                 )
-        return <Text style={{ textAlign: 'center', width: screenWidth - 30, color: colors.text }}>Sin Eventos</Text>;
-    }, [data, screenWidth, colors, Color])
+        return <Text style={{ textAlign: 'center', width: 100, color: colors.text }}>Sin Eventos</Text>;
+    }, [data, colors, Color])
 
     return (
         <View style={[styles.container, {

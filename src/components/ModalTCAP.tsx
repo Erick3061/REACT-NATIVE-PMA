@@ -265,7 +265,7 @@ export const ModalTCAP = ({ accept, visible, setVisible, dismissable }: Props) =
     }
 
     return (
-        <Modal visible={visible} animationType='fade' hardwareAccelerated transparent>
+        <Modal visible={visible} animationType='fade' hardwareAccelerated transparent supportedOrientations={['landscape', 'portrait']}>
             <StatusBar backgroundColor={colors.backdrop} />
             <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Pressable style={{ width: '100%', height: '100%', backgroundColor: Color(colors.backdrop).fade(.7).toString() }} onPress={() => !dismissable && setVisible(false)} />

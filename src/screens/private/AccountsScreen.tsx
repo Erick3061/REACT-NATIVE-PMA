@@ -44,7 +44,7 @@ export const AccountsScreen = () => {
     const { navigate } = useNavigation<Stack>();
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
-    const { vh, orientation, handleError } = useContext(HandleContext);
+    const { handleError, orientation } = useContext(HandleContext);
 
     const { control, handleSubmit, reset, setValue: setValueForm, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
@@ -115,7 +115,7 @@ export const AccountsScreen = () => {
                     render={({ field: { value, onChange }, fieldState: { error } }) =>
                         <>
                             <Select
-                                maxHeight={(orientation == Orientation.portrait) ? vh * 30 : undefined}
+                                maxHeight={200}
                                 animationType='fade'
                                 valueField='value'
                                 labelField='name'
@@ -133,7 +133,7 @@ export const AccountsScreen = () => {
                                     }
                                 }}
                                 error={error ? true : false}
-                                renderCancelBtn={orientation === Orientation.landscape}
+                                renderCancelBtn
                             />
                             {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
@@ -142,23 +142,34 @@ export const AccountsScreen = () => {
             )
         }
         return undefined;
-    }, [control, report, setReport, reports, vh, colors])
+    }, [control, report, setReport, reports, colors, orientation])
 
     useEffect(() => {
         if (error) handleError(String(error));
     }, [error]);
 
     return (
-        <View style={{ flex: 1, padding: 10, justifyContent: 'center' }}>
-            <View>
+        <View style={[{ flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center' }]}>
+            <Loading loading={isLoading} />
+            <View style={[
+                { width: '100%' },
+                orientation === Orientation.landscape && {
+                    width: '80%'
+                }
+            ]}>
                 <ScrollView>
                     {
-                        isLoading ? <Loading />
-                            :
-                            <KeyboardAvoidingView>
-                                <Text variant='titleMedium' style={[{ textAlign: 'center' }]}>Seleccione el inicio y fin de la consulta;</Text>
-                                <Text variant='titleMedium' style={[{ textAlign: 'center' }]}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
-                                {_renderSelectAccount()}
+                        <KeyboardAvoidingView>
+                            <Text variant='titleMedium' style={[{ textAlign: 'center' }]}>Seleccione el inicio y fin de la consulta;</Text>
+                            <Text variant='titleMedium' style={[{ textAlign: 'center' }]}>Recuerde que solo se pueden consultar hasta 30 dias naturales</Text>
+                            {_renderSelectAccount()}
+                            {_renderSelectReport()}
+                            <View style={[
+                                orientation === Orientation.landscape && {
+                                    flexDirection: 'row',
+                                    justifyContent: 'flex-end'
+                                }
+                            ]}>
                                 <Calendar
                                     calendars={calendars}
                                     backgroundColor={colors.background}
@@ -168,8 +179,6 @@ export const AccountsScreen = () => {
                                     onChange={setDates}
                                     Textstyle={fonts.titleMedium}
                                 />
-                                {_renderSelectReport()}
-
                                 <View style={{ padding: 10, alignItems: 'flex-end' }}>
                                     <Button
                                         text='CONSULTAR'
@@ -180,7 +189,8 @@ export const AccountsScreen = () => {
                                         contentStyle={{ paddingVertical: 5 }}
                                     />
                                 </View>
-                            </KeyboardAvoidingView>
+                            </View>
+                        </KeyboardAvoidingView>
                     }
                 </ScrollView>
             </View>

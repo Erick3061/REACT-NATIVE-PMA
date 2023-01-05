@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, TextInput as NativeTextInput } from 'react-native';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Input } from '../../components/Input';
@@ -8,16 +8,14 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { Loading } from '../../components/Loading';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { CheckAuth, LogIn } from '../../api/Api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setUser } from '../../features/appSlice';
-import { User } from '../../interfaces/interfaces';
 import Toast from 'react-native-toast-message';
 import { SocialNetworks } from '../../components/SocialNetworks';
 import { ModalTCAP } from '../../components/ModalTCAP';
 import { Button } from '../../components/Button';
 import { Alert } from '../../components/Alert';
-import { HandleContext } from '../../context/HandleContext';
 import Text from '../../components/Text';
+import { OrientationLocker } from 'react-native-orientation-locker';
 
 type InputsLogIn = {
     email: string,
@@ -26,8 +24,7 @@ type InputsLogIn = {
 
 interface Props extends StackScreenProps<rootPublicScreen, 'LogInScreen'> { };
 export const LogInScreen = ({ navigation }: Props) => {
-    const { theme: { dark: isDark, colors, fonts } } = useAppSelector(store => store.app);
-    const { vh } = useContext(HandleContext);
+    const { theme: { dark: isDark, colors } } = useAppSelector(store => store.app);
     const [visible, setVisible] = useState<boolean>(false);
     const [isHelp, setIsHelp] = useState<boolean>(false);
     const [aceptTerms, setAceptTerms] = useState<boolean>(false);
@@ -40,26 +37,20 @@ export const LogInScreen = ({ navigation }: Props) => {
             Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
         onSuccess: async data => {
-            if (data.termsAndConditions) setLogIn(data);
+            if (data.termsAndConditions) dispatch(setUser(data));
             else setAceptTerms(true)
         },
     });
 
-    const { refetch } = useQuery(['Terms'], () => CheckAuth(data?.token), {
+    const { refetch } = useQuery(['Terms'], () => CheckAuth({ terms: data?.token }), {
         retry: 0,
         enabled: false,
         onError: async err => {
             Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
-        onSuccess: async data => { await setLogIn(data); },
+        onSuccess: async data => { await dispatch(setUser(data)); }
     })
 
-    const setLogIn = async (user: User) => {
-        try {
-            await AsyncStorage.setItem('token', data?.token ?? user.token);
-            dispatch(setUser(user));
-        } catch (error) { Toast.show({ text1: 'Error', text2: String(error), type: 'error' }); }
-    };
 
     const onSubmit: SubmitHandler<InputsLogIn> = async (data) => {
         mutate(data);
@@ -74,19 +65,27 @@ export const LogInScreen = ({ navigation }: Props) => {
 
     return (
         <View style={{ flex: 1 }}>
+            <Loading loading={isLoading} />
+            <OrientationLocker
+                orientation='PORTRAIT'
+            />
             <ScrollView>
-                {isLoading && <Loading />}
                 <View style={{ paddingHorizontal: 30, alignItems: 'center' }}>
                     <Image
                         source={require('../../assets/logo4.png')}
                         style={[
                             styles.img,
                             isDark && { tintColor: colors.onSurface },
-                            { height: vh * 35, }
+                            {
+                                height: 200,
+                                width: 200
+                            }
                         ]}
                     />
                     <Text variant='headlineSmall' style={[styles.title]}>PEMSA monitoreo APP</Text>
-                    <KeyboardAvoidingView style={styles.ContainerViewInputs}>
+                    <KeyboardAvoidingView style={[
+                        styles.ContainerViewInputs
+                    ]}>
                         <Input
                             formInputs={control._defaultValues}
                             control={control}

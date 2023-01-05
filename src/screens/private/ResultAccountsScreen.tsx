@@ -1,5 +1,5 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { createRef, useCallback, useEffect, useReducer, useState } from 'react';
+import React, { createRef, useCallback, useContext, useEffect, useReducer, useState } from 'react';
 import { View, SectionList, ScrollView, Animated, ListRenderItemInfo, StyleSheet, Text } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
@@ -11,14 +11,15 @@ import { TypeReport } from '../../types/types';
 import { TargetPercentaje } from '../../components/TargetPercentaje';
 import Color from 'color';
 import { Menu, _renderModalMenu } from '../../components/select/Menu';
-import { Account, BatteryStatus, percentaje } from '../../interfaces/interfaces';
+import { Account, BatteryStatus, Orientation, percentaje, formatDate } from '../../interfaces/interfaces';
 import { stylesApp } from '../../App';
-import { getDay, modDate } from '../../functions/functions';
+import { getDay, getKeys, modDate } from '../../functions/functions';
 import TextInput from '../../components/TextInput';
 import { IconButton } from '../../components/IconButton';
 import { Button } from '../../components/Button';
 import { AppBar } from '../../components/AppBar';
 import { useQueryClient } from '@tanstack/react-query';
+import { HandleContext } from '../../context/HandleContext';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountsScreen'> { };
 
@@ -52,11 +53,16 @@ function reducerState(state: initialStateState, action: actionReducerState) {
 export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, end, report, start, keys, typeAccount } } }: Props) => {
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
 
-    const { data, isLoading, isFetching, refetch } = useReport({ accounts: [...accounts], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.sort()) });
+    const { data, isLoading, isFetching, refetch } =
+        useReport({ accounts: [...accounts], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.sort()) });
 
     const [filterData, setFilterData] = useState<typeof data>();
     const queryClient = useQueryClient();
-    const keyQuery = ["Events", String(accounts), report, start, end];
+    const keyQuery = ["Events", JSON.stringify(accounts), report, start, end];
+
+    const dates: { start: formatDate, end: formatDate } = { start: modDate({ days: -30 }), end: modDate({}) }
+
+    const { orientation } = useContext(HandleContext);
 
 
     const [stateBB, dispatchBB] = useReducer(reducerBB, initialStateBB);//Problemas de baterias
@@ -100,7 +106,7 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
     }, [stateState]);
 
     const _renderPercentajes = useCallback(() => {
-        if (data && data.percentajes) {
+        if (data && data.percentajes && orientation === Orientation.portrait) {
             const { percentajes } = data;
             return (
                 <View style={{ paddingVertical: 5 }}>
@@ -133,7 +139,7 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                 </View>
             )
         } else { return undefined }
-    }, [filterData]);
+    }, [filterData, orientation]);
 
     const _renderHead = useCallback(() => {
         const sizeName: number = 200;
@@ -350,7 +356,9 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                                 mode='contained-tonal'
                                 text='Detalles'
                                 colorPressed={Color(colors.primary).fade(.8).toString()}
-                                onPress={() => { }}
+                                onPress={() => {
+                                    navigation.navigate('ResultAccountScreen', { account: parseInt(item.CodigoCte), start: dates.start.date.date, report: 'event-alarm', end: dates.end.date.date, keys: getKeys('event-alarm'), typeAccount: 1 });
+                                }}
                             />
                         </View>
                     </View>
@@ -472,11 +480,11 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                 />
             </>
         )
-    }, [filterData, stateBB, stateState, keys, colors, fonts, dark]);
+    }, [filterData, stateBB, stateState, keys, colors, fonts, dark, navigation, dates]);
 
     return (
         <>
-            {(isLoading || isFetching) && <Loading />}
+            <Loading loading={isLoading} refresh={isFetching} />
             <AppBar
                 left={
                     <IconButton name='arrow-left'

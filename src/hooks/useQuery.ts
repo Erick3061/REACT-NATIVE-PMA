@@ -1,5 +1,5 @@
 import { TypeReport, typeAccount } from "../types/types";
-import { useQuery, QueryObserverOptions } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CheckAuth, GetGroups, GetMyAccount, ReportEvents } from "../api/Api";
 import Toast from 'react-native-toast-message';
 
@@ -31,8 +31,8 @@ export function useGroups() {
     });
 }
 
-export function useCheckAuth({ enabled, retry }: QueryObserverOptions) {
-    return useQuery(['checkAuth'], () => CheckAuth(), {
+export function useCheckAuth({ enabled, retry, }: { enabled?: boolean, retry?: number }) {
+    return useQuery(['checkAuth'], () => CheckAuth({}), {
         enabled,
         retry,
         onError: error => Toast.show({ type: 'error', text1: 'Error', text2: String(error) }),

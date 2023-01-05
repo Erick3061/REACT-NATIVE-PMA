@@ -12,6 +12,7 @@ import { Alert } from '../../components/Alert';
 import Toast from 'react-native-toast-message';
 import { HandleContext } from '../../context/HandleContext';
 import Text from '../../components/Text';
+import { Orientation } from '../../interfaces/interfaces';
 
 type PagerViewOnPageScrollEventData = { position: number; offset: number; }
 
@@ -73,7 +74,6 @@ const Item = ({ title, description, scrollOffsetAnimatedValue }: {
     scrollOffsetAnimatedValue: Animated.Value;
 }) => {
     const opacity = scrollOffsetAnimatedValue.interpolate({ inputRange: [0, 0.5, 0.99], outputRange: [1, 0, 1], });
-    const { theme: { colors, fonts } } = useAppSelector(state => state.app);
     return (
         <Animated.View style={{ paddingHorizontal: 30, opacity }} >
             <Text variant='headlineMedium' style={[styles.heading]}>{title}</Text>
@@ -91,9 +91,8 @@ const Dots = ({ positionAnimatedValue, scrollOffsetAnimatedValue }: { scrollOffs
         outputRange: [0, data.length * (DOT_SIZE + (margin * 2))]
     });
 
-
     return (
-        <View style={{ alignItems: 'center' }}>
+        <View style={{ alignItems: 'center', marginVertical: 20 }}>
             <View style={{ flexDirection: 'row' }} >
                 <Animated.View
                     style={[
@@ -123,7 +122,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
     const [showPages, setShowPages] = useState<boolean>(false);
     const { colors, dark } = useAppSelector(state => state.app.theme);
     const Pager = useRef<PagerView>(null);
-    const { vh } = useContext(HandleContext);
+    const { orientation } = useContext(HandleContext);
 
     const omitWellcome = async () => {
         try {
@@ -137,14 +136,23 @@ export const IntroductionScreen = ({ navigation }: Props) => {
         navigation.reset
     }, []);
 
-
     return (
         <View style={[styles.container]}>
             <Image
                 source={require('../../assets/logo4.png')}
                 style={[
                     styles.imageStyle,
-                    { height: vh * 30 },
+                    {
+                        height: 200,
+                        width: 200,
+                    },
+                    (orientation === Orientation.landscape) && [{
+                        height: 100,
+                        width: 100,
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0
+                    }],
                     dark && { tintColor: colors.onSurface }
                 ]}
             />
@@ -171,7 +179,7 @@ export const IntroductionScreen = ({ navigation }: Props) => {
             <Dots positionAnimatedValue={positionAnimatedValue} scrollOffsetAnimatedValue={scrollOffsetAnimatedValue} />
             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <TouchableHighlight
-                    style={[{ backgroundColor: colors.primary, padding: 8, borderRadius: 100, marginVertical: 30 }]}
+                    style={[{ backgroundColor: colors.primary, padding: 8, borderRadius: 100, }]}
                     underlayColor={Color(colors.primary).fade(.5).toString()}
                     onPress={() => {
                         if (page === data.length - 1) setShowPages(true);
@@ -200,8 +208,8 @@ export const IntroductionScreen = ({ navigation }: Props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        display: 'flex',
-        justifyContent: 'flex-end'
+        justifyContent: 'space-between',
+        padding: 20,
     },
     bootom: {
         flexDirection: 'row',
@@ -218,13 +226,12 @@ const styles = StyleSheet.create({
     imageStyle: {
         resizeMode: 'contain',
         alignSelf: 'center',
-        marginTop: 50
     },
     heading: {
         textTransform: 'uppercase',
         fontWeight: '700',
         textAlign: 'center',
-        marginBottom: 15
+        // marginBottom: 15
     },
     description: {
         textAlign: 'justify',

@@ -6,7 +6,6 @@ import { ModalTCAP } from '../../components/ModalTCAP';
 import Text from '../../components/Text';
 
 export const DetailsInfoScreen = () => {
-    const { vh } = useContext(HandleContext);
     const { theme: { colors, fonts, dark } } = useAppSelector(state => state.app);
     const [visible, setVisible] = useState<boolean>(false)
     return (
@@ -15,7 +14,7 @@ export const DetailsInfoScreen = () => {
                 style={[
                     {
                         width: '100%',
-                        height: vh * 25,
+                        height: 100,
                         resizeMode: 'contain'
                     },
                     dark && { tintColor: colors.onSurface }

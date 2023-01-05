@@ -8,6 +8,7 @@ import { stylesApp } from '../App';
 import Color from 'color';
 import { HandleContext } from '../context/HandleContext';
 import Text from './Text';
+import { Orientation } from '../interfaces/interfaces';
 
 interface Props {
     type: 'info' | 'error' | 'question' | 'warning' | 'success' | 'theme';
@@ -33,15 +34,15 @@ interface Props {
 export const Alert = ({ icon, visible, dismissable, type, timeClose, func, questionProps, msg, subtitle, title, renderCancel, textCancel, onCancel }: Props) => {
 
     const { theme: { colors, dark, fonts, roundness } } = useAppSelector((state) => state.app);
-    const { vw, vh } = useContext(HandleContext);
     const opacity = useRef(new Animated.Value(0)).current;
     const zoom = useRef(new Animated.Value(2)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const aminIn = useRef(new Animated.Value(0)).current;
     const AnimatedIcon = Animated.createAnimatedComponent(Icon);
     const [isVisible, setIsVisible] = useState<boolean>(false);
-    const minWidth: number = vw * 70;
-    const minHeight: number = vh * 25;
+    const minWidth: number = 70;
+    const minHeight: number = 25;
+    const { orientation } = useContext(HandleContext);
 
     const closeAlert = () => {
         opacity.setValue(0);
@@ -115,7 +116,7 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
                     <AnimatedIcon
                         name={nameIcon}
                         color={iconColor}
-                        size={vw * 13}
+                        size={40}
                         style={{ transform: [{ scale: zoom }], opacity }}
                     />
                 </View>
@@ -170,7 +171,7 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
     }, [type, questionProps, renderCancel, textCancel])
 
     return (
-        <Modal visible={isVisible} transparent animationType='fade'>
+        <Modal visible={isVisible} transparent animationType='fade' supportedOrientations={['landscape', 'portrait']}>
             <StatusBar backgroundColor={colors.backdrop} />
             <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Pressable style={{ width: '100%', height: '100%', backgroundColor: Color(colors.backdrop).fade(.7).toString() }} onPress={() => {
@@ -183,7 +184,11 @@ export const Alert = ({ icon, visible, dismissable, type, timeClose, func, quest
                     backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
                     borderRadius: roundness * 3, minHeight, minWidth, width: '90%',
                     shadowColor: colors.onSurface
-                }]}>
+                },
+                orientation === Orientation.landscape && {
+                    width: '50%'
+                }
+                ]}>
                     {_renderIcon()}
                     <View style={{ justifyContent: 'center', flex: 1 }}>
                         <View>

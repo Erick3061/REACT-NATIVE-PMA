@@ -1,11 +1,12 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { Dimensions, I18nManager, Keyboard, Modal, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet, StatusBar, Platform } from 'react-native';
+import { Dimensions, I18nManager, Keyboard, Modal, TextInput as NativeTextInput, TouchableWithoutFeedback, View, SafeAreaView, StyleSheet, StatusBar, Platform, LayoutRectangle } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { List } from '../List';
 import { stylesApp } from '../../App';
 import TextInput from '../TextInput';
 import Color from 'color';
 import { HandleContext } from '../../context/HandleContext';
+import { Orientation } from '../../interfaces/interfaces';
 
 interface Props<T> {
     valueField: keyof T;
@@ -45,13 +46,13 @@ export const Select = <T extends Object>(props: Props<T>) => {
     } = props;
 
     const { colors, roundness, dark } = useAppSelector(state => state.app.theme);
-    const { width: W, height: H } = Dimensions.get('window');
     const heightOption: number = 40;
     const ref = useRef<View>(null);
     const search = useRef<NativeTextInput>(null);
     const [visible, setVisible] = useState<boolean>(false);
-    const [position, setPosition] = useState<{ width: number, top: number, bottom: number, left: number, height: number }>();
+    const [layout, setLayout] = useState<LayoutRectangle>();
     const [keyboardHeight, setKeyboardHeight] = useState<number>(0);
+    const { top: topSafe, bottom: bottomSafe, orientation } = useContext(HandleContext);
 
 
     useEffect(() => {
@@ -70,20 +71,6 @@ export const Select = <T extends Object>(props: Props<T>) => {
     const _close = useCallback(() => {
         if (visible) setVisible(false);
     }, [visible]);
-
-    const _measure = useCallback(() => {
-        if (ref && ref?.current) {
-            ref.current.measure((_width, _height, px, py, fx, fy) => {
-                let width = Math.floor(px);
-                let top = Math.floor(py) + Math.floor(fy) + 2;
-                let bottom = H - top;
-                let left = I18nManager.isRTL
-                    ? W - Math.floor(px) - Math.floor(fx)
-                    : Math.floor(fx);
-                setPosition({ width, top, bottom: Math.floor(bottom), left, height: Math.floor(py) });
-            });
-        }
-    }, [W, H]);
 
     const onSelect = useCallback(
         (items: Array<T>) => {
@@ -130,71 +117,65 @@ export const Select = <T extends Object>(props: Props<T>) => {
     }, [error, value, visible, label, colors]);
 
     const _renderModal = useCallback(() => {
-        if (position) {
-            const { width, bottom, height, left, top } = position;
-            const { top: topSafe, screenHeight, bottom: bottomSafe } = useContext(HandleContext);
-            let isDes: boolean = false;
-            if (maxHeight) {
-                isDes = ((screenHeight - topSafe) - bottomSafe) < (maxHeight + top - topSafe);
-            }
-
-            return (
-                <Modal
-                    transparent
-                    animationType={animationType}
-                    visible={visible}
-                    hardwareAccelerated
+        return (
+            <Modal
+                transparent
+                animationType={animationType}
+                visible={visible}
+                hardwareAccelerated
+                supportedOrientations={['landscape', 'portrait']}
+            >
+                <StatusBar backgroundColor={colors.backdrop} />
+                <TouchableWithoutFeedback
+                    onPress={maxHeight ? _close : () => { }}
                 >
-                    <StatusBar backgroundColor={colors.backdrop} />
-                    <TouchableWithoutFeedback
-                        onPress={maxHeight ? _close : () => { }}
-                    >
-                        <SafeAreaView style={{ flex: 1, backgroundColor: colors.backdrop }}>
-                            <View style={[modal.Modal]}>
-                                <View style={[
-                                    modal.Container,
-                                    {
-                                        height: maxHeight ?? '100%',
-                                        width,
-                                        borderRadius: roundness * 2,
-                                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
-                                        shadowColor: colors.onSurface
-                                    },
-                                    maxHeight ? {
+                    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backdrop }}>
+                        <View style={[modal.Modal]}>
+                            <View style={[
+                                modal.Container,
+                                {
+                                    height: maxHeight ?? '100%',
+                                    width: layout?.width ?? '90%',
+                                    borderRadius: roundness * 2,
+                                    backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                                    shadowColor: colors.onSurface
+                                },
+                                orientation === Orientation.landscape ? {
+                                    position: 'absolute',
+                                    bottom: 15
+                                }
+                                    : maxHeight ? {
                                         position: 'absolute',
-                                        top: !isDes ? Platform.OS === 'ios' ? top : top : undefined,
-                                        bottom: isDes ? 0 : undefined
+                                        top: (layout && ((layout.height * 2) + layout.y + maxHeight) - topSafe) ?? undefined
                                     } : {}
-                                ]}>
-                                    <TouchableWithoutFeedback>
-                                        <List
-                                            data={data}
-                                            itemsSelected={itemsSelected}
-                                            labelField={labelField}
-                                            valueField={valueField}
-                                            separator
-                                            separatorColor={colors.primary}
-                                            colorSelected={colorSelected}
-                                            onChange={onSelect}
-                                            multiSelect={multiSelect}
-                                            renderSearch={renderSearch}
-                                            colorBtns={{ cancel: colors.danger, confirm: colors.success }}
-                                            renderCanelBtn={renderCancelBtn}
-                                            height={40}
-                                        />
-                                    </TouchableWithoutFeedback>
-                                </View>
+                            ]}>
+                                <TouchableWithoutFeedback>
+                                    <List
+                                        data={data}
+                                        itemsSelected={itemsSelected}
+                                        labelField={labelField}
+                                        valueField={valueField}
+                                        separator
+                                        separatorColor={colors.primary}
+                                        colorSelected={colorSelected}
+                                        onChange={onSelect}
+                                        multiSelect={multiSelect}
+                                        renderSearch={renderSearch}
+                                        colorBtns={{ cancel: colors.danger, confirm: colors.success }}
+                                        renderCanelBtn={renderCancelBtn}
+                                        height={40}
+                                    />
+                                </TouchableWithoutFeedback>
                             </View>
-                        </SafeAreaView>
-                    </TouchableWithoutFeedback>
-                </Modal>
-            )
-        }
-        return null
-    }, [visible, keyboardHeight, position, colors, dark, heightOption, maxHeight]);
+                        </View>
+                    </SafeAreaView>
+                </TouchableWithoutFeedback>
+            </Modal>
+        )
+    }, [visible, keyboardHeight, colors, dark, heightOption, maxHeight, topSafe, bottomSafe, layout, orientation]);
 
     return (
-        <View style={{ justifyContent: 'center', flex: 1 }} ref={ref} onLayout={_measure}>
+        <View style={{ justifyContent: 'center', flex: 1 }} ref={ref} onLayout={({ nativeEvent: { layout } }) => setLayout(layout)}>
             {_renderDropDown()}
             {_renderModal()}
         </View>

@@ -16,7 +16,7 @@ type ChagePassword = {
 
 export const ProfileScreen = () => {
     const { control, handleSubmit, reset, setValue, formState } = useForm<ChagePassword>({ defaultValues: { password: '', confirmPAssword: '', newPassword: '' } });
-    const { vw } = useContext(HandleContext);
+    // const { vw } = useContext(HandleContext);
     const newPass = useRef<NativeTextInput>(null);
     const confPass = useRef<NativeTextInput>(null);
 
@@ -37,7 +37,7 @@ export const ProfileScreen = () => {
 
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: vw * 7 }}>
+        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}>
             <KeyboardAvoidingView>
                 <Input
                     formInputs={control._defaultValues}

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as StoreProvider } from "react-redux";
 import { StyleSheet } from 'react-native';
@@ -8,7 +8,7 @@ import { HandleProvider } from './context/HandleContext';
 
 export const App = () => {
   const queryClient = new QueryClient();
-  const OrientationState = ({ children }: any) => {
+  const HandleState = ({ children }: any) => {
     return (
       <HandleProvider>
         {children}
@@ -19,9 +19,9 @@ export const App = () => {
   return (
     <StoreProvider store={store}>
       <QueryClientProvider client={queryClient}>
-        <OrientationState>
+        <HandleState>
           <Root />
-        </OrientationState>
+        </HandleState>
       </QueryClientProvider>
     </StoreProvider >
   );

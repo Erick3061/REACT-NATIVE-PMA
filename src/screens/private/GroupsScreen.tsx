@@ -36,7 +36,7 @@ export const GroupsScreen = () => {
 
 
     const { theme: { colors, fonts } } = useAppSelector(state => state.app);
-    const { vh, orientation, handleError } = useContext(HandleContext);
+    const { handleError, orientation } = useContext(HandleContext);
 
     const { control, handleSubmit, reset, formState: { errors } } = useForm<Accout>({ defaultValues: { name: '', report: '' } });
 
@@ -107,7 +107,7 @@ export const GroupsScreen = () => {
                     render={({ field: { value, onChange }, fieldState: { error } }) =>
                         <>
                             <Select
-                                maxHeight={(orientation == Orientation.portrait) ? vh * 30 : undefined}
+                                maxHeight={200}
                                 animationType='fade'
                                 valueField='value'
                                 labelField='name'
@@ -125,7 +125,7 @@ export const GroupsScreen = () => {
                                     }
                                 }}
                                 error={error ? true : false}
-                                renderCancelBtn={orientation === Orientation.landscape}
+                                renderCancelBtn
                             />
                             {error && <Text style={[fonts.titleSmall, { marginLeft: 15, color: colors.error }]}>{error.message}</Text>}
                         </>
@@ -134,36 +134,38 @@ export const GroupsScreen = () => {
             )
         }
         return undefined;
-    }, [control, report, setReport, reports, vh, colors]);
+    }, [control, report, setReport, reports, colors]);
 
     useEffect(() => {
         if (error) handleError(String(error));
     }, [error]);
 
     return (
-        <View style={{ flex: 1, padding: 10, justifyContent: 'center' }}>
+        <View style={{ flex: 1, padding: 10, justifyContent: 'center', alignItems: 'center' }}>
             <View style={[
-                (orientation === Orientation.landscape) && { marginHorizontal: 100 }
+                { width: '100%' },
+                orientation === Orientation.landscape && {
+                    width: '80%'
+                }
             ]}>
+                <Loading loading={isLoading} />
                 <ScrollView>
                     {
-                        isLoading ? <Loading />
-                            :
-                            <KeyboardAvoidingView>
-                                <Text style={[fonts.headlineSmall, { textAlign: 'center', color: colors.text, marginVertical: 10 }]}>Consulta por grupos</Text>
-                                {_renderSelectGroup()}
-                                {_renderSelectReport()}
-                                <View style={{ padding: 10, alignItems: 'flex-end' }}>
-                                    <Button
-                                        text='CONSULTAR'
-                                        loading={isLoading}
-                                        style={{ marginVertical: 5 }}
-                                        mode='contained'
-                                        onPress={handleSubmit(onSubmit)}
-                                        contentStyle={{ paddingVertical: 5 }}
-                                    />
-                                </View>
-                            </KeyboardAvoidingView>
+                        <KeyboardAvoidingView>
+                            <Text style={[fonts.headlineSmall, { textAlign: 'center', color: colors.text, marginVertical: 10 }]}>Consulta por grupos</Text>
+                            {_renderSelectGroup()}
+                            {_renderSelectReport()}
+                            <View style={{ padding: 10, alignItems: 'flex-end' }}>
+                                <Button
+                                    text='CONSULTAR'
+                                    loading={isLoading}
+                                    style={{ marginVertical: 5 }}
+                                    mode='contained'
+                                    onPress={handleSubmit(onSubmit)}
+                                    contentStyle={{ paddingVertical: 5 }}
+                                />
+                            </View>
+                        </KeyboardAvoidingView>
                     }
                 </ScrollView>
             </View>

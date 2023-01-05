@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput as NativeTextInput } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, TouchableWithoutFeedback, TextInput as NativeTextInput, LayoutRectangle } from 'react-native';
 import { DataProvider, LayoutProvider, RecyclerListView } from 'recyclerlistview';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import Toast from 'react-native-toast-message';
@@ -10,6 +10,7 @@ import { useAppSelector } from '../app/hooks';
 import Text from './Text';
 import TextInput from './TextInput';
 import { Button } from './Button';
+import { Orientation } from '../interfaces/interfaces';
 
 interface Props<T> {
     data: Array<T>;
@@ -32,12 +33,15 @@ interface Props<T> {
     onChange: (item: Array<T>) => void;
 }
 export const List = <T extends Object>({ data, labelField, valueField, height, separator, separatorColor, multiSelect, onChange, itemsSelected, colorSelected, colorBtns, renderSearch, renderCanelBtn }: Props<T>) => {
-    const [dataProvider, setDataProvider] = useState<DataProvider>(new DataProvider((r1, r2) => r1 !== r2));
     const containerList = useRef<View>(null);
+    const search = useRef<NativeTextInput>(null);
+
+    const [dataProvider, setDataProvider] = useState<DataProvider>(new DataProvider((r1, r2) => r1 !== r2));
     const [selected, setSelected] = useState<Array<any>>(itemsSelected);
     const [filter, setFilter] = useState<Array<any>>(data);
-    const search = useRef<NativeTextInput>(null);
-    const { screenWidth } = useContext(HandleContext);
+    const [content, setContent] = useState<LayoutRectangle>();
+
+    const { screenWidth, screenHeight, orientation } = useContext(HandleContext);
     const { theme: { colors, roundness } } = useAppSelector(state => state.app);
 
 
@@ -59,6 +63,16 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
     }, [dataProvider, valueField, labelField, setSelected, onChange, selected]);
 
     const _layoutProvider = useCallback(() => {
+        if (content) {
+            const { width } = content;
+            return new LayoutProvider(
+                index => index,
+                (_, dim) => {
+                    dim.width = orientation === Orientation.landscape ? width / 2.1 : screenWidth;
+                    dim.height = height ?? 50;
+                }
+            );
+        }
         return new LayoutProvider(
             index => index,
             (_, dim) => {
@@ -66,7 +80,7 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
                 dim.height = height ?? 50;
             }
         );
-    }, [dataProvider, height]);
+    }, [dataProvider, height, screenHeight, screenWidth, orientation, content]);
 
     const _renderRow = useCallback((type: string | number, data: any, index: number, extendedState?: object | undefined) => {
         const isSelected = selected.find(f => f[valueField] === data[valueField]);
@@ -135,7 +149,9 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
         <TouchableWithoutFeedback>
             <View style={{ flex: 1, padding: 5 }}>
                 {renderSearch && _renderSearch()}
-                <View ref={containerList} style={[styles.container, { borderColor: separatorColor ?? 'silver' }]}>
+                <View ref={containerList} style={[styles.container, { borderColor: separatorColor ?? 'silver' }]}
+                    onLayout={({ nativeEvent: { layout } }) => setContent(layout)}
+                >
                     {
                         filter.length > 0
                             ?
@@ -144,7 +160,7 @@ export const List = <T extends Object>({ data, labelField, valueField, height, s
                                 dataProvider={dataProvider}
                                 layoutProvider={_layoutProvider()}
                             />
-                            : <View style={{ flex: 1, justifyContent: 'center' }}><Text style={{ textAlign: 'center' }}>SIN COINCIDENCIAS</Text></View>
+                            : <Text style={{ textAlign: 'center', paddingVertical: 10 }}>SIN COINCIDENCIAS</Text>
                     }
                 </View>
                 <View style={styles.containerBtns}>

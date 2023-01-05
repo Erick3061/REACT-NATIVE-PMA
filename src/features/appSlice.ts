@@ -6,6 +6,7 @@ import { CombinedLightTheme } from "../config/theme/Theme";
 import { User } from '../interfaces/interfaces';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeBase } from "../types/types";
+import Toast from 'react-native-toast-message';
 
 interface appSlice {
     status: boolean;
@@ -23,12 +24,19 @@ const initialState: appSlice = {
     User: undefined,
 };
 
-export const test = createAsyncThunk('LogIn', async (User: User) => {
+export const setUser = createAsyncThunk('LogIn', async (User: User) => {
     try {
-        await AsyncStorage.setItem('token', User.token);
-        return User;
+        return await AsyncStorage.setItem('token', User.token)
+            .then(() => User)
+            .catch(error => {
+                Toast.show({ text1: 'Error', text2: String(error), type: 'error' });
+                AsyncStorage.removeItem('token');
+                return undefined;
+            });
     } catch (error) { console.log('Error') }
 });
+
+// export const 
 
 export const appSlice = createSlice({
     name: 'app',
@@ -41,18 +49,25 @@ export const appSlice = createSlice({
         updateTheme: (state, action: PayloadAction<ThemeBase & Theme>) => {
             state.theme = action.payload;
         },
-        setUser: (state, action: PayloadAction<User>) => {
-            state.User = action.payload;
-            state.status = true;
-        }
+        // setUser: (state, action: PayloadAction<User>) => {
+        //     state.User = action.payload;
+        //     state.status = true;
+        // }
     },
     extraReducers: (builder) => {
-        builder.addCase(test.fulfilled, (state, { payload }) => {
-            state.User = payload;
-        })
+        builder
+            .addCase(setUser.fulfilled, (state, { payload }) => {
+                state.User = payload;
+                if (!payload) {
+                    state.status = false
+                    state.User = payload;
+                }
+                state.User = payload;
+                state.status = true;
+            })
     }
 });
 
-export const { updateTheme, LogOut, setUser } = appSlice.actions;
+export const { updateTheme, LogOut } = appSlice.actions;
 export const app = (state: RootState) => state.app;
 export default appSlice.reducer;

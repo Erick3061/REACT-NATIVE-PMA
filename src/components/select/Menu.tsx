@@ -1,11 +1,12 @@
 import Color from 'color';
 import React, { useState, useRef, useCallback, useContext } from 'react';
-import { LayoutRectangle, Modal, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, TouchableHighlight, View, Platform, Animated } from 'react-native';
+import { LayoutRectangle, Modal, Platform, Pressable, SafeAreaView, StatusBar, StyleSheet, TouchableHighlight, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { stylesApp } from '../../App';
 import { useAppSelector } from '../../app/hooks';
 import { HandleContext } from '../../context/HandleContext';
+import { Orientation } from '../../interfaces/interfaces';
 import { Button } from '../Button';
 
 interface option {
@@ -25,7 +26,7 @@ export const _renderModalMenu = (props: Props &
     positionActivator?: LayoutRectangle,
 }) => {
     const { theme: { colors, roundness, dark } } = useAppSelector(state => state.app);
-    const { screenHeight, top, bottom } = useContext(HandleContext);
+    const { top, bottom, orientation } = useContext(HandleContext);
     const plus: number = 2;
 
     const _renderItems = () => {
@@ -40,7 +41,7 @@ export const _renderModalMenu = (props: Props &
                     colorPressed={colors.primaryContainer}
                     onPress={() => {
                         props.setOpen(false);
-                        o.onPress();
+                        o.onPress && o.onPress();
                     }}
                 />
             )
@@ -50,38 +51,43 @@ export const _renderModalMenu = (props: Props &
     const _renderOptions = useCallback(() => {
         if (props.positionActivator) {
             return (
-                Platform.OS === 'ios'
-                    ?
-                    <Animated.View style={[styles.modal, {
-                        width: '100%',
-                        bottom,
-                        borderRadius: roundness * plus,
-                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                // Platform.OS === 'ios'
+                //     ?
+                //     <View style={[styles.modal,
+                //     {
+                //         width: '100%',
+                //         bottom,
+                //         borderRadius: roundness * plus,
+                //         backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                //         shadowColor: colors.onSurface
+                //     },
+                //     orientation === Orientation.landscape && {
+                //         backgroundColor: 'red'
+                //     }
+                //     ]}>
+                //         {_renderItems()}
+                //     </View>
+                //     :
+                <View style={[
+                    styles.modal,
+                    stylesApp.shadow,
+                    {
+                        right: 20,
+                        top: props.positionActivator.y + 10 + top, borderRadius: roundness * plus,
+                        backgroundColor: dark
+                            ? Color(colors.background).darken(.4).toString()
+                            : colors.background,
                         shadowColor: colors.onSurface
                     }]}>
-                        {_renderItems()}
-                    </Animated.View>
-                    :
-                    <View style={[
-                        styles.modal,
-                        stylesApp.shadow,
-                        {
-                            right: 20,
-                            top: props.positionActivator.y + 10, borderRadius: roundness * plus,
-                            backgroundColor: dark
-                                ? Color(colors.background).darken(.4).toString()
-                                : colors.background,
-                            shadowColor: colors.onSurface
-                        }]}>
-                        {_renderItems()}
-                    </View>
+                    {_renderItems()}
+                </View>
             )
         } else {
             return (
                 <View
                     style={[styles.modal, {
                         width: '100%',
-                        bottom: screenHeight - (top + bottom * 2),
+                        bottom: 100 - (top + bottom * 2),
                         paddingBottom: bottom + 20,
                         borderTopRightRadius: roundness * plus,
                         borderTopLeftRadius: roundness * plus,
@@ -95,10 +101,10 @@ export const _renderModalMenu = (props: Props &
                 </View>
             )
         }
-    }, [props.positionActivator, screenHeight, colors]);
+    }, [props.positionActivator, 100, colors, orientation]);
 
     return (
-        <Modal visible={props.open} transparent animationType='fade'>
+        <Modal visible={props.open} transparent animationType='fade' supportedOrientations={['landscape', 'portrait']}>
             <StatusBar backgroundColor={colors.backdrop} />
             <SafeAreaView style={{ flex: 1, backgroundColor: colors.backdrop }}>
                 <Pressable style={{ flex: 1 }}

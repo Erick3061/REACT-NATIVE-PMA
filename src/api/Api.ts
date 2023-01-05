@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { responseError, User, Account, GetReport, Group, BatteryStatus, Percentajes } from '../interfaces/interfaces';
+import { responseError, User, Account, GetReport, Group, BatteryStatus, Percentajes, CheckAuthProps } from '../interfaces/interfaces';
 import { TypeReport } from '../types/types';
 
 export const baseUrl = 'http://192.168.1.93:3000';
@@ -28,9 +28,9 @@ export const LogIn = async (props: { email: string, password: string }) => {
     } catch (error) { throw (`${error}`) }
 }
 
-export const CheckAuth = async (terms?: string) => {
+export const CheckAuth = async ({ terms, token }: CheckAuthProps) => {
     try {
-        const response = await Api(`${terms ? 'user/accept-terms' : 'auth/check-auth'}`, {}, 'GET', terms ?? undefined);
+        const response = await Api(`${terms ? 'user/accept-terms' : 'auth/check-auth'}`, {}, 'GET', terms ?? token ?? undefined);
         if (!response.ok) {
             return response.json()
                 .catch(() => { throw (response.status); })
@@ -67,7 +67,6 @@ export const GetGroups = async () => {
         return data;
     } catch (error) { throw (`${error}`); }
 };
-
 
 export const ReportEvents = async ({ body, type }: { body: GetReport, type?: TypeReport }) => {
     try {
@@ -276,4 +275,4 @@ export const ReportEvents = async ({ body, type }: { body: GetReport, type?: Typ
 
         return data;
     } catch (error) { throw (`${error}`); }
-}
+};

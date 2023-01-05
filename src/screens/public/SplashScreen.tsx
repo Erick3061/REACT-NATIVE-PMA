@@ -1,25 +1,29 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Animated, Easing } from 'react-native';
-import { useAppSelector } from '../../app/hooks';
+import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import { rootPublicScreen } from '../../navigation/PublicScreens';
-import { useDispatch } from 'react-redux';
 import Toast from 'react-native-toast-message';
-import { HandleContext } from '../../context/HandleContext';
-import { useCheckAuth } from '../../hooks/useQuery';
 import { setUser } from '../../features/appSlice';
+import { useQuery } from '@tanstack/react-query';
+import { CheckAuth } from '../../api/Api';
 
 interface Props extends StackScreenProps<rootPublicScreen, 'SplashScreen'> { };
 
 export const SplashScreen = ({ navigation }: Props) => {
     const anim = useRef(new Animated.Value(1)).current;
     const { theme: { dark, colors } } = useAppSelector(state => state.app);
-    const { vh } = useContext(HandleContext);
     const [token, setToken] = useState<string>();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
-    const { data, error } = useCheckAuth({ enabled: token ? true : false });
+    useQuery(['checkAuth'], () => CheckAuth({}), {
+        enabled: token ? true : false,
+        retry: 0,
+        onError: error => AsyncStorage.removeItem('token').then(() => start({})).catch(error => toast(String(error))),
+        onSuccess: (resp) => dispatch(setUser(resp))
+    });
+
     const toast = (error: string) => {
         Toast.show({
             type: 'error',
@@ -63,13 +67,6 @@ export const SplashScreen = ({ navigation }: Props) => {
     ).start();
 
     useEffect(() => {
-        if (data) dispatch(setUser(data));
-        if (error) {
-            AsyncStorage.removeItem('token').then(() => start({})).catch(error => toast(String(error)));
-        }
-    }, [data, error]);
-
-    useEffect(() => {
         AsyncStorage.getItem('token').then(async token => {
             if ((typeof token === 'string')) {
                 setToken(token);
@@ -84,7 +81,7 @@ export const SplashScreen = ({ navigation }: Props) => {
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Animated.Image
                 style={[
-                    { width: vh * 25, height: vh * 25, transform: [{ scale: anim, }] },
+                    { width: 150, height: 150, transform: [{ scale: anim, }] },
                     dark && { tintColor: colors.onSurface }
                 ]}
                 source={require('../../assets/logo4.png')}

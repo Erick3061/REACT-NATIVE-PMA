@@ -171,41 +171,40 @@ const TextInput: React.ForwardRefRenderFunction<Ref, PropsTI> = (props: PropsTI,
 
 
     return (
-        <TouchableWithoutFeedback>
-            <Pressable
-                style={[
-                    styles.container,
-                    isFocused && { borderBottomWidth: 1.8 },
-                    { borderBottomColor: color },
-                    containerStyle,
-                    !label && { alignItems: 'flex-start' }
-                ]}
-                onPress={onPress}
-            >
-                {_renderIcon(iconLeft)}
-                <NativeTextInput
-                    {...props}
-                    onLayout={({ nativeEvent }) => setLayoutInput(nativeEvent.layout)}
-                    ref={input}
-                    style={[styles.input, fonts.bodyLarge, { color: colors.onSurface }, inputStyle]}
-                    selectionColor={Color(colors.primary).fade(.8).toString()}
-                    onBlur={(e) => {
-                        setIsFocused(false);
-                        if (props.onBlur) props.onBlur(e)
-                    }}
-                    onFocus={(e) => {
-                        setIsFocused(true);
-                        if (props.onFocus) props.onFocus(e)
-                    }}
-                    secureTextEntry={props.secureTextEntry && isPasswordVisible}
-                    placeholder={(!isFocused && label) ? undefined : props.placeholder}
-                    placeholderTextColor={colors.outlineVariant}
-                />
-                {_renderLabel()}
-                {_renderIcon(iconRight)}
-                {_renderIconPass()}
-            </Pressable>
-        </TouchableWithoutFeedback>
+        <Pressable
+            style={[
+                styles.container,
+                isFocused && { borderBottomWidth: 1.8 },
+                { borderBottomColor: color },
+                containerStyle,
+                !label && { alignItems: 'flex-start' }
+            ]}
+            onPress={onPress}
+        >
+            {_renderIcon(iconLeft)}
+            <NativeTextInput
+                {...props}
+                onLayout={({ nativeEvent }) => setLayoutInput(nativeEvent.layout)}
+                ref={input}
+                style={[styles.input, fonts.bodyLarge, { color: colors.onSurface }, inputStyle]}
+                selectionColor={Color(colors.primary).fade(.8).toString()}
+                onBlur={(e) => {
+                    setIsFocused(false);
+                    if (props.onBlur) props.onBlur(e)
+                }}
+                onFocus={(e) => {
+                    setIsFocused(true);
+                    if (props.onFocus) props.onFocus(e)
+                }}
+                onPressIn={(e) => onPress && onPress(e)}
+                secureTextEntry={props.secureTextEntry && isPasswordVisible}
+                placeholder={(!isFocused && label) ? undefined : props.placeholder}
+                placeholderTextColor={colors.outlineVariant}
+            />
+            {_renderLabel()}
+            {_renderIcon(iconRight)}
+            {_renderIconPass()}
+        </Pressable>
     )
 }
 

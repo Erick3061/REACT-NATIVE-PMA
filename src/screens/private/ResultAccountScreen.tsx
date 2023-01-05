@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { useReport } from '../../hooks/useQuery';
 import { Loading } from '../../components/Loading';
-import { Account, Events, percentaje } from '../../interfaces/interfaces';
+import { Account, Events, percentaje, Orientation } from '../../interfaces/interfaces';
 import { useAppSelector } from '../../app/hooks';
 import Color from 'color';
 import { stylesApp } from '../../App';
@@ -20,9 +20,11 @@ import { useQueryClient } from '@tanstack/react-query';
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountScreen'> { };
 export const ResultAccountScreen = ({ navigation, route: { params: { account, end, report, start, keys, events, typeAccount } } }: Props) => {
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
+
     const { data, isLoading, isFetching, refetch, error } = useReport({ accounts: [account], dateStart: start, dateEnd: end, type: report, typeAccount, key: String(account) });
+
     const [view, setView] = useState<'table' | 'default'>('table');
-    const { handleError } = useContext(HandleContext);
+    const { handleError, orientation, downloadReport, isDownload } = useContext(HandleContext);
     const queryClient = useQueryClient();
 
     const _renderItem = ({ index, item, separators }: ListRenderItemInfo<Events>) => {
@@ -39,7 +41,7 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
     };
 
     const _renderPercentajes = useCallback(() => {
-        if (data && data.cuentas) {
+        if (data && data.cuentas && orientation === Orientation.portrait) {
             if (data.cuentas.length === 1) {
                 const { percentajes } = data;
                 if (percentajes)
@@ -80,7 +82,7 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                 else return undefined;
             } else { return undefined }
         } else { return undefined }
-    }, [data, colors]);
+    }, [data, colors, orientation]);
 
     const _renderData = useCallback(() => {
         const ScrollY = useRef(new Animated.Value(0)).current;
@@ -130,10 +132,9 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
 
     const keyQuery = ["Events", String(account), report, start, end];
 
-
     return (
         <>
-            {(isLoading || isFetching) && <Loading />}
+            <Loading loading={isLoading} refresh={isFetching || isDownload} />
             <AppBar
                 left={
                     <IconButton name='arrow-left'
@@ -159,17 +160,30 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                                 {
                                     icon: 'file-pdf-box',
                                     label: 'Descargar Pdf',
-                                    onPress: () => console.log('Pressed star'),
+                                    onPress: () => {
+                                        console.log(data);
+
+                                        if (data && data.cuentas) {
+                                            console.log(data);
+
+                                            // downloadReport({
+                                            //     data: {
+                                            //         dateStart: start,
+                                            //         dateEnd: end,
+                                            //         accounts: [account],
+                                            //         typeAccount: typeAccount,
+                                            //         showGraphs: false
+                                            //     },
+                                            //     endpoint: report === 'ap-ci' ? 'download-ap-ci' : 'download-event-alarm',
+                                            //     fileName: `${report === 'ap-ci' ? `Apertura y cierre${data.cuentas[0].Nombre ?? ''}.pdf` : `Apertura y cierre${''}.pdf`}`,
+                                            // })
+                                        }
+                                    },
                                 },
                                 {
                                     icon: 'file-excel',
                                     label: 'Descargar Exel',
-                                    onPress: () => console.log('Pressed email'),
-                                },
-                                {
-                                    icon: (view === 'default') ? 'table' : 'table-row',
-                                    label: (view === 'default') ? 'Visualizar tabla' : 'Visualizar cards',
-                                    onPress: () => (view === 'default') ? setView('table') : setView('default'),
+                                    onPress: () => console.log('Pressed excel'),
                                 },
                                 {
                                     icon: 'refresh',
@@ -182,7 +196,15 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                 }
             />
             <View style={{ flex: 1, margin: 5 }}>
-                <Text style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  Entre las fechas {start} a {end}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text adjustsFontSizeToFit style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  Entre las fechas {start} a {end}</Text>
+                    <IconButton
+                        style={{ marginHorizontal: 10 }}
+                        name={(view === 'default') ? 'table' : 'table-row'}
+                        onPress={() => (view === 'default') ? setView('table') : setView('default')}
+                        color={colors.primary}
+                    />
+                </View>
                 {_renderPercentajes()}
                 {_renderData()}
             </View>

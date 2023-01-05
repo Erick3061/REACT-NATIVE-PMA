@@ -1,21 +1,57 @@
 import Color from 'color';
 import React, { useContext } from 'react';
-import { ActivityIndicator, Modal, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, StatusBar, StyleSheet, View } from 'react-native';
 import { useAppSelector } from '../app/hooks';
+import Text from './Text';
+import ContentLoader, { Rect, Circle, Path } from "react-content-loader/native"
 import { HandleContext } from '../context/HandleContext';
-export const Loading = () => {
-    const { colors, fonts, roundness, dark } = useAppSelector(state => state.app.theme);
-    const { vw } = useContext(HandleContext);
+import { stylesApp } from '../App';
+
+export const Loading = ({ loading, refresh }: { loading?: boolean, refresh?: boolean }) => {
+    const { colors, roundness, dark } = useAppSelector(state => state.app.theme);
+    const { screenHeight, screenWidth, orientation } = useContext(HandleContext);
     return (
-        <Modal visible transparent animationType='slide' hardwareAccelerated>
-            <StatusBar backgroundColor={colors.backdrop} />
-            <View style={styles.centeredView}>
-                <View style={[styles.modalView, { backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background, borderRadius: roundness * 3, width: vw * 50, height: vw * 50, shadowColor: colors.primary }]}>
-                    <ActivityIndicator color={colors.primary} size={vw * 5} />
-                    <Text style={[{ color: colors.primary }, fonts.bodyMedium]} >Cargando...</Text>
-                </View>
+        loading ?
+            <View collapsable style={[
+                { backgroundColor: colors.background, position: 'absolute', zIndex: 10, top: 0, justifyContent: 'center', alignItems: 'center' },
+                loading && { width: '100%', height: '100%' }
+            ]}>
+                <ContentLoader
+                    viewBox="0 0 265 230"
+                    backgroundColor={dark ? colors.primary : "#f3f3f3"}
+                    foregroundColor={dark ? colors.onPrimaryContainer : "#ecebeb"}
+                >
+                    <Rect x="15" y="15" rx="4" ry="4" width="200" height="25" />
+                    <Rect x="15" y="50" rx="2" ry="2" width="40" height="15" />
+                    <Rect x="75" y="45" rx="16" ry="16" width="55" height="22" />
+                    <Rect x="15" y="75" rx="3" ry="3" width="215" height="15" />
+                    <Rect x="15" y="105" rx="3" ry="3" width="50" height="15" />
+                    <Rect x="75" y="105" rx="3" ry="3" width="50" height="15" />
+                    <Rect x="135" y="105" rx="3" ry="3" width="50" height="15" />
+                    <Rect x="15" y="135" rx="16" ry="16" width="55" height="22" />
+                    <Rect x="15" y="165" rx="2" ry="2" width="150" height="50" />
+                    <Rect x="215" y="180" rx="2" ry="2" width="40" height="20" />
+                </ContentLoader>
             </View>
-        </Modal>
+            :
+            refresh
+                ?
+                <View style={[
+                    {
+                        alignSelf: 'center',
+                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                        position: 'absolute',
+                        zIndex: 100,
+                        top: 55,
+                        padding: 7,
+                        borderRadius: 100
+                    },
+                    stylesApp.shadow, { shadowColor: colors.primary, elevation: 4 }
+                ]}>
+                    <ActivityIndicator color={colors.primary} size={25} />
+                </View>
+                :
+                null
     )
 }
 const styles = StyleSheet.create({
@@ -23,10 +59,9 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 22
     },
     modalView: {
-        padding: 35,
+        padding: 10,
         alignItems: "center",
         justifyContent: 'center',
         shadowOffset: {
