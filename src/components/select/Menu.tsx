@@ -1,55 +1,38 @@
 import Color from 'color';
-import React, { useState, useRef, useCallback, useContext } from 'react';
-import { LayoutRectangle, Modal, Platform, Pressable, SafeAreaView, StatusBar, StyleSheet, TouchableHighlight, View } from 'react-native';
+import React, { useState, useCallback, useContext, useEffect } from 'react';
+import { LayoutRectangle, Modal, Pressable, SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { stylesApp } from '../../App';
 import { useAppSelector } from '../../app/hooks';
 import { HandleContext } from '../../context/HandleContext';
-import { Orientation } from '../../interfaces/interfaces';
-import { Button } from '../Button';
-
-interface option {
-    label: string,
-    icon?: string,
-    onPress: () => void;
-}
 
 interface Props {
-    options: Array<option>
+    children: React.ReactNode;
+    open: boolean,
+    positionActivator?: LayoutRectangle,
+    close: (close: boolean) => void;
+    animationType?: "none" | "slide" | "fade" | undefined;
 }
 
-export const _renderModalMenu = (props: Props &
-{
-    open: boolean,
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>,
-    positionActivator?: LayoutRectangle,
-}) => {
+export const Menu = ({ children, open, positionActivator, close, animationType }: Props) => {
     const { theme: { colors, roundness, dark } } = useAppSelector(state => state.app);
     const { top, bottom, orientation } = useContext(HandleContext);
     const plus: number = 2;
 
-    const _renderItems = () => {
-        return props.options.map((o, idx) => {
-            return (
-                <Button
-                    key={idx}
-                    mode='elevated'
-                    text={o.label}
-                    icon={o.icon ?? 'home'}
-                    contentStyle={{ alignItems: 'flex-start', elevation: 2, marginVertical: 5 }}
-                    colorPressed={colors.primaryContainer}
-                    onPress={() => {
-                        props.setOpen(false);
-                        o.onPress && o.onPress();
-                    }}
-                />
-            )
-        })
+    const renderContent = ({ children }: { children: React.ReactNode }) => {
+        return (
+            React.Children.toArray(children as React.ReactNode | Array<React.ReactNode>)
+                .filter((child) => child != null && typeof (child) !== 'boolean')//aseguramos que es un Elemento
+                .map((child, i) => {
+                    //@ts-ignore
+                    if (!React.isValidElement(child) || ![].includes(child.type)) return child;
+                    return child
+                })
+        )
     }
 
     const _renderOptions = useCallback(() => {
-        if (props.positionActivator) {
+        if (positionActivator) {
             return (
                 // Platform.OS === 'ios'
                 //     ?
@@ -73,67 +56,65 @@ export const _renderModalMenu = (props: Props &
                     stylesApp.shadow,
                     {
                         right: 20,
-                        top: props.positionActivator.y + 10 + top, borderRadius: roundness * plus,
-                        backgroundColor: dark
-                            ? Color(colors.background).darken(.4).toString()
-                            : colors.background,
-                        shadowColor: colors.onSurface
+                        top: positionActivator.y + 10 + top, borderRadius: roundness * plus,
+                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                        shadowColor: colors.primary,
+                        elevation: 5,
                     }]}>
-                    {_renderItems()}
+                    {/* {_renderItems()} */}
+                    {renderContent({ children })}
                 </View>
             )
         } else {
             return (
                 <View
                     style={[styles.modal, {
-                        width: '100%',
-                        bottom: 100 - (top + bottom * 2),
-                        paddingBottom: bottom + 20,
+                        alignSelf: 'center',
+                        width: '90%',
+                        bottom: 0,
                         borderTopRightRadius: roundness * plus,
                         borderTopLeftRadius: roundness * plus,
                         maxHeight: 400,
-                        ...stylesApp.shadow
+                        backgroundColor: dark ? Color(colors.background).darken(.4).toString() : colors.background,
+                        paddingBottom: 20,
+                        ...stylesApp.shadow,
+                        elevation: 5
                     }]}
                 >
                     <ScrollView>
-                        {_renderItems()}
+                        {renderContent({ children })}
                     </ScrollView>
                 </View>
             )
         }
-    }, [props.positionActivator, 100, colors, orientation]);
+    }, [positionActivator, colors, orientation]);
+
+    const [changeColor, setChangeColor] = useState(false)
+
+    useEffect(() => {
+        setChangeColor(false);
+    }, [])
+
 
     return (
-        <Modal visible={props.open} transparent animationType='fade' supportedOrientations={['landscape', 'portrait']}>
+        <Modal
+            visible={open}
+            transparent
+            animationType={animationType}
+            hardwareAccelerated
+            supportedOrientations={['landscape', 'portrait']}
+            onShow={() => {
+                setChangeColor(true)
+            }}
+        >
             <StatusBar backgroundColor={colors.backdrop} />
-            <SafeAreaView style={{ flex: 1, backgroundColor: colors.backdrop }}>
-                <Pressable style={{ flex: 1 }}
-                    onPress={() => props.setOpen(false)} />
+            <SafeAreaView style={[
+                { flex: 1, backgroundColor: changeColor ? colors.backdrop : undefined }
+            ]}>
+                <Pressable style={{ flex: 1 }} onPress={() => close && close(true)} />
                 {_renderOptions()}
             </SafeAreaView>
         </Modal>
-    )
-}
-
-export const Menu = (props: Props) => {
-    const { theme: { colors } } = useAppSelector(state => state.app);
-    const [open, setOpen] = useState<boolean>(false);
-    const [positionActivator, setPositionActivator] = useState<LayoutRectangle>();
-    const activator = useRef<TouchableHighlight>(null);
-
-    return (
-        <>
-            <TouchableHighlight
-                ref={activator}
-                underlayColor={Color(colors.primaryContainer).toString()}
-                style={{ padding: 5, borderRadius: 100 }}
-                onPress={() => setOpen(true)}
-                onLayout={layout => setPositionActivator(layout.nativeEvent.layout)}
-            >
-                <Icon color={colors.primary} size={25} name='dots-vertical' />
-            </TouchableHighlight>
-            {_renderModalMenu({ open, setOpen, options: props.options, positionActivator })}
-        </>
     )
 }
 

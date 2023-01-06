@@ -46,13 +46,31 @@ export const GroupsScreen = () => {
     const onSubmit: SubmitHandler<Accout> = async (props) => {
         if (valueSelect && valueSelect.length > 0 && report && report?.length > 0) {
             if (report[0].value === 'batery') {
-                navigate('ResultAccountsScreen', { accounts: [valueSelect[0].Codigo], report: report[0].value, keys: getKeysAccount(report[0].value), typeAccount: valueSelect[0].Tipo });
+                navigate('ResultAccountsScreen', {
+                    accounts: [{ name: valueSelect[0].Nombre, code: valueSelect[0].Codigo }],
+                    report: report[0].value,
+                    keys: getKeysAccount(report[0].value),
+                    typeAccount: valueSelect[0].Tipo,
+                    nameGroup: valueSelect[0].Nombre,
+                });
             }
             if (report[0].value === 'state') {
-                navigate('ResultAccountsScreen', { accounts: [valueSelect[0].Codigo], report: report[0].value, keys: getKeys(report[0].value), typeAccount: valueSelect[0].Tipo });
+                navigate('ResultAccountsScreen', {
+                    accounts: [{ name: valueSelect[0].Nombre, code: valueSelect[0].Codigo }],
+                    report: report[0].value,
+                    keys: getKeys(report[0].value),
+                    typeAccount: valueSelect[0].Tipo,
+                    nameGroup: valueSelect[0].Nombre,
+                });
             }
             if (report[0].value === 'apci-week') {
-                navigate('ResultAccountsScreen', { accounts: [valueSelect[0].Codigo], report: report[0].value, keys: getKeys(report[0].value), typeAccount: valueSelect[0].Tipo });
+                navigate('ResultAccountsScreen', {
+                    accounts: [{ name: valueSelect[0].Nombre, code: valueSelect[0].Codigo }],
+                    report: report[0].value,
+                    keys: getKeys(report[0].value),
+                    typeAccount: valueSelect[0].Tipo,
+                    nameGroup: valueSelect[0].Nombre,
+                });
             }
         }
 

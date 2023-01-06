@@ -1,6 +1,6 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ListRenderItemInfo, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ListRenderItemInfo, ScrollView, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { useReport } from '../../hooks/useQuery';
@@ -16,14 +16,20 @@ import { AppBar } from '../../components/AppBar';
 import { IconButton } from '../../components/IconButton';
 import { HandleContext } from '../../context/HandleContext';
 import { useQueryClient } from '@tanstack/react-query';
+import Text from '../../components/Text';
+import { Button } from '../../components/Button';
+import Toast from 'react-native-toast-message';
+import { modDate } from '../../functions/functions';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountScreen'> { };
 export const ResultAccountScreen = ({ navigation, route: { params: { account, end, report, start, keys, events, typeAccount } } }: Props) => {
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
 
-    const { data, isLoading, isFetching, refetch, error } = useReport({ accounts: [account], dateStart: start, dateEnd: end, type: report, typeAccount, key: String(account) });
+    const { data, isLoading, isFetching, refetch, error } = useReport({ accounts: [account.code], dateStart: start, dateEnd: end, type: report, typeAccount, key: String(account.code) });
 
-    const [view, setView] = useState<'table' | 'default'>('table');
+    const [view, setView] = useState<'table' | 'default'>('default');
+    const [openMenu, setOpenMenu] = useState<boolean>(false);
+
     const { handleError, orientation, downloadReport, isDownload } = useContext(HandleContext);
     const queryClient = useQueryClient();
 
@@ -128,77 +134,65 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
 
     useEffect(() => {
         if (error) handleError(String(error));
-    }, [error]);
+    }, [error])
+
+    const Download = (withGrap?: boolean) => {
+        downloadReport({
+            data: {
+                accounts: [account.code],
+                showGraphs: withGrap ? true : false,
+                typeAccount,
+                dateStart: start,
+                dateEnd: end
+            },
+            endpoint: (report === 'ap-ci') ? 'download-ap-ci' : 'download-event-alarm',
+            fileName: `${(report === 'ap-ci') ? 'Apertura y cierre' : 'Evento de alarma'} ${start} ${end} ${account.name}.pdf`
+        })
+    }
 
     const keyQuery = ["Events", String(account), report, start, end];
 
     return (
         <>
             <Loading loading={isLoading} refresh={isFetching || isDownload} />
-            <AppBar
-                left={
-                    <IconButton name='arrow-left'
-                        style={{ marginLeft: 10 }}
-                        iconsize={30}
-                        onPress={() => {
-                            queryClient.removeQueries({ queryKey: keyQuery })
-                            navigation.goBack()
-                        }}
-                        color={colors.primary}
-                    />
-                }
-                label={report === 'ap-ci' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'}
-                right={
-                    <View style={{ marginRight: 10 }}>
-                        <Menu
-                            options={[
-                                {
-                                    icon: 'file-pdf-box',
-                                    label: 'Descargar Pdf con gráfica',
-                                    onPress: () => console.log('Pressed star'),
-                                },
-                                {
-                                    icon: 'file-pdf-box',
-                                    label: 'Descargar Pdf',
-                                    onPress: () => {
-                                        console.log(data);
-
-                                        if (data && data.cuentas) {
-                                            console.log(data);
-
-                                            // downloadReport({
-                                            //     data: {
-                                            //         dateStart: start,
-                                            //         dateEnd: end,
-                                            //         accounts: [account],
-                                            //         typeAccount: typeAccount,
-                                            //         showGraphs: false
-                                            //     },
-                                            //     endpoint: report === 'ap-ci' ? 'download-ap-ci' : 'download-event-alarm',
-                                            //     fileName: `${report === 'ap-ci' ? `Apertura y cierre${data.cuentas[0].Nombre ?? ''}.pdf` : `Apertura y cierre${''}.pdf`}`,
-                                            // })
-                                        }
-                                    },
-                                },
-                                {
-                                    icon: 'file-excel',
-                                    label: 'Descargar Exel',
-                                    onPress: () => console.log('Pressed excel'),
-                                },
-                                {
-                                    icon: 'refresh',
-                                    label: 'Recargar',
-                                    onPress: () => refetch(),
-                                },
-                            ]}
-                        />
-                    </View>
-                }
-            />
+            <AppBar style={{ paddingHorizontal: 10 }}>
+                <IconButton name='arrow-left'
+                    disabled={isLoading || isFetching || isDownload}
+                    iconsize={28}
+                    onPress={() => {
+                        queryClient.removeQueries({ queryKey: keyQuery })
+                        navigation.goBack();
+                    }}
+                    color={colors.primary}
+                />
+                <Text variant='titleMedium'>{report === 'ap-ci' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'}</Text>
+                <IconButton disabled={isLoading || isFetching || isDownload} color={colors.primary} name='dots-vertical' onPress={(e) => setOpenMenu(true)} onLayout={({ nativeEvent: { layout } }) => { }} />
+            </AppBar>
+            <Menu open={openMenu} close={close => setOpenMenu(!close)} animationType='slide'>
+                <Button
+                    onPress={() => {
+                        setOpenMenu(false);
+                        Download(true);
+                    }}
+                    icon='file-pdf-box' contentStyle={styles.btnMenu} text='Descargar pdf con gráfica' />
+                <Button
+                    onPress={() => {
+                        setOpenMenu(false);
+                        Download();
+                    }}
+                    icon='file-pdf-box' contentStyle={styles.btnMenu} text='Descargar pdf' />
+                <Button
+                    onPress={() => {
+                        setOpenMenu(false);
+                        refetch();
+                    }}
+                    icon='refresh' contentStyle={styles.btnMenu} text='Recargar' />
+            </Menu>
             <View style={{ flex: 1, margin: 5 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text adjustsFontSizeToFit style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  Entre las fechas {start} a {end}</Text>
+                    <Text variant='titleMedium' adjustsFontSizeToFit style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }]}>  Entre las fechas {start} a {end}</Text>
                     <IconButton
+                        disabled={isLoading || isFetching || isDownload}
                         style={{ marginHorizontal: 10 }}
                         name={(view === 'default') ? 'table' : 'table-row'}
                         onPress={() => (view === 'default') ? setView('table') : setView('default')}
@@ -217,5 +211,9 @@ const styles = StyleSheet.create({
         padding: 5,
         margin: 5,
         ...stylesApp.shadow,
+    },
+    btnMenu: {
+        alignItems: 'flex-start',
+        marginVertical: 5
     }
 });

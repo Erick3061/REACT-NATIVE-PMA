@@ -11,7 +11,6 @@ export function useReport({ accounts, dateEnd, dateStart, key, type, typeAccount
     typeAccount: typeAccount,
     key: string;
 }) {
-    console.log(['Events', key, type, dateStart, dateEnd]);
     return useQuery(['Events', key, type, dateStart, dateEnd], () => ReportEvents({ type, body: { accounts, dateStart, dateEnd, typeAccount } }), {
         onError: error => Toast.show({ type: 'error', text1: 'Error', text2: String(error) }),
     })

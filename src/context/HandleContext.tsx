@@ -92,7 +92,6 @@ const Reducer = (state: State, action: Action): State => {
 
 export const HandleProvider = ({ children }: any) => {
     const [state, dispatch] = useReducer(Reducer, initialState);
-    const { status } = useAppSelector(state => state.app);
     const appDispatch = useAppDispatch();
     const queryClient = useQueryClient();
     const androidPermissions = [
@@ -152,16 +151,30 @@ export const HandleProvider = ({ children }: any) => {
         const headers: HeadersInit_ | undefined = {};
         (token) ? Object.assign(headers, { 'Content-type': 'application/json', 'Authorization': `Bearer ${token}` }) : Object.assign(headers, { 'Content-type': 'application/json', });
         dispatch({ type: 'updateIsDownload', payload: true });
-
-        const directory = (Platform.OS === 'ios' ? RNFetchBlob.fs.dirs.DocumentDir : RNFetchBlob.fs.dirs.DownloadDir) + '/' + fileName;
+        const path = (Platform.OS === 'ios' ? RNFetchBlob.fs.dirs.DocumentDir : RNFetchBlob.fs.dirs.DownloadDir)
+        const directory = path + '/' + fileName;
 
         RNFetchBlob
             .fetch('POST', url, headers, JSON.stringify(data))
             .then(async (resp: FetchBlobResponse) => {
-                if (resp.type === 'base64')
-                    return RNFetchBlob.fs.createFile(directory, resp.data, 'base64')
-                        .then(a => Toast.show({ text1: `${fileName}`, text2: 'Creado existosamente' }))
-                        .catch(error => { throw (String(error)) });
+                if (resp.type === 'base64') {
+                    try {
+                        const exist = await RNFetchBlob.fs.exists(directory);
+                        if (exist) {
+                            const files = await RNFetchBlob.fs.ls(path);
+                            const numFiles = files.filter(a => a.includes(fileName.replace('.pdf', ''))).length;
+                            const newFileName = fileName.replace('.pdf', ` ${numFiles}.pdf`);
+                            const newDirectory = path + '/' + newFileName;
+                            await RNFetchBlob.fs.createFile(newDirectory, resp.data, 'base64');
+                            Toast.show({ text1: `${newFileName}`, text2: 'Creado existosamente', autoHide: true, visibilityTime: 2000 });
+                        } else {
+                            await RNFetchBlob.fs.createFile(directory, resp.data, 'base64');
+                            Toast.show({ text1: `${fileName}`, text2: 'Creado existosamente', autoHide: true, visibilityTime: 2000 });
+                        }
+                    } catch (error) {
+                        throw (String(error))
+                    }
+                }
                 else {
                     if (resp.type === 'utf8') throw (JSON.stringify(resp.data, null, 3));
                     else { throw (JSON.stringify(resp, null, 3)); }

@@ -42,10 +42,10 @@ export const DrawerScreens = () => {
             drawerContent={(Props) => <MenuContent {...Props} />}
             screenOptions={{
                 header: (({ layout, navigation, options, route }) =>
-                    <AppBar
-                        left={<Icon style={{ paddingHorizontal: 12 }} name="menu" size={30} color={colors.text} onPress={() => navigation.openDrawer()} />}
-                        label={options.title ?? ''}
-                    />
+                    <AppBar>
+                        <Icon style={{ paddingHorizontal: 12 }} name="menu" size={30} color={colors.text} onPress={() => navigation.openDrawer()} />
+                        <Text variant='titleMedium' >{options.title ?? ''}</Text>
+                    </AppBar>
                 )
             }}
         >

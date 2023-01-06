@@ -67,15 +67,16 @@ export const AdvancedScreen = () => {
                 const start = dates.find(f => f.name === 'Fecha inicio')?.date?.date.date ?? modDate({}).date.date;
                 const end = dates.find(f => f.name === 'Fecha final')?.date?.date.date ?? modDate({}).date.date;
                 if (accounts.length === 1) {
-                    navigate('ResultAccountScreen', { account: parseInt(accounts[0].CodigoCte), end, report: report[0].value, start, keys: getKeys(report[0].value), typeAccount: 1 })
+                    navigate('ResultAccountScreen', { account: { name: accounts[0].Nombre, code: parseInt(accounts[0].CodigoCte) }, end, report: report[0].value, start, keys: getKeys(report[0].value), typeAccount: 1 })
                 } else {
                     navigate('ResultAccountsScreen', {
-                        accounts: valueSelect ? valueSelect.map(v => parseInt(v.CodigoCte)).sort() : [],
+                        accounts: valueSelect ? valueSelect.map(v => { return { name: v.Nombre, code: parseInt(v.CodigoCte) } }).sort() : [],
                         report: report[0].value,
                         keys: report[0].value === 'batery' ? getKeysAccount(report[0].value) : getKeys(report[0].value),
                         typeAccount: 1,
                         start: (report[0].value === 'ap-ci' || report[0].value === 'event-alarm') ? start : undefined,
                         end: (report[0].value === 'ap-ci' || report[0].value === 'event-alarm') ? end : undefined,
+                        nameGroup: 'Custom Group'
                     });
                 }
             } else {

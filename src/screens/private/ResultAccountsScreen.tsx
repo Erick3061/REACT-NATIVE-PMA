@@ -1,6 +1,6 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { createRef, useCallback, useContext, useEffect, useReducer, useState } from 'react';
-import { View, SectionList, ScrollView, Animated, ListRenderItemInfo, StyleSheet, Text } from 'react-native';
+import { View, SectionList, ScrollView, Animated, ListRenderItemInfo, StyleSheet } from 'react-native';
 import { useAppSelector } from '../../app/hooks';
 import { rootPrivateScreens } from '../../navigation/PrivateScreens';
 import { Loading } from '../../components/Loading';
@@ -10,7 +10,6 @@ import { Row } from '../../components/table/Row';
 import { TypeReport } from '../../types/types';
 import { TargetPercentaje } from '../../components/TargetPercentaje';
 import Color from 'color';
-import { Menu, _renderModalMenu } from '../../components/select/Menu';
 import { Account, BatteryStatus, Orientation, percentaje, formatDate } from '../../interfaces/interfaces';
 import { stylesApp } from '../../App';
 import { getDay, getKeys, modDate } from '../../functions/functions';
@@ -20,6 +19,8 @@ import { Button } from '../../components/Button';
 import { AppBar } from '../../components/AppBar';
 import { useQueryClient } from '@tanstack/react-query';
 import { HandleContext } from '../../context/HandleContext';
+import Text from '../../components/Text';
+import { Menu } from '../../components/select/Menu';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountsScreen'> { };
 
@@ -50,19 +51,21 @@ function reducerState(state: initialStateState, action: actionReducerState) {
     }
 }
 
-export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, end, report, start, keys, typeAccount } } }: Props) => {
+export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, end, report, start, keys, typeAccount, nameGroup } } }: Props) => {
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
 
     const { data, isLoading, isFetching, refetch } =
-        useReport({ accounts: [...accounts], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.sort()) });
+        useReport({ accounts: [...accounts.map(a => a.code)], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.map(a => a.code).sort()) });
 
     const [filterData, setFilterData] = useState<typeof data>();
+    const [openMenu, setOpenMenu] = useState<boolean>(false);
+
     const queryClient = useQueryClient();
     const keyQuery = ["Events", JSON.stringify(accounts), report, start, end];
 
     const dates: { start: formatDate, end: formatDate } = { start: modDate({ days: -30 }), end: modDate({}) }
 
-    const { orientation } = useContext(HandleContext);
+    const { orientation, isDownload, downloadReport } = useContext(HandleContext);
 
 
     const [stateBB, dispatchBB] = useReducer(reducerBB, initialStateBB);//Problemas de baterias
@@ -75,6 +78,20 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
     const colorA: string = colors.success;
     const colorC: string = colors.danger;
     const colorS: string = colors.warning;
+
+    const Download = (withGrap?: boolean) => {
+        downloadReport({
+            data: {
+                accounts: accounts.map(a => a.code),
+                showGraphs: withGrap ? true : false,
+                typeAccount,
+                dateStart: start,
+                dateEnd: end
+            },
+            endpoint: (report === 'apci-week') ? 'download-ap-week' : (report === 'state') ? 'download-state' : 'download-batery',
+            fileName: `${(report === 'apci-week') ? 'Aperturas y Cieres una semana' : (report === 'state') ? 'Estado de sucursales' : 'Estados de bateria'} ${start ?? ''} ${end ?? ''} ${nameGroup}.pdf`
+        })
+    }
 
 
     useEffect(() => {
@@ -357,7 +374,7 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                                 text='Detalles'
                                 colorPressed={Color(colors.primary).fade(.8).toString()}
                                 onPress={() => {
-                                    navigation.navigate('ResultAccountScreen', { account: parseInt(item.CodigoCte), start: dates.start.date.date, report: 'event-alarm', end: dates.end.date.date, keys: getKeys('event-alarm'), typeAccount: 1 });
+                                    navigation.navigate('ResultAccountScreen', { account: { name: item.Nombre, code: parseInt(item.CodigoCte) }, start: dates.start.date.date, report: 'event-alarm', end: dates.end.date.date, keys: getKeys('event-alarm'), typeAccount: 1 });
                                 }}
                             />
                         </View>
@@ -473,10 +490,6 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                     renderItem={_renderItem}
                     keyExtractor={(_, idx) => `${idx}`}
                     ListEmptyComponent={<Text style={[fonts.titleMedium, { textAlign: 'center' }]}>Sin coincidencias</Text>}
-                // onScroll={Animated.event(
-                //     [{ nativeEvent: { contentOffset: { x: ScrollY } } }],
-                //     { useNativeDriver: true }
-                // )}
                 />
             </>
         )
@@ -484,64 +497,49 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
 
     return (
         <>
-            <Loading loading={isLoading} refresh={isFetching} />
-            <AppBar
-                left={
-                    <IconButton name='arrow-left'
-                        style={{ marginLeft: 10 }}
-                        iconsize={30}
-                        onPress={() => {
-                            queryClient.removeQueries({ queryKey: keyQuery })
-                            navigation.goBack()
-                        }}
-                        color={colors.primary}
-                    />
+            <Loading loading={isLoading} refresh={isFetching || isDownload} />
+            <AppBar style={{ paddingHorizontal: 10 }}>
+                <IconButton name='arrow-left'
+                    disabled={isLoading || isFetching || isDownload}
+                    iconsize={28}
+                    onPress={() => {
+                        queryClient.removeQueries({ queryKey: keyQuery })
+                        navigation.goBack();
+                    }}
+                    color={colors.primary}
+                />
+                <Text variant='titleMedium'>{report === 'ap-ci' ? 'APERTURA Y CIERRE'
+                    : (report === 'event-alarm') ? 'EVENTO DE ALARMA'
+                        : (report === 'batery') ? 'PROBLEMAS DE BATERÍAS'
+                            : (report === 'state') ? 'ESTADO DE SUCURSALES'
+                                : (report === 'apci-week') ? 'HORARIO DE APERTURAS Y CIERRES'
+                                    : ''}</Text>
+                <IconButton disabled={isLoading || isFetching || isDownload} color={colors.primary} name='dots-vertical' onPress={(e) => setOpenMenu(true)} onLayout={({ nativeEvent: { layout } }) => { }} />
+            </AppBar>
+            <Menu open={openMenu} close={close => setOpenMenu(!close)} animationType='slide'>
+                {(report === 'apci-week' || report === 'batery' || report === 'state') &&
+                    <>
+                        <Button
+                            onPress={() => {
+                                setOpenMenu(false);
+                                Download(true);
+                            }}
+                            icon='file-pdf-box' mode='contained-tonal' contentStyle={styles.btnMenu} text='Descargar pdf con gráfica' />
+                        <Button
+                            onPress={() => {
+                                setOpenMenu(false);
+                                Download();
+                            }}
+                            icon='file-pdf-box' mode='contained-tonal' contentStyle={styles.btnMenu} text='Descargar pdf' />
+                    </>
                 }
-                label={
-                    report === 'ap-ci' ? 'APERTURA Y CIERRE'
-                        : (report === 'event-alarm') ? 'EVENTO DE ALARMA'
-                            : (report === 'batery') ? 'PROBLEMAS DE BATERÍAS'
-                                : (report === 'state') ? 'ESTADO DE SUCURSALES'
-                                    : (report === 'apci-week') ? 'HORARIO DE APERTURAS Y CIERRES'
-                                        : ''}
-                right={
-                    <View style={{ marginRight: 10 }}>
-                        <Menu
-                            options={
-                                [
-                                    ...(report === 'apci-week') ? [
-                                        {
-                                            icon: 'file-pdf-box',
-                                            label: 'Descargar Pdf con gráfica',
-                                            onPress: () => console.log('Pressed star'),
-                                        },
-                                        {
-                                            icon: 'file-pdf-box',
-                                            label: 'Descargar Pdf',
-                                            onPress: () => console.log('Pressed star'),
-                                        },
-                                        {
-                                            icon: 'file-excel',
-                                            label: 'Descargar Exel',
-                                            onPress: () => console.log('Pressed email'),
-                                        }
-                                    ] : [],
-                                    // {
-                                    //     icon: (view === 'default') ? 'table' : 'table-row',
-                                    //     label: (view === 'default') ? 'Visualizar tabla' : 'Visualizar cards',
-                                    //     onPress: () => (view === 'default') ? setView('table') : setView('default'),
-                                    // },
-                                    {
-                                        icon: 'refresh',
-                                        label: 'Recargar',
-                                        onPress: () => refetch(),
-                                    },
-                                ]
-                            }
-                        />
-                    </View>
-                }
-            />
+                <Button
+                    onPress={() => {
+                        setOpenMenu(false);
+                        refetch();
+                    }}
+                    icon='refresh' mode='contained-tonal' contentStyle={styles.btnMenu} text='Recargar' />
+            </Menu>
             <View style={{ flex: 1, margin: 5 }}>
                 <Text style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  {(data?.nombre) ? data.nombre : 'Grupo personalizado, cuentas individuales'}</Text>
                 {_renderPercentajes()}
@@ -571,4 +569,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 5,
         fontWeight: 'bold'
     },
+    btnMenu: {
+        alignItems: 'flex-start',
+        marginVertical: 5
+    }
 });

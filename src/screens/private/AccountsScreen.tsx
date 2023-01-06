@@ -59,7 +59,7 @@ export const AccountsScreen = () => {
             if (missingDates?.length === 0) {
                 const start = dates.find(f => f.name === 'Fecha inicio')?.date?.date.date ?? modDate({}).date.date;
                 const end = dates.find(f => f.name === 'Fecha final')?.date?.date.date ?? modDate({}).date.date;
-                navigate('ResultAccountScreen', { account: parseInt(accounts[0].CodigoCte), end, report: report[0].value, start, keys: getKeys(report[0].value), typeAccount: 1 });
+                navigate('ResultAccountScreen', { account: { name: accounts[0].Nombre, code: parseInt(accounts[0].CodigoCte) }, end, report: report[0].value, start, keys: getKeys(report[0].value), typeAccount: 1 });
             } else {
                 Toast.show({ type: 'customError', text1: 'Error al asignar Fechas', text2: `Fechas faltantes:\n${missingDates}` })
             }

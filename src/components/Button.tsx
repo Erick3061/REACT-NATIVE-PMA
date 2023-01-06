@@ -16,6 +16,7 @@ interface Props extends PressableProps {
     labelStyle?: StyleProp<TextStyle>;
     variantText?: keyof typeof TypescaleKey;
     contentStyle?: StyleProp<ViewStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
     mode?: ButtonMode;
     uppercase?: boolean;
     disabled?: boolean;
@@ -28,7 +29,7 @@ interface Props extends PressableProps {
 export const Button = (props: Props) => {
     const { loading, labelStyle, contentStyle, mode = 'text', icon,
         text, uppercase = true, disabled, customButtonColor, customTextColor,
-        borderRadiusBtn, colorPressed, colorTextPressed, variantText } = props;
+        borderRadiusBtn, colorPressed, colorTextPressed, variantText, containerStyle } = props;
     const { color: customLabelColor, fontSize: customLabelSize } = StyleSheet.flatten(labelStyle) || {};
     const iconSize = 18;
     const { theme: { colors, fonts, roundness, dark } } = useAppSelector(state => state.app);
@@ -129,11 +130,14 @@ export const Button = (props: Props) => {
                 buttonStyle,
                 isMode('elevated') && { ...stylesApp.shadow, backgroundColor: colors.background },
                 pressed && { backgroundColor: colorPressed ?? Color(buttonStyle.backgroundColor).fade(.2).toString() },
+                isMode('text') && pressed && {
+                    backgroundColor: Color(buttonStyle.backgroundColor).alpha(.1).toString()
+                },
                 contentStyle
             ]}
         >
             {({ pressed }) => (
-                <View style={[styles.content]}>
+                <View style={[styles.content, containerStyle]}>
                     {icon && loading !== true ? (
                         <View style={styles.icon}>
                             <Icon
