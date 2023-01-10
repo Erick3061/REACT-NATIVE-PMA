@@ -50,6 +50,13 @@ export interface User {
     refreshToken: string;
 }
 
+export interface UpdateUserProps {
+    id: string;
+    fullName: string;
+    password: string;
+    lastPassword: string;
+}
+
 export enum BatteryStatus {
     ERROR = "ERROR",
     RESTORE = "RESTORE",

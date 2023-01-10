@@ -16,6 +16,7 @@ import { Button } from '../../components/Button';
 import { Alert } from '../../components/Alert';
 import Text from '../../components/Text';
 import { OrientationLocker } from 'react-native-orientation-locker';
+import { User } from '../../interfaces/interfaces';
 
 type InputsLogIn = {
     email: string,
@@ -31,26 +32,25 @@ export const LogInScreen = ({ navigation }: Props) => {
     const dispatch = useAppDispatch();
     const { control, handleSubmit, reset, setValue, formState } = useForm<InputsLogIn>({ defaultValues: { email: '', password: '' } });
 
-    const { isLoading, mutate, data } = useMutation(['LogIn'], LogIn, {
+    const { isLoading, mutate, data: dataLogIn } = useMutation(['LogIn'], LogIn, {
         retry: 0,
         onError: async err => {
             Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
         onSuccess: async data => {
             if (data.termsAndConditions) dispatch(setUser(data));
+            // if (data.termsAndConditions) setAceptTerms(true);
             else setAceptTerms(true)
         },
     });
 
-    const { refetch } = useQuery(['Terms'], () => CheckAuth({ terms: data?.token }), {
+    const { mutate: mutateTerms } = useMutation(['Terms'], (token: string) => CheckAuth({ terms: token }), {
         retry: 0,
-        enabled: false,
         onError: async err => {
             Toast.show({ text1: 'Error', text2: String(err), type: 'error' });
         },
-        onSuccess: async data => { await dispatch(setUser(data)); }
-    })
-
+        onSuccess: () => dispatch(setUser(dataLogIn as User)),
+    });
 
     const onSubmit: SubmitHandler<InputsLogIn> = async (data) => {
         mutate(data);
@@ -59,13 +59,13 @@ export const LogInScreen = ({ navigation }: Props) => {
     const nextInput = useRef<NativeTextInput>(null);
 
     useEffect(() => {
-        setValue('email', 'admin@pem-sa.com');
-        setValue('password', '1234');
+        setValue('email', 'grillo.erick1@gmail.com');
+        setValue('password', '123456');
     }, []);
 
     return (
         <View style={{ flex: 1 }}>
-            <Loading loading={isLoading} />
+            <Loading refresh={isLoading} />
             <OrientationLocker
                 orientation='PORTRAIT'
             />
@@ -87,6 +87,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                         styles.ContainerViewInputs
                     ]}>
                         <Input
+                            editable={!isLoading}
                             formInputs={control._defaultValues}
                             control={control}
                             name={'email'}
@@ -99,8 +100,10 @@ export const LogInScreen = ({ navigation }: Props) => {
                             onSubmitEditing={() => {
                                 nextInput.current?.focus();
                             }}
+                            autoCapitalize='none'
                         />
                         <Input
+                            editable={!isLoading}
                             onRef={(nextInput) => { nextInput = nextInput }}
                             formInputs={control._defaultValues}
                             control={control}
@@ -113,6 +116,7 @@ export const LogInScreen = ({ navigation }: Props) => {
                             label='Contraseña'
                             onSubmitEditing={handleSubmit(onSubmit)}
                             returnKeyType='done'
+                            autoCapitalize='none'
                         />
                         <Text variant='titleMedium' onPress={() => setIsHelp(true)} style={[{ fontWeight: '600', textAlign: 'right', marginVertical: 10 }]}>Olvidé mi contraseña</Text>
                     </KeyboardAvoidingView>
@@ -133,7 +137,18 @@ export const LogInScreen = ({ navigation }: Props) => {
             </ScrollView>
             <Alert visible={isHelp} type='info' icon subtitle='Contacta a tu titular para recuperar tu contraseña' dismissable renderCancel onCancel={(cancel: boolean) => { setIsHelp(!cancel) }} />
             <ModalTCAP visible={visible} setVisible={setVisible} />
-            <ModalTCAP visible={aceptTerms} setVisible={setAceptTerms} dismissable accept={{ cancel: () => setAceptTerms(false), confirm: () => { setAceptTerms(false); refetch() }, textCancel: 'cancelar', textConfirm: 'aceptar' }} />
+            <ModalTCAP
+                visible={aceptTerms}
+                setVisible={setAceptTerms}
+                dismissable
+                accept={{
+                    cancel: () => setAceptTerms(false),
+                    confirm: () => {
+                        setAceptTerms(false);
+                        mutateTerms(dataLogIn?.token ?? '');
+                    },
+                    textCancel: 'cancelar', textConfirm: 'aceptar'
+                }} />
         </View>
     )
 }

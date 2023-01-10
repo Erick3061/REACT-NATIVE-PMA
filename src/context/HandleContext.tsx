@@ -1,14 +1,14 @@
 import { createContext, useEffect, useReducer } from "react";
 import { Alert, Dimensions, LayoutRectangle, Platform } from "react-native";
 import { Orientation } from '../interfaces/interfaces';
-import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { LogOut } from "../features/appSlice";
+import { useAppDispatch } from '../app/hooks';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from 'react-native-toast-message';
 import { useQueryClient } from "@tanstack/react-query";
 import { PERMISSIONS, requestMultiple, checkMultiple } from 'react-native-permissions';
 import RNFetchBlob, { FetchBlobResponse } from 'rn-fetch-blob';
 import { baseUrl } from "../api/Api";
+import { logOut } from '../features/appSlice';
 
 type State = {
     orientation: Orientation;
@@ -126,12 +126,12 @@ export const HandleProvider = ({ children }: any) => {
     const handleError = (error: string) => {
         if (error === 'La sesión expiro, inicie sesión nuevamente') {
             queryClient.clear();
-            AsyncStorage.removeItem('token').then(() => appDispatch(LogOut())).catch(error => {
+            AsyncStorage.removeItem('token').then(() => appDispatch(logOut())).catch(error => {
                 Toast.show({ type: 'error', text1: 'Error', text2: String(error) });
             });
         }
         if (error.includes('Unauthorized') || error.includes('unauthorized')) {
-            AsyncStorage.removeItem('token').then(() => appDispatch(LogOut())).catch(error => {
+            AsyncStorage.removeItem('token').then(() => appDispatch(logOut())).catch(error => {
                 Toast.show({ type: 'error', text1: 'Error', text2: String(error) });
             });
         }

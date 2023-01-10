@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { ColorSchemeName, SafeAreaView, StatusBar, useColorScheme, View, LayoutRectangle } from 'react-native';
+import React, { useContext, useEffect, } from 'react';
+import { ColorSchemeName, SafeAreaView, useColorScheme, View } from 'react-native';
 import { useAppSelector, useAppDispatch } from '../app/hooks';
 import { PublicScreens } from './PublicScreens';
 import { updateTheme } from '../features/appSlice';
@@ -85,19 +85,13 @@ export const toastConfig = {
 
 export const Root = () => {
     const { status: isAuth, theme } = useAppSelector((state) => state.app);
-    const { colors, dark } = theme;
     const dispatch = useAppDispatch();
     const color: ColorSchemeName = useColorScheme();
-    const [layout, setLayout] = useState<LayoutRectangle>();
     const { setToBo, changeOrientation } = useContext(HandleContext);
 
     useEffect(() => {
         color === 'dark' ? dispatch(updateTheme(CombinedDarkTheme)) : dispatch(updateTheme(CombinedLightTheme));
     }, [color]);
-
-    useEffect(() => {
-        if (layout) { setToBo(layout); }
-    }, [layout]);
 
     return (
         <>
@@ -110,7 +104,7 @@ export const Root = () => {
                     {/* <StatusBar backgroundColor={dark ? Color(colors.background).darken(.4).toString() : colors.background} barStyle={dark ? 'light-content' : 'dark-content'} /> */}
                     <View
                         style={{ flex: 1 }}
-                        onLayout={({ nativeEvent: { layout } }) => setLayout(layout)}
+                        onLayout={({ nativeEvent: { layout } }) => setToBo(layout)}
                     >
                         {(isAuth) ? <PrivateScreens /> : <PublicScreens />}
                     </View>

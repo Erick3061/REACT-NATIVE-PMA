@@ -25,7 +25,10 @@ export const HomeScreen = () => {
                 }
             ]}>
                 <Image
-                    style={{ resizeMode: 'contain', height: '50%', width: '100%' }}
+                    style={[
+                        { resizeMode: 'contain', height: '50%', width: '100%' },
+                        dark && { tintColor: colors.onSurface }
+                    ]}
                     source={require('../../assets/logo2.png')}
                 />
             </View>

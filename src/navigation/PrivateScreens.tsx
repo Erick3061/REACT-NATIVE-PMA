@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { CardStyleInterpolators, createStackNavigator, HeaderStyleInterpolators, TransitionSpecs } from '@react-navigation/stack';
 import { DrawerScreens } from './DrawerScreens';
 import { TypeReport, typeAccount } from '../types/types';
@@ -28,6 +28,7 @@ export const PrivateScreens = () => {
     useQuery(['checkAuth'], () => CheckAuth({ token: User?.refreshToken }), {
         retry: 0,
         refetchInterval: 300000,
+        // enabled: start,
         onError: error => {
             handleError(String(error));
             Toast.show({ type: 'error', text1: 'Error', text2: String(error) })

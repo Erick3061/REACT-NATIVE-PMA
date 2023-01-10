@@ -11,15 +11,11 @@ import Color from 'color';
 import { stylesApp } from '../../App';
 import { TargetPercentaje } from '../../components/TargetPercentaje';
 import Table from '../../components/table/Table';
-import { Menu } from '../../components/select/Menu';
 import { AppBar } from '../../components/AppBar';
 import { IconButton } from '../../components/IconButton';
 import { HandleContext } from '../../context/HandleContext';
 import { useQueryClient } from '@tanstack/react-query';
 import Text from '../../components/Text';
-import { Button } from '../../components/Button';
-import Toast from 'react-native-toast-message';
-import { modDate } from '../../functions/functions';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountScreen'> { };
 export const ResultAccountScreen = ({ navigation, route: { params: { account, end, report, start, keys, events, typeAccount } } }: Props) => {
@@ -28,18 +24,17 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
     const { data, isLoading, isFetching, refetch, error } = useReport({ accounts: [account.code], dateStart: start, dateEnd: end, type: report, typeAccount, key: String(account.code) });
 
     const [view, setView] = useState<'table' | 'default'>('default');
-    const [openMenu, setOpenMenu] = useState<boolean>(false);
 
     const { handleError, orientation, downloadReport, isDownload } = useContext(HandleContext);
     const queryClient = useQueryClient();
 
     const _renderItem = ({ index, item, separators }: ListRenderItemInfo<Events>) => {
         return (
-            <View style={[styles.item, { borderRadius: roundness * 2, backgroundColor: colors.background, shadowColor: colors.primary }]}>
+            <View style={[styles.item, { borderRadius: roundness * 2, backgroundColor: colors.background, shadowColor: colors.primary, flex: 1 }]}>
                 {keys.map(({ key, label }, idx) => (
                     <View key={idx + label} style={{ flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: .2, borderColor: Color(colors.primary).alpha(.2).toString() }}>
                         <Text style={[fonts.titleSmall, { color: colors.text }]}>{label}</Text>
-                        <Text> {Array.isArray(key) ? key.map(k => item[k]).join(' - ') : item[key]}  </Text>
+                        <Text numberOfLines={3}> {Array.isArray(key) ? key.map(k => item[k]).join(' - ') : item[key]}  </Text>
                     </View>
                 ))}
             </View>
@@ -155,7 +150,41 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
     return (
         <>
             <Loading loading={isLoading} refresh={isFetching || isDownload} />
-            <AppBar style={{ paddingHorizontal: 10 }}>
+            <AppBar
+                disabled={isLoading || isFetching || isDownload}
+                style={{ paddingHorizontal: 10 }}
+                menu={[
+                    {
+                        text: 'Descargar pdf con gráfica',
+                        icon: 'file-pdf-box',
+                        onPress: () => {
+                            Download(true);
+                        },
+                        contentStyle: { ...styles.btnMenu }
+                    },
+                    {
+                        text: 'Descargar pdf',
+                        icon: 'file-pdf-box',
+                        onPress: () => {
+                            Download(true);
+                        },
+                        contentStyle: { ...styles.btnMenu }
+                    },
+                    view === 'default' ? {
+                        text: 'ver tabla',
+                        onPress: () => setView('table'),
+                    } : {
+                        text: 'ver lista',
+                        onPress: () => setView('default'),
+                    },
+                    {
+                        text: 'Recargar',
+                        icon: 'refresh',
+                        onPress: () => refetch(),
+                        contentStyle: { ...styles.btnMenu }
+                    },
+
+                ]}>
                 <IconButton name='arrow-left'
                     disabled={isLoading || isFetching || isDownload}
                     iconsize={28}
@@ -166,28 +195,7 @@ export const ResultAccountScreen = ({ navigation, route: { params: { account, en
                     color={colors.primary}
                 />
                 <Text variant='titleMedium'>{report === 'ap-ci' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'}</Text>
-                <IconButton disabled={isLoading || isFetching || isDownload} color={colors.primary} name='dots-vertical' onPress={(e) => setOpenMenu(true)} onLayout={({ nativeEvent: { layout } }) => { }} />
             </AppBar>
-            <Menu open={openMenu} close={close => setOpenMenu(!close)} animationType='slide'>
-                <Button
-                    onPress={() => {
-                        setOpenMenu(false);
-                        Download(true);
-                    }}
-                    icon='file-pdf-box' contentStyle={styles.btnMenu} text='Descargar pdf con gráfica' />
-                <Button
-                    onPress={() => {
-                        setOpenMenu(false);
-                        Download();
-                    }}
-                    icon='file-pdf-box' contentStyle={styles.btnMenu} text='Descargar pdf' />
-                <Button
-                    onPress={() => {
-                        setOpenMenu(false);
-                        refetch();
-                    }}
-                    icon='refresh' contentStyle={styles.btnMenu} text='Recargar' />
-            </Menu>
             <View style={{ flex: 1, margin: 5 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text variant='titleMedium' adjustsFontSizeToFit style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }]}>  Entre las fechas {start} a {end}</Text>

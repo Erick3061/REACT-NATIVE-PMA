@@ -20,7 +20,6 @@ import { AppBar } from '../../components/AppBar';
 import { useQueryClient } from '@tanstack/react-query';
 import { HandleContext } from '../../context/HandleContext';
 import Text from '../../components/Text';
-import { Menu } from '../../components/select/Menu';
 
 interface Props extends StackScreenProps<rootPrivateScreens, 'ResultAccountsScreen'> { };
 
@@ -58,7 +57,6 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
         useReport({ accounts: [...accounts.map(a => a.code)], dateStart: start, dateEnd: end, type: report, typeAccount, key: JSON.stringify(accounts.map(a => a.code).sort()) });
 
     const [filterData, setFilterData] = useState<typeof data>();
-    const [openMenu, setOpenMenu] = useState<boolean>(false);
 
     const queryClient = useQueryClient();
     const keyQuery = ["Events", JSON.stringify(accounts), report, start, end];
@@ -498,7 +496,43 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
     return (
         <>
             <Loading loading={isLoading} refresh={isFetching || isDownload} />
-            <AppBar style={{ paddingHorizontal: 10 }}>
+            <AppBar
+                disabled={isLoading || isFetching || isDownload}
+                style={{ paddingHorizontal: 10 }}
+                menu={
+                    (report === 'apci-week' || report === 'batery' || report === 'state') ? [
+                        {
+                            text: 'Descargar pdf con gráfica',
+                            icon: 'file-pdf-box',
+                            onPress: () => {
+                                Download(true);
+                            },
+                            contentStyle: { ...styles.btnMenu }
+                        },
+                        {
+                            text: 'Descargar pdf',
+                            icon: 'file-pdf-box',
+                            onPress: () => {
+                                Download(true);
+                            },
+                            contentStyle: { ...styles.btnMenu }
+                        },
+                        {
+                            text: 'Recargar',
+                            icon: 'refresh',
+                            onPress: () => refetch(),
+                            contentStyle: { ...styles.btnMenu }
+                        },
+                    ]
+                        : [
+                            {
+                                text: 'Recargar',
+                                icon: 'refresh',
+                                onPress: () => refetch(),
+                                contentStyle: { ...styles.btnMenu }
+                            },
+                        ]
+                }>
                 <IconButton name='arrow-left'
                     disabled={isLoading || isFetching || isDownload}
                     iconsize={28}
@@ -508,15 +542,9 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                     }}
                     color={colors.primary}
                 />
-                <Text variant='titleMedium'>{report === 'ap-ci' ? 'APERTURA Y CIERRE'
-                    : (report === 'event-alarm') ? 'EVENTO DE ALARMA'
-                        : (report === 'batery') ? 'PROBLEMAS DE BATERÍAS'
-                            : (report === 'state') ? 'ESTADO DE SUCURSALES'
-                                : (report === 'apci-week') ? 'HORARIO DE APERTURAS Y CIERRES'
-                                    : ''}</Text>
-                <IconButton disabled={isLoading || isFetching || isDownload} color={colors.primary} name='dots-vertical' onPress={(e) => setOpenMenu(true)} onLayout={({ nativeEvent: { layout } }) => { }} />
+                <Text variant='titleMedium'>{report === 'ap-ci' ? 'APERTURA Y CIERRE' : 'EVENTO DE ALARMA'}</Text>
             </AppBar>
-            <Menu open={openMenu} close={close => setOpenMenu(!close)} animationType='slide'>
+            {/* <Menu open={openMenu} close={close => setOpenMenu(!close)} animationType='slide'>
                 {(report === 'apci-week' || report === 'batery' || report === 'state') &&
                     <>
                         <Button
@@ -539,7 +567,7 @@ export const ResultAccountsScreen = ({ navigation, route: { params: { accounts, 
                         refetch();
                     }}
                     icon='refresh' mode='contained-tonal' contentStyle={styles.btnMenu} text='Recargar' />
-            </Menu>
+            </Menu> */}
             <View style={{ flex: 1, margin: 5 }}>
                 <Text style={[{ borderLeftWidth: 3, borderColor: colors.primary, color: colors.text }, fonts.titleMedium]}>  {(data?.nombre) ? data.nombre : 'Grupo personalizado, cuentas individuales'}</Text>
                 {_renderPercentajes()}

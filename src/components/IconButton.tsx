@@ -15,7 +15,8 @@ interface Props extends PressableProps {
 
 export const IconBtn = React.forwardRef<View, Props>(
     (props: Props, ref) => {
-        const { name, iconsize, style, active, colorActive, color } = props;
+        const { name, iconsize, style, active, colorActive, color, disabled } = props;
+        const { theme: { colors } } = useAppSelector(state => state.app);
         const iconProps = { color, name };
         const size: number = 25;
         const stl = Array.isArray(style) ? style.reduce((accumulator, currentValue) => { return { ...accumulator as {}, ...currentValue as {} } }) : style;
@@ -37,7 +38,7 @@ export const IconBtn = React.forwardRef<View, Props>(
                         backgroundColor: pressed ? Color(colorActive ?? bc).fade(.9).toString() : active ? colorActive ?? bc : undefined,
                     }
                 ]}>
-                <Icon {...iconProps} size={iconsize ?? size} />
+                <Icon {...iconProps} size={iconsize ?? size} color={disabled ? colors.surfaceDisabled : iconProps.color} />
             </Pressable >
         )
     }

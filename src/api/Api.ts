@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { responseError, User, Account, GetReport, Group, BatteryStatus, Percentajes, CheckAuthProps } from '../interfaces/interfaces';
+import { responseError, User, Account, GetReport, Group, BatteryStatus, Percentajes, CheckAuthProps, UpdateUserProps } from '../interfaces/interfaces';
 import { TypeReport } from '../types/types';
 
 export const baseUrl = 'http://192.168.1.93:3000';
@@ -213,7 +213,7 @@ export const ReportEvents = async ({ body, type }: { body: GetReport, type?: Typ
                         percentaje: sinEstado,
                         total: data.cuentas.length,
                         events: sinEstado,
-                        label: 'Sin estadoa',
+                        label: 'Sin estado',
                         text: 'Sucursales sin estado'
                     }
                 }
@@ -276,3 +276,16 @@ export const ReportEvents = async ({ body, type }: { body: GetReport, type?: Typ
         return data;
     } catch (error) { throw (`${error}`); }
 };
+
+export const UpdateUser = async ({ id, ...props }: UpdateUserProps) => {
+    try {
+        const response = await Api(`user/update/${id}`, props, 'PATCH');
+        if (!response.ok) {
+            return response.json()
+                .catch(() => { throw (response.status); })
+                .then(({ message }) => { throw (message || response.status); });
+        }
+        const { status, message, ...data }: response = await response.json();
+        return data;
+    } catch (error) { throw (`${error}`) }
+}

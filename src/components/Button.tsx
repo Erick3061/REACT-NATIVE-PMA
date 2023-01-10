@@ -9,7 +9,7 @@ import { TypescaleKey } from '../types/types';
 
 type ButtonMode = 'text' | 'outlined' | 'contained' | 'elevated' | 'contained-tonal';
 
-interface Props extends PressableProps {
+export interface Props extends PressableProps {
     text: string;
     icon?: string;
     loading?: boolean;

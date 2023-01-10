@@ -10,6 +10,7 @@ import { stylesApp } from '../App';
 export const Loading = ({ loading, refresh }: { loading?: boolean, refresh?: boolean }) => {
     const { colors, roundness, dark } = useAppSelector(state => state.app.theme);
     const { screenHeight, screenWidth, orientation } = useContext(HandleContext);
+    dark ? Color(colors.background).darken(.4).toString() : colors.background
     return (
         loading ?
             <View collapsable style={[
@@ -18,8 +19,8 @@ export const Loading = ({ loading, refresh }: { loading?: boolean, refresh?: boo
             ]}>
                 <ContentLoader
                     viewBox="0 0 265 230"
-                    backgroundColor={dark ? colors.primary : "#f3f3f3"}
-                    foregroundColor={dark ? colors.onPrimaryContainer : "#ecebeb"}
+                    backgroundColor={dark ? Color(colors.background).darken(.8).toString() : "#f3f3f3"}
+                    foregroundColor={dark ? Color(colors.background).lighten(.2).toString() : "#ecebeb"}
                 >
                     <Rect x="15" y="15" rx="4" ry="4" width="200" height="25" />
                     <Rect x="15" y="50" rx="2" ry="2" width="40" height="15" />
@@ -30,7 +31,6 @@ export const Loading = ({ loading, refresh }: { loading?: boolean, refresh?: boo
                     <Rect x="135" y="105" rx="3" ry="3" width="50" height="15" />
                     <Rect x="15" y="135" rx="16" ry="16" width="55" height="22" />
                     <Rect x="15" y="165" rx="2" ry="2" width="150" height="50" />
-                    <Rect x="215" y="180" rx="2" ry="2" width="40" height="20" />
                 </ContentLoader>
             </View>
             :

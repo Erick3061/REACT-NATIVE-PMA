@@ -1,43 +1,66 @@
 import React, { useContext, useRef } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { SubmitHandler, useForm, ErrorOption } from 'react-hook-form';
 import { KeyboardAvoidingView, View, TextInput as NativeTextInput } from 'react-native';
 import { useEffect } from 'react';
 import Toast from 'react-native-toast-message';
-import { HandleContext } from '../../context/HandleContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { useAppSelector } from '../../app/hooks';
+import { HandleContext } from '../../context/HandleContext';
+import { Orientation, UpdateUserProps } from '../../interfaces/interfaces';
+import { useMutation } from '@tanstack/react-query';
+import { UpdateUser } from '../../api/Api';
+import { Loading } from '../../components/Loading';
 
 
 type ChagePassword = {
     password: string;
     newPassword: string;
-    confirmPAssword: string;
+    confirmPassword: string;
 }
 
 export const ProfileScreen = () => {
-    const { control, handleSubmit, reset, setValue, formState } = useForm<ChagePassword>({ defaultValues: { password: '', confirmPAssword: '', newPassword: '' } });
-    // const { vw } = useContext(HandleContext);
+    const { control, handleSubmit, reset, setValue, setError } = useForm<ChagePassword>({ defaultValues: { password: '', confirmPassword: '', newPassword: '' } });
     const newPass = useRef<NativeTextInput>(null);
     const confPass = useRef<NativeTextInput>(null);
+    const { orientation, handleError } = useContext(HandleContext);
+    const { User } = useAppSelector(state => state.app);
 
-    const onSubmit: SubmitHandler<ChagePassword> = async (data) => {
-        console.log(data);
-        Toast.show({
-            type: 'success',
-            text1: 'Correcto',
-            text2: 'Contaseña cambiada'
-        })
+    const { isLoading, mutate } = useMutation(['updateUser'], (props: UpdateUserProps) => UpdateUser(props), {
+        onError: error => {
+            if (String(error).includes('no coincide')) {
+                setError('password', { message: String(error) }, { shouldFocus: false });
+            }
+            handleError(String(error))
+        },
+        onSuccess: (data) => Toast.show({ text1: 'Correcto', text2: 'Contraseña cambiada', type: 'success', autoHide: true, visibilityTime: 2000 })
+    })
+
+    const onSubmit: SubmitHandler<ChagePassword> = async ({ confirmPassword, newPassword, password }) => {
+        if (newPassword !== confirmPassword) {
+            setValue('confirmPassword', '', { shouldValidate: false, shouldDirty: false, shouldTouch: false });
+            setError('confirmPassword', { message: 'Contraseña no coincide' });
+        } else {
+            if (User) {
+                const { id, fullName } = User;
+                mutate({ id, fullName, lastPassword: password, password: confirmPassword });
+            }
+        }
     };
 
-    useEffect(() => {
-        setValue('password', '11');
-        setValue('newPassword', '11');
-        setValue('confirmPAssword', '11');
-    }, []);
-
-
     return (
-        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 10 }}>
+        <View style={[
+            {
+                flex: 1,
+                justifyContent: 'center',
+                padding: 10
+            },
+            orientation === Orientation.landscape && {
+                width: '80%',
+                alignSelf: 'center'
+            }
+        ]}>
+            <Loading refresh={isLoading} />
             <KeyboardAvoidingView>
                 <Input
                     formInputs={control._defaultValues}
@@ -61,7 +84,11 @@ export const ProfileScreen = () => {
                     iconLeft='lock'
                     keyboardType='default'
                     placeholder='**********'
-                    rules={{ required: { value: true, message: 'Campo requerido' } }}
+                    rules={{
+                        required: { value: true, message: 'Campo requerido' },
+                        minLength: { value: 6, message: 'Minimo 6 caracteres' },
+
+                    }}
                     secureTextEntry
                     label='Contraseña nueva'
                     onSubmitEditing={() => confPass.current?.focus()}
@@ -72,11 +99,15 @@ export const ProfileScreen = () => {
                     onRef={confPass => confPass = confPass}
                     formInputs={control._defaultValues}
                     control={control}
-                    name={'confirmPAssword'}
+                    name={'confirmPassword'}
                     iconLeft='lock'
                     keyboardType='default'
                     placeholder='**********'
-                    rules={{ required: { value: true, message: 'Campo requerido' } }}
+                    rules={{
+                        required: { value: true, message: 'Campo requerido' },
+                        minLength: { value: 6, message: 'Minimo 6 caracteres' },
+
+                    }}
                     secureTextEntry
                     label='Confirma tu contraseña'
                     onSubmitEditing={handleSubmit(onSubmit)}

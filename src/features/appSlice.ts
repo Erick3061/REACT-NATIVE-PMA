@@ -33,7 +33,13 @@ export const setUser = createAsyncThunk('LogIn', async (User: User) => {
                 AsyncStorage.removeItem('token');
                 return undefined;
             });
-    } catch (error) { console.log('Error') }
+    } catch (error) { console.log(error) }
+});
+
+export const logOut = createAsyncThunk('logOut', async () => {
+    try {
+        await AsyncStorage.removeItem('token');
+    } catch (error) { console.log(error) }
 });
 
 // export const 
@@ -42,10 +48,10 @@ export const appSlice = createSlice({
     name: 'app',
     initialState,
     reducers: {
-        LogOut: (state) => {
-            state.User = undefined;
-            state.status = false;
-        },
+        // LogOut: (state) => {
+        //     state.User = undefined;
+        //     state.status = false;
+        // },
         updateTheme: (state, action: PayloadAction<ThemeBase & Theme>) => {
             state.theme = action.payload;
         },
@@ -65,9 +71,13 @@ export const appSlice = createSlice({
                 state.User = payload;
                 state.status = true;
             })
+            .addCase(logOut.fulfilled, (state) => {
+                state.User = undefined;
+                state.status = false;
+            });
     }
 });
 
-export const { updateTheme, LogOut } = appSlice.actions;
+export const { updateTheme } = appSlice.actions;
 export const app = (state: RootState) => state.app;
 export default appSlice.reducer;
