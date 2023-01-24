@@ -58,10 +58,10 @@ export const LogInScreen = ({ navigation }: Props) => {
 
     const nextInput = useRef<NativeTextInput>(null);
 
-    useEffect(() => {
-        setValue('email', 'grillo.erick1@gmail.com');
-        setValue('password', '123456');
-    }, []);
+    // useEffect(() => {
+    //     setValue('email', 'grillo.erick1@gmail.com');
+    //     setValue('password', '123456');
+    // }, []);
 
     return (
         <View style={{ flex: 1 }}>
